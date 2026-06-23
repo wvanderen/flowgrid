@@ -47,21 +47,6 @@ function buildStarter(): FlowgridSnapshot {
   });
 }
 
-function cloneSnapshot(snapshot: FlowgridSnapshot): FlowgridSnapshot {
-  return {
-    ...snapshot,
-    cells: new Map(snapshot.cells),
-    moduleInstances: new Map(snapshot.moduleInstances),
-    routes: new Map(snapshot.routes),
-    sessions: [...snapshot.sessions],
-    operations: [...snapshot.operations],
-    forgeHistory: [...snapshot.forgeHistory],
-    client: { ...snapshot.client },
-    core: { ...snapshot.core },
-    settings: { ...snapshot.settings },
-  };
-}
-
 test('starter snapshot validates clean', () => {
   const snapshot = buildStarter();
   const issues = validateFlowgridSnapshot(snapshot);
@@ -188,32 +173,47 @@ test('validateCoreAllocation emits invalid_core_allocation_total when sum != 100
 });
 
 test('validateMonotonicCounters emits token_regression when moduleTokens decrease', () => {
-  const previous = buildStarter();
-  const next = cloneSnapshot(previous);
-  next.core = { ...next.core, moduleTokens: previous.core.moduleTokens + 5 };
-  const previousWithMore = cloneSnapshot(previous);
-  previousWithMore.core = { ...previousWithMore.core, moduleTokens: 10 };
-  const issues = validateMonotonicCounters(previousWithMore, next);
+  const basePrevious = buildStarter();
+  const baseNext = buildStarter();
+  const previous: FlowgridSnapshot = {
+    ...basePrevious,
+    core: { ...basePrevious.core, moduleTokens: 10 },
+  };
+  const next: FlowgridSnapshot = {
+    ...baseNext,
+    core: { ...baseNext.core, moduleTokens: 5 },
+  };
+  const issues = validateMonotonicCounters(previous, next);
   expect(issues.some((i) => i.code === 'token_regression')).toBe(true);
 });
 
 test('validateMonotonicCounters emits forge_count_regression when forgeCount decreases', () => {
-  const previous = buildStarter();
-  const next = cloneSnapshot(previous);
-  next.core = { ...next.core, forgeCount: 0 };
-  const previousWithForge = cloneSnapshot(previous);
-  previousWithForge.core = { ...previousWithForge.core, forgeCount: 3 };
-  const issues = validateMonotonicCounters(previousWithForge, next);
+  const basePrevious = buildStarter();
+  const baseNext = buildStarter();
+  const previous: FlowgridSnapshot = {
+    ...basePrevious,
+    core: { ...basePrevious.core, forgeCount: 3 },
+  };
+  const next: FlowgridSnapshot = {
+    ...baseNext,
+    core: { ...baseNext.core, forgeCount: 0 },
+  };
+  const issues = validateMonotonicCounters(previous, next);
   expect(issues.some((i) => i.code === 'forge_count_regression')).toBe(true);
 });
 
 test('validateMonotonicCounters emits negative_resource when lifetimeEnergy regresses', () => {
-  const previous = buildStarter();
-  const next = cloneSnapshot(previous);
-  next.core = { ...next.core, lifetimeEnergy: 0 };
-  const previousWithEnergy = cloneSnapshot(previous);
-  previousWithEnergy.core = { ...previousWithEnergy.core, lifetimeEnergy: 100 };
-  const issues = validateMonotonicCounters(previousWithEnergy, next);
+  const basePrevious = buildStarter();
+  const baseNext = buildStarter();
+  const previous: FlowgridSnapshot = {
+    ...basePrevious,
+    core: { ...basePrevious.core, lifetimeEnergy: 100 },
+  };
+  const next: FlowgridSnapshot = {
+    ...baseNext,
+    core: { ...baseNext.core, lifetimeEnergy: 0 },
+  };
+  const issues = validateMonotonicCounters(previous, next);
   expect(issues.some((i) => i.code === 'negative_resource' && i.path === 'core.lifetimeEnergy')).toBe(true);
 });
 

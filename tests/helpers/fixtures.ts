@@ -3,6 +3,8 @@
 // deterministic-by-construction contract stay stable.
 
 import type { Rng, SimulationEnv } from '../../src/domain/index.js';
+import type { FlowgridSnapshot } from '../../src/domain/index.js';
+import { createStarterFlowgridState } from '../../src/content/index.js';
 
 export type TestIds = {
   readonly clientId: string;
@@ -120,4 +122,28 @@ export function createTestSimulationEnv(
     rng: createRng(params.seed ?? 'flowgrid-test-seed'),
     contentVersion: params.contentVersion ?? 'phase-1-starter-v1',
   };
+}
+
+// Convenience: build a starter FlowgridSnapshot with deterministic IDs prefixed by
+// `prefix`. Used by unit and property tests to avoid repeating the long param list.
+export function buildStarterSnapshot(prefix: string): {
+  readonly ids: TestIds;
+  readonly state: FlowgridSnapshot;
+} {
+  const ids = createTestIds(prefix);
+  const state = createStarterFlowgridState({
+    now: '2026-01-01T00:00:00.000Z',
+    localDate: '2026-01-01',
+    clientId: ids.clientId,
+    cellId: ids.cellId,
+    coreId: ids.coreId,
+    generatorModuleInstanceId: ids.generatorModuleInstanceId,
+    chargeCoreModuleInstanceId: ids.chargeCoreModuleInstanceId,
+    outputModuleInstanceId: ids.outputModuleInstanceId,
+    bloomModuleInstanceId: ids.bloomModuleInstanceId,
+    outputRouteId: ids.outputRouteId,
+    settingsId: ids.settingsId,
+    forgeHistoryId: ids.forgeHistoryId,
+  });
+  return { ids, state };
 }
