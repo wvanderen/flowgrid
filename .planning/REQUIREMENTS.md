@@ -26,7 +26,7 @@
 - [ ] **SESS-01**: User can start a focus session from a selected Cell with one primary Generator action.
 - [ ] **SESS-02**: User can finish a focus session and receive proportional rewards based on completed duration.
 - [ ] **SESS-03**: User can cancel or discard an active session without creating accidental rewards.
-- [ ] **SESS-04**: Completed sessions are stored as append-only history records with Cell, start time, end time, duration, XP, Current, Energy/Core outcome, and Bloom/Activation effects.
+- [x] **SESS-04**: Completed sessions are stored as append-only history records with Cell, start time, end time, duration, XP, Current, Energy/Core outcome, and Bloom/Activation effects.
 - [ ] **SESS-05**: User can view a completion summary showing duration, Current, XP, milestone progress, Energy/Core Charge outcome, and the next useful action.
 
 ### Simulation
@@ -79,9 +79,9 @@
 
 ### Persistence and Ownership
 
-- [ ] **DATA-01**: IndexedDB persistence preserves Cells, sessions, Core, modules, forge history, operations, and settings across reloads.
-- [ ] **DATA-02**: Persistence uses normalized entity stores with schema versioning and migrations rather than one giant app-state blob.
-- [ ] **DATA-03**: Command persistence writes changed records and sync-ready operations atomically where IndexedDB transaction boundaries allow it.
+- [x] **DATA-01**: IndexedDB persistence preserves Cells, sessions, Core, modules, forge history, operations, and settings across reloads.
+- [x] **DATA-02**: Persistence uses normalized entity stores with schema versioning and migrations rather than one giant app-state blob.
+- [x] **DATA-03**: Command persistence writes changed records and sync-ready operations atomically where IndexedDB transaction boundaries allow it.
 - [ ] **DATA-04**: User can export full local state as JSON.
 - [ ] **DATA-05**: User can export completed sessions as CSV.
 - [ ] **DATA-06**: Import or restore validates schema version, required records, references, and resource invariants before replacing or merging local data.
@@ -91,7 +91,7 @@
 
 - [ ] **VER-01**: Unit tests cover pure simulation commands for focus completion, Bloom, Activation, Core allocation, rejuvenation, Integration, Module Token grants, Forge, and validation failures.
 - [ ] **VER-02**: Property-based tests cover resource non-negativity, allocation normalization, idempotent operation IDs, duplicate prevention, monotonic forge count, and token non-duplication.
-- [ ] **VER-03**: Persistence tests cover Dexie schema creation, migration fixtures, repository writes, append-only sessions, export, and restore validation.
+- [x] **VER-03**: Persistence tests cover Dexie schema creation, migration fixtures, repository writes, append-only sessions, export, and restore validation.
 - [ ] **VER-04**: Browser tests cover the core user flow: create Cell, start/finish focus session, see Current/Bloom/Core effects, log rejuvenation, gain Module Token, run Forge, and reload with state preserved.
 - [ ] **VER-05**: Accessibility checks verify keyboard and semantic UI paths for all critical canvas-backed actions.
 - [ ] **VER-06**: Canvas/WebGL smoke checks verify that Flowgrid visuals render nonblank Cells/Core/routes and can be reduced or disabled without breaking economy state.
@@ -155,7 +155,7 @@
 | SESS-01 | Phase 3 | Pending |
 | SESS-02 | Phase 3 | Pending |
 | SESS-03 | Phase 3 | Pending |
-| SESS-04 | Phase 2 | Pending |
+| SESS-04 | Phase 2 | Complete |
 | SESS-05 | Phase 3 | Pending |
 | SIM-01 | Phase 3 | Pending |
 | SIM-02 | Phase 3 | Pending |
@@ -190,21 +190,22 @@
 | UI-05 | Phase 3 | Pending |
 | UI-06 | Phase 6 | Pending |
 | UI-07 | Phase 4 | Pending |
-| DATA-01 | Phase 2 | Pending |
-| DATA-02 | Phase 2 | Pending |
-| DATA-03 | Phase 2 | Pending |
+| DATA-01 | Phase 2 | Complete |
+| DATA-02 | Phase 2 | Complete |
+| DATA-03 | Phase 2 | Complete |
 | DATA-04 | Phase 2 | Pending |
 | DATA-05 | Phase 2 | Pending |
 | DATA-06 | Phase 2 | Pending |
 | DATA-07 | Phase 2 | Pending |
 | VER-01 | Phase 1 | Pending |
 | VER-02 | Phase 1 | Pending |
-| VER-03 | Phase 2 | Pending |
+| VER-03 | Phase 2 | Complete |
 | VER-04 | Phase 6 | Pending |
 | VER-05 | Phase 6 | Pending |
 | VER-06 | Phase 6 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 61 total
 - Mapped to phases: 61
 - Unmapped: 0
