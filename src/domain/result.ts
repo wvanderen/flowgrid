@@ -67,12 +67,64 @@ export interface InstallModuleCommand {
   readonly installedSlotId: ModuleSlotId;
 }
 
+// --- Phase 3 cell + session-lifecycle commands (D-05, D-09, D-11, D-12) ---
+
+export interface CreateCellCommand {
+  readonly type: 'create_cell';
+  readonly operationId: OperationId;
+  readonly cellId: CellId;
+  readonly name: string;
+  readonly color: string;
+  readonly icon: string | null;
+  readonly dailyTargetSeconds: IntSeconds;
+}
+
+export interface EditCellCommand {
+  readonly type: 'edit_cell';
+  readonly operationId: OperationId;
+  readonly cellId: CellId;
+  readonly name: string;
+  readonly color: string;
+  readonly icon: string | null;
+  readonly dailyTargetSeconds: IntSeconds;
+}
+
+export interface ArchiveCellCommand {
+  readonly type: 'archive_cell';
+  readonly operationId: OperationId;
+  readonly cellId: CellId;
+}
+
+export interface UnarchiveCellCommand {
+  readonly type: 'unarchive_cell';
+  readonly operationId: OperationId;
+  readonly cellId: CellId;
+}
+
+export interface StartFocusSessionCommand {
+  readonly type: 'start_focus_session';
+  readonly operationId: OperationId;
+  readonly cellId: CellId;
+}
+
+export interface CancelFocusSessionCommand {
+  readonly type: 'cancel_focus_session';
+  readonly operationId: OperationId;
+  readonly cellId: CellId;
+}
+
 export type SimulationCommand =
   | CompleteFocusSessionCommand
   | SetCoreAllocationCommand
   | LogRejuvenationCommand
   | RunForgeCommand
-  | InstallModuleCommand;
+  | InstallModuleCommand
+  | CreateCellCommand
+  | EditCellCommand
+  | ArchiveCellCommand
+  | UnarchiveCellCommand
+  | StartFocusSessionCommand
+  | CancelFocusSessionCommand;
 
 export interface EconomyEvent {
   readonly type: string;

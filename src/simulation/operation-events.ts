@@ -26,6 +26,18 @@ function entityTypeForCommand(command: SimulationCommand): EntityType {
       return 'forge_history';
     case 'install_module':
       return 'module_instance';
+    case 'create_cell':
+      return 'cell';
+    case 'edit_cell':
+      return 'cell';
+    case 'archive_cell':
+      return 'cell';
+    case 'unarchive_cell':
+      return 'cell';
+    case 'start_focus_session':
+      return 'cell';
+    case 'cancel_focus_session':
+      return 'cell';
   }
 }
 
@@ -41,6 +53,18 @@ function entityIdForCommand(command: SimulationCommand, fallback: string): strin
       return fallback;
     case 'install_module':
       return command.ownerCellId;
+    case 'create_cell':
+      return command.cellId;
+    case 'edit_cell':
+      return command.cellId;
+    case 'archive_cell':
+      return command.cellId;
+    case 'unarchive_cell':
+      return command.cellId;
+    case 'start_focus_session':
+      return command.cellId;
+    case 'cancel_focus_session':
+      return command.cellId;
   }
 }
 
