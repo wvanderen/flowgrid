@@ -20,17 +20,17 @@ See: .planning/PROJECT.md (updated 2026-06-23)
 
 ## Current Position
 
-Phase: 1 of 6 (Deterministic Foundation Slice)
-Plan: 01-02 complete; 01-03 next
-Status: Executing Phase 1
-Last activity: 2026-06-23 - Completed Plan 01-02 (domain records, command/result contracts, starter content, deterministic state factory).
+Phase: 1 of 6 (Deterministic Foundation Slice) — COMPLETE
+Plan: 01-03 complete; Phase 2 next
+Status: Phase 1 verification gate green (typecheck, lint, 36 tests)
+Last activity: 2026-06-23 - Completed Plan 01-03 (foundation loop, invariant validators, property tests). Phase 1 done.
 
-Progress: [██░░░░░░░░] 33%
+Progress: [██████░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
+- Total plans completed: 3
 - Average duration: n/a
 - Total execution time: 0.0 hours
 
@@ -38,7 +38,7 @@ Progress: [██░░░░░░░░] 33%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Deterministic Foundation Slice | 2/3 | TBD | n/a |
+| 1. Deterministic Foundation Slice | 3/3 | TBD | n/a |
 | 2. Durable Local-First Spine | 0 | TBD | n/a |
 | 3. Playable Generator Flowgrid | 0 | TBD | n/a |
 | 4. Core Alternation and Rejuvenation Economy | 0 | TBD | n/a |
@@ -63,6 +63,7 @@ Recent decisions affecting current work:
 - [Roadmap]: Requirement coverage count was corrected to 61 v1 IDs based on REQUIREMENTS.md.
 - [Plan 01-01]: Latest npm versions approved for all dev deps; prettier skipped. Added globals as a required ESLint 10 flat-config companion.
 - [Plan 01-02]: IDs are plain string aliases (not branded) to reduce cross-plan friction; result.ts introduced in Task 1 to keep typecheck green at every task boundary; slot IDs derived from cellId by convention.
+- [Plan 01-03]: Session IDs are 1:1 with operation IDs in Phase 1; foundation loop is atomic (no intermediate Cell.current accumulation); command input validation uses `invalid_reference` since no dedicated input-error code exists in Phase 1's enum.
 
 ### Pending Todos
 
