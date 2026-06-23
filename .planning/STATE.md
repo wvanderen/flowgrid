@@ -21,16 +21,16 @@ See: .planning/PROJECT.md (updated 2026-06-23)
 ## Current Position
 
 Phase: 1 of 6 (Deterministic Foundation Slice)
-Plan: 01-01 complete; 01-02 next
+Plan: 01-02 complete; 01-03 next
 Status: Executing Phase 1
-Last activity: 2026-06-23 - Completed Plan 01-01 (strict TypeScript scaffold, boundary scanner, red foundation-loop test).
+Last activity: 2026-06-23 - Completed Plan 01-02 (domain records, command/result contracts, starter content, deterministic state factory).
 
-Progress: [██░░░░░░░░] 17%
+Progress: [██░░░░░░░░] 33%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
+- Total plans completed: 2
 - Average duration: n/a
 - Total execution time: 0.0 hours
 
@@ -38,7 +38,7 @@ Progress: [██░░░░░░░░] 17%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Deterministic Foundation Slice | 1/3 | TBD | n/a |
+| 1. Deterministic Foundation Slice | 2/3 | TBD | n/a |
 | 2. Durable Local-First Spine | 0 | TBD | n/a |
 | 3. Playable Generator Flowgrid | 0 | TBD | n/a |
 | 4. Core Alternation and Rejuvenation Economy | 0 | TBD | n/a |
@@ -62,6 +62,7 @@ Recent decisions affecting current work:
 - [Roadmap]: Advanced systems and sync spikes are deferred until the first Generator -> Core -> Rejuvenation -> Forge loop is validated.
 - [Roadmap]: Requirement coverage count was corrected to 61 v1 IDs based on REQUIREMENTS.md.
 - [Plan 01-01]: Latest npm versions approved for all dev deps; prettier skipped. Added globals as a required ESLint 10 flat-config companion.
+- [Plan 01-02]: IDs are plain string aliases (not branded) to reduce cross-plan friction; result.ts introduced in Task 1 to keep typecheck green at every task boundary; slot IDs derived from cellId by convention.
 
 ### Pending Todos
 

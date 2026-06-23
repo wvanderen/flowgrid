@@ -33,7 +33,7 @@ Flowgrid v1 is a vertical MVP that proves the first loop before expanding into a
 **Plans:** 3 plans
 Plans:
 - [x] 01-01-PLAN.md — Tooling, package verification checkpoint, strict source layout, and walking skeleton tests.
-- [ ] 01-02-PLAN.md — Domain records, command/result contracts, deterministic env, and versioned starter content.
+- [x] 01-02-PLAN.md — Domain records, command/result contracts, deterministic env, and versioned starter content.
 - [ ] 01-03-PLAN.md — Executable foundation loop, invariant validators, and unit/property safety tests.
 
 ### Phase 2: Durable Local-First Spine
@@ -116,7 +116,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Deterministic Foundation Slice | 1/3 | In progress | - |
+| 1. Deterministic Foundation Slice | 2/3 | In progress | - |
 | 2. Durable Local-First Spine | 0/TBD | Not started | - |
 | 3. Playable Generator Flowgrid | 0/TBD | Not started | - |
 | 4. Core Alternation and Rejuvenation Economy | 0/TBD | Not started | - |
