@@ -749,22 +749,27 @@ export function makeEnv(
 | A8 | The D-15 Activation bonus is exactly +10% (content-tunable) | Code Examples | LOW — CONTEXT.md says "e.g. +10%, exact value content-tunable"; expose as a `formulas.ts` constant |
 | A9 | Momentum decay checks sessions whose `startedAt.slice(0,10) === lastBloomLocalDate` | Pattern 5 | MEDIUM — "yesterday had no completed session" is the natural reading of D-14, but the comparison key (startedAt date vs localDate vs lastBloomLocalDate) needs confirmation. Planner should verify against the local-day-boundary semantics in D-16. |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> All three questions below are substantively resolved by the Phase 3 plans (03-01, 03-02, 03-03) adopting the recommendations. RESOLVED markers record the disposition for traceability.
 
 1. **React Router v7 vs v8 — confirm pin**
    - What we know: STACK.md/AGENTS.md lock "React Router v7." v8.0.1 shipped 2026-06-18 (peer react>=19.2.7, which is satisfied). Latest v7 is 7.18.0.
    - What's unclear: Whether "v7" is a hard lock or "v7+" shorthand. v8 is the new major.
    - Recommendation: Default to `react-router@^7.18.0` (honor the explicit lock, avoid brand-new-major risk). If the user wants v8, swap to `react-router@^8.0.1` — no other code changes since declarative `createBrowserRouter` API is stable across both. Surface as an `checkpoint:human-verify` before install if planner wants belt-and-suspenders.
+   - **RESOLVED:** Plans 03-02 and 03-03 adopt the recommendation verbatim — `react-router@^7.18.0` with declarative `createBrowserRouter` mode (no `@react-router/dev`). The `createBrowserRouter` API is identical across v7/v8, so a future swap would not change Plan 03-02 Task 1's routing code. No checkpoint surfaced: STACK.md's explicit "v7" lock is treated as authoritative.
 
 2. **Momentum decay comparison key**
    - What we know: D-14 says "if yesterday had no completed session for a given Cell, Momentum -1."
    - What's unclear: "Yesterday" relative to what — `env.localDate`, or the Cell's `lastBloomLocalDate`? With a non-midnight `localDayBoundary`, these can differ.
    - Recommendation: Compare session `startedAt.slice(0,10)` (the UTC calendar date, NOT local) against `cell.lastBloomLocalDate` (the local date the Cell last bloomed). This is the most consistent reading but the planner should confirm against D-16's boundary semantics. Mark as a verification step in the day-rollover task.
+   - **RESOLVED:** Plan 03-01 Task 1's `reconcileDayRollover` implementation adopts the recommendation: it checks whether any session in `snapshot.sessions` has `s.cellId === id && s.startedAt.slice(0,10) === cell.lastBloomLocalDate` and applies `momentum: hadSession ? cell.momentum : Math.max(0, cell.momentum - 1)`. The behavior is locked in by `tests/simulation/day-rollover.test.ts` (Test: "reconcileDayRollover applies Momentum -1 when the prior day had no completed session for that Cell"). A9 in the Assumptions table above is thereby confirmed.
 
 3. **Completion summary surface shape**
    - What we know: SESS-05 lists content (duration, Current, XP, milestone, Energy/Core outcome, Bloom/Activation, next useful action). CONTEXT.md Agent's Discretion says modal/drawer/panel/route.
    - What's unclear: Which shape fits the protected-interaction constraint best (modal blocks the board; inline panel does not).
    - Recommendation: Inline panel on the Cell Board (does not block, keeps the Generator reachable). Defer to planner; this is a UX call, not a technical blocker.
+   - **RESOLVED:** Plan 03-03 Task 2 adopts the recommendation — `SessionSummary` is an inline `<section role="status">` panel rendered inside `CellBoard.tsx` when `lastCompletedSession.cellId === cellId`, NOT a modal. This keeps the Generator tile reachable while the summary is visible, honoring the protected `open app → tap Cell → start session` interaction.
 
 ## Environment Availability
 
