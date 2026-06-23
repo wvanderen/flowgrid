@@ -6,14 +6,14 @@ current_phase: 02
 current_phase_name: Durable Local-First Spine
 status: executing
 stopped_at: Completed 02-01-PLAN.md (durable local-first spine)
-last_updated: "2026-06-23T20:31:06.679Z"
+last_updated: "2026-06-23T20:40:48.915Z"
 last_activity: 2026-06-23
 last_activity_desc: Phase 02 execution started
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
   percent: 17
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-23)
 ## Current Position
 
 Phase: 02 (Durable Local-First Spine) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-06-23 — Phase 02 execution started
 
@@ -61,6 +61,7 @@ Progress: [██████░░░░] 50%
 
 *Updated after each plan completion*
 | Phase 02 P01 | 52min | 6 tasks | 19 files |
+| Phase 02 P02 | 6min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,7 @@ Recent decisions affecting current work:
 - [Plan 01-02]: IDs are plain string aliases (not branded) to reduce cross-plan friction; result.ts introduced in Task 1 to keep typecheck green at every task boundary; slot IDs derived from cellId by convention.
 - [Plan 01-03]: Session IDs are 1:1 with operation IDs in Phase 1; foundation loop is atomic (no intermediate Cell.current accumulation); command input validation uses `invalid_reference` since no dedicated input-error code exists in Phase 1's enum.
 - [Phase ?]: 02-01: database.ts is the sole Dexie gateway; core store accessed via db.table() (Dexie core:DBCore collision); first-run seed writes only the 3 singletons; reload flow uses seeded snapshot as previousState
+- [Phase ?]: ARCHIVE_VERSION=1 is a fourth independent version axis (archive envelope shape), distinct from Dexie schema/ContentVersion/payloadVersion (D-08); exportJson never strips the operation log (D-09).
 
 ### Pending Todos
 
@@ -97,6 +99,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-23T20:31:06.674Z
+Last session: 2026-06-23T20:40:30.298Z
 Stopped at: Completed 02-01-PLAN.md (durable local-first spine)
 Resume file: None
