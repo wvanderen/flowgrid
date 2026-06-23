@@ -142,73 +142,73 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FND-01 | TBD | Pending |
-| FND-02 | TBD | Pending |
-| FND-03 | TBD | Pending |
-| FND-04 | TBD | Pending |
-| FND-05 | TBD | Pending |
-| CELL-01 | TBD | Pending |
-| CELL-02 | TBD | Pending |
-| CELL-03 | TBD | Pending |
-| CELL-04 | TBD | Pending |
-| CELL-05 | TBD | Pending |
-| SESS-01 | TBD | Pending |
-| SESS-02 | TBD | Pending |
-| SESS-03 | TBD | Pending |
-| SESS-04 | TBD | Pending |
-| SESS-05 | TBD | Pending |
-| SIM-01 | TBD | Pending |
-| SIM-02 | TBD | Pending |
-| SIM-03 | TBD | Pending |
-| SIM-04 | TBD | Pending |
-| SIM-05 | TBD | Pending |
-| SIM-06 | TBD | Pending |
-| SIM-07 | TBD | Pending |
-| SIM-08 | TBD | Pending |
-| CORE-01 | TBD | Pending |
-| CORE-02 | TBD | Pending |
-| CORE-03 | TBD | Pending |
-| CORE-04 | TBD | Pending |
-| CORE-05 | TBD | Pending |
-| CORE-06 | TBD | Pending |
-| REJ-01 | TBD | Pending |
-| REJ-02 | TBD | Pending |
-| REJ-03 | TBD | Pending |
-| REJ-04 | TBD | Pending |
-| REJ-05 | TBD | Pending |
-| MOD-01 | TBD | Pending |
-| MOD-02 | TBD | Pending |
-| MOD-03 | TBD | Pending |
-| MOD-04 | TBD | Pending |
-| MOD-05 | TBD | Pending |
-| MOD-06 | TBD | Pending |
-| MOD-07 | TBD | Pending |
-| UI-01 | TBD | Pending |
-| UI-02 | TBD | Pending |
-| UI-03 | TBD | Pending |
-| UI-04 | TBD | Pending |
-| UI-05 | TBD | Pending |
-| UI-06 | TBD | Pending |
-| UI-07 | TBD | Pending |
-| DATA-01 | TBD | Pending |
-| DATA-02 | TBD | Pending |
-| DATA-03 | TBD | Pending |
-| DATA-04 | TBD | Pending |
-| DATA-05 | TBD | Pending |
-| DATA-06 | TBD | Pending |
-| DATA-07 | TBD | Pending |
-| VER-01 | TBD | Pending |
-| VER-02 | TBD | Pending |
-| VER-03 | TBD | Pending |
-| VER-04 | TBD | Pending |
-| VER-05 | TBD | Pending |
-| VER-06 | TBD | Pending |
+| FND-01 | Phase 1 | Pending |
+| FND-02 | Phase 1 | Pending |
+| FND-03 | Phase 1 | Pending |
+| FND-04 | Phase 1 | Pending |
+| FND-05 | Phase 1 | Pending |
+| CELL-01 | Phase 3 | Pending |
+| CELL-02 | Phase 3 | Pending |
+| CELL-03 | Phase 3 | Pending |
+| CELL-04 | Phase 3 | Pending |
+| CELL-05 | Phase 3 | Pending |
+| SESS-01 | Phase 3 | Pending |
+| SESS-02 | Phase 3 | Pending |
+| SESS-03 | Phase 3 | Pending |
+| SESS-04 | Phase 2 | Pending |
+| SESS-05 | Phase 3 | Pending |
+| SIM-01 | Phase 3 | Pending |
+| SIM-02 | Phase 3 | Pending |
+| SIM-03 | Phase 3 | Pending |
+| SIM-04 | Phase 3 | Pending |
+| SIM-05 | Phase 3 | Pending |
+| SIM-06 | Phase 3 | Pending |
+| SIM-07 | Phase 3 | Pending |
+| SIM-08 | Phase 1 | Pending |
+| CORE-01 | Phase 4 | Pending |
+| CORE-02 | Phase 4 | Pending |
+| CORE-03 | Phase 4 | Pending |
+| CORE-04 | Phase 4 | Pending |
+| CORE-05 | Phase 4 | Pending |
+| CORE-06 | Phase 4 | Pending |
+| REJ-01 | Phase 4 | Pending |
+| REJ-02 | Phase 4 | Pending |
+| REJ-03 | Phase 4 | Pending |
+| REJ-04 | Phase 4 | Pending |
+| REJ-05 | Phase 4 | Pending |
+| MOD-01 | Phase 1 | Pending |
+| MOD-02 | Phase 5 | Pending |
+| MOD-03 | Phase 5 | Pending |
+| MOD-04 | Phase 5 | Pending |
+| MOD-05 | Phase 5 | Pending |
+| MOD-06 | Phase 5 | Pending |
+| MOD-07 | Phase 5 | Pending |
+| UI-01 | Phase 3 | Pending |
+| UI-02 | Phase 6 | Pending |
+| UI-03 | Phase 6 | Pending |
+| UI-04 | Phase 6 | Pending |
+| UI-05 | Phase 3 | Pending |
+| UI-06 | Phase 6 | Pending |
+| UI-07 | Phase 4 | Pending |
+| DATA-01 | Phase 2 | Pending |
+| DATA-02 | Phase 2 | Pending |
+| DATA-03 | Phase 2 | Pending |
+| DATA-04 | Phase 2 | Pending |
+| DATA-05 | Phase 2 | Pending |
+| DATA-06 | Phase 2 | Pending |
+| DATA-07 | Phase 2 | Pending |
+| VER-01 | Phase 1 | Pending |
+| VER-02 | Phase 1 | Pending |
+| VER-03 | Phase 2 | Pending |
+| VER-04 | Phase 6 | Pending |
+| VER-05 | Phase 6 | Pending |
+| VER-06 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 58 total
-- Mapped to phases: 0
-- Unmapped: 58 (pending roadmap)
+- v1 requirements: 61 total
+- Mapped to phases: 61
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-06-23*
-*Last updated: 2026-06-23 after initial definition*
+*Last updated: 2026-06-23 after roadmap creation*
