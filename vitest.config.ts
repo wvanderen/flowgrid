@@ -39,7 +39,10 @@ export default defineConfig({
             'tests/ui/**/*.test.{ts,tsx}',
             'tests/render/**/*.test.{ts,tsx}',
           ],
-          setupFiles: ['tests/helpers/setup-indexeddb.ts'],
+          setupFiles: [
+            'tests/helpers/setup-indexeddb.ts',
+            'tests/helpers/setup-dom.ts',
+          ],
           globals: false,
         },
       },

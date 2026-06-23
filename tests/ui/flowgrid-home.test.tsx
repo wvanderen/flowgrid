@@ -9,12 +9,13 @@
 import type { ReactNode } from 'react';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
+import { createMemoryRouter, RouterProvider } from 'react-router';
 
 // Mock FlowgridCanvas — happy-dom has no WebGL and FlowgridHome only needs to
 // know the canvas container renders when status === 'ready'. The mock keeps the
 // onCellTap prop shape so future integration tests can extend it.
 vi.mock('../../src/ui/flowgrid-home/FlowgridCanvas.js', () => ({
-  FlowgridCanvas: (_props: { onCellTap: (cellId: string) => void }): ReactNode => (
+  FlowgridCanvas: (_props: { onCellTap: (cellId: string) => void; snapshot: unknown }): ReactNode => (
     <div data-testid="flowgrid-canvas-mock" />
   ),
 }));
@@ -22,6 +23,16 @@ vi.mock('../../src/ui/flowgrid-home/FlowgridCanvas.js', () => ({
 import { FlowgridHome } from '../../src/ui/flowgrid-home/FlowgridHome.js';
 import { flowgridStore } from '../../src/app/store/flowgrid-store.js';
 import { buildStarterSnapshot } from '../helpers/fixtures.js';
+
+// Render FlowgridHome inside a memory-router-backed RouterProvider so `useNavigate`
+// has the context it needs. Tests that need to assert navigation would extend
+// this with `initialEntries` and inspect the resulting location.
+function renderHome(): ReturnType<typeof render> {
+  const router = createMemoryRouter([{ path: '/', element: <FlowgridHome /> }], {
+    initialEntries: ['/'],
+  });
+  return render(<RouterProvider router={router} />);
+}
 
 beforeEach(() => {
   cleanup();
@@ -38,14 +49,14 @@ test('FlowgridHome: renders an accessible h1 heading with text "Flowgrid" (PROJE
   const { state } = buildStarterSnapshot('home-heading');
   flowgridStore.setState({ snapshot: state, status: 'ready' });
 
-  render(<FlowgridHome />);
+  renderHome();
 
   const heading = screen.getByRole('heading', { name: 'Flowgrid', level: 1 });
   expect(heading).toBeInTheDocument();
 });
 
 test('FlowgridHome: shows a loading state when the store status is "loading"', () => {
-  render(<FlowgridHome />);
+  renderHome();
 
   expect(screen.getByText(/loading/i)).toBeInTheDocument();
 });
@@ -54,7 +65,7 @@ test('FlowgridHome: renders without crashing in happy-dom (RTL smoke test)', () 
   const { state } = buildStarterSnapshot('home-smoke');
   flowgridStore.setState({ snapshot: state, status: 'ready' });
 
-  const { container } = render(<FlowgridHome />);
+  const { container } = renderHome();
 
   expect(container).toBeDefined();
   // Even in ready state, the mock canvas should mount via FlowgridHome.
