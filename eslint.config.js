@@ -65,4 +65,30 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    files: ['src/persistence/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            { name: 'dexie', message: 'Import Dexie through the database module, not directly in repositories.' },
+          ],
+          patterns: [
+            {
+              group: [
+                '@/simulation',
+                '@/simulation/*',
+                '../simulation',
+                '../simulation/*',
+                '../../simulation',
+                '../../simulation/*',
+              ],
+              message: 'Persistence must not import simulation. Consume SimulationResult types only.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 );
