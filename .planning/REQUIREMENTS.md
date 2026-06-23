@@ -84,8 +84,8 @@
 - [x] **DATA-03**: Command persistence writes changed records and sync-ready operations atomically where IndexedDB transaction boundaries allow it.
 - [x] **DATA-04**: User can export full local state as JSON.
 - [x] **DATA-05**: User can export completed sessions as CSV.
-- [ ] **DATA-06**: Import or restore validates schema version, required records, references, and resource invariants before replacing or merging local data.
-- [ ] **DATA-07**: App handles storage persistence/quota errors with recoverable user-facing states.
+- [x] **DATA-06**: Import or restore validates schema version, required records, references, and resource invariants before replacing or merging local data.
+- [x] **DATA-07**: App handles storage persistence/quota errors with recoverable user-facing states.
 
 ### Verification
 
@@ -195,8 +195,8 @@
 | DATA-03 | Phase 2 | Complete |
 | DATA-04 | Phase 2 | Complete |
 | DATA-05 | Phase 2 | Complete |
-| DATA-06 | Phase 2 | Pending |
-| DATA-07 | Phase 2 | Pending |
+| DATA-06 | Phase 2 | Complete |
+| DATA-07 | Phase 2 | Complete |
 | VER-01 | Phase 1 | Pending |
 | VER-02 | Phase 1 | Pending |
 | VER-03 | Phase 2 | Complete |
