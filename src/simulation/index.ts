@@ -1,19 +1,35 @@
-// Plan 01-01 placeholder barrel.
+// src/simulation public barrel.
 //
-// Plan 01-03 replaces this file with re-exports from engine.ts, selectors.ts,
-// deterministic-env.ts, economy-events.ts, visual-events.ts, operation-events.ts,
-// and the commands/ and systems/ subdirectories.
-//
-// `runSimulationCommand` is a typed stub: it throws at runtime because the real
-// dispatcher lands in Plan 01-03. The signature matches the foundation-loop test
-// contract so the test compiles and fails only at runtime.
+// Re-exports env, event, operation, and engine contracts. `runSimulationCommand`
+// remains a Plan 01-01 stub: Plan 01-03 implements the dispatcher in
+// `src/simulation/engine.ts` and replaces this re-export.
 
 import type {
+  FlowgridSnapshot,
   SimulationCommand,
   SimulationEnv,
   SimulationResult,
-  FlowgridSnapshot,
 } from '../domain/index.js';
+
+export type {
+  CompleteFocusSessionCommand,
+  EconomyEvent,
+  InstallModuleCommand,
+  LogRejuvenationCommand,
+  Rng,
+  RunForgeCommand,
+  SetCoreAllocationCommand,
+  SimulationCommand,
+  SimulationEnv,
+  SimulationResult,
+  SimulationStatus,
+  VisualEvent,
+} from '../domain/index.js';
+
+export * from './deterministic-env.js';
+export * from './economy-events.js';
+export * from './visual-events.js';
+export * from './operation-events.js';
 
 export function runSimulationCommand(
   _previousState: FlowgridSnapshot,
@@ -21,6 +37,6 @@ export function runSimulationCommand(
   _env: SimulationEnv,
 ): SimulationResult {
   throw new Error(
-    'Plan 01-01 stub: runSimulationCommand is implemented in Plan 01-03.',
+    'Plan 01-02 stub: runSimulationCommand is implemented in Plan 01-03.',
   );
 }
