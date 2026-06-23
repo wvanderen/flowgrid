@@ -67,13 +67,44 @@ export default tseslint.config(
   },
   {
     files: ['src/persistence/**/*.ts'],
+    ignores: ['src/persistence/database.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           paths: [
-            { name: 'dexie', message: 'Import Dexie through the database module, not directly in repositories.' },
+            {
+              name: 'dexie',
+              message: 'Import Dexie through the database module, not directly in repositories.',
+              allowTypeImports: true,
+            },
           ],
+          patterns: [
+            {
+              group: [
+                '@/simulation',
+                '@/simulation/*',
+                '../simulation',
+                '../simulation/*',
+                '../../simulation',
+                '../../simulation/*',
+              ],
+              message: 'Persistence must not import simulation. Consume SimulationResult types only.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // database.ts is the designated Dexie gateway but still must not import
+    // simulation at runtime (type-only SimulationResult consumption lives in
+    // repository.ts, which uses import type).
+    files: ['src/persistence/database.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
           patterns: [
             {
               group: [
