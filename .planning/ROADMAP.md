@@ -77,8 +77,16 @@ Plans:
 
 **Plans:** 3 plans
 Plans:
+**Wave 1**
+
 - [ ] 03-01-PLAN.md — Simulation truth: CellRecord extension, six new commands, Dexie v2 migration, day-rollover system, Bloom Momentum, Activation bonus
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 03-02-PLAN.md — App shell, locked stack install, PixiJS 8 stub scene renderer, Flowgrid Home with hex lattice
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 03-03-PLAN.md — Cell Board UI, session lifecycle, completion summary, Cell CRUD forms, resume prompt, day-rollover invocation
 
 **UI hint**: yes
