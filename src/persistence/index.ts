@@ -13,3 +13,4 @@ export type { FlowgridWritePlan } from './diff.js';
 export { FlowgridRepository } from './repository.js';
 export type { ApplyResult } from './repository.js';
 export * from './export-json.js';
+export * from './export-csv.js';
