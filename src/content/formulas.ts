@@ -19,6 +19,12 @@ export const DEFAULT_CONVERT_ALLOCATION_PERCENT: IntPercent = 50;
 export const DEFAULT_STORE_ALLOCATION_PERCENT: IntPercent = 50;
 export const ALLOCATION_TOTAL_PERCENT: IntPercent = 100;
 
+// D-15 / SIM-07: when a Cell is Activated today (lastBloomLocalDate === env.localDate),
+// complete_focus_session generates extra Current equal to
+//   Math.floor(baseCurrent * ACTIVATION_CURRENT_BONUS_PERCENT / 100).
+// XP is NOT bonused. Content-tunable (CONTEXT.md).
+export const ACTIVATION_CURRENT_BONUS_PERCENT: IntPercent = 10;
+
 export const CORE_CONVERT_RATE = 1;
 export const CORE_STORE_RATE = 1;
 

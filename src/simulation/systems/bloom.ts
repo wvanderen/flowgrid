@@ -32,6 +32,9 @@ export function applyBloom(cell: CellRecord, localDate: LocalDateString): BloomR
     cell: {
       ...cell,
       activation: cell.activation + 1,
+      // D-14 / SIM-06: Momentum increments by 1 alongside Activation when Bloom fires.
+      // The Momentum-decay half of D-14 lives in day-rollover.ts (reconcileDayRollover).
+      momentum: cell.momentum + 1,
       lastBloomLocalDate: localDate,
     },
     fired: true,

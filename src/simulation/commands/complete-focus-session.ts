@@ -51,6 +51,7 @@ import { hasStarterModulesForCell } from '../systems/modules.js';
 import { findRoutesFromCellToCore, routeCurrentThroughRoutes } from '../systems/routes.js';
 import { isCoreAllocationValid } from '../systems/core-allocation.js';
 import { operationFromCommand } from '../operation-events.js';
+import { ACTIVATION_CURRENT_BONUS_PERCENT } from '../../content/index.js';
 
 function rejectWith(
   state: FlowgridSnapshot,
@@ -151,7 +152,14 @@ export function completeFocusSession(
     return rejectWith(previousState, inputIssues);
   }
 
-  const currentGenerated = generateCurrent(command.durationSeconds);
+  // D-15 / SIM-07: Activation +% Current bonus. When the Cell already bloomed today
+  // (lastBloomLocalDate === env.localDate) it is "Activated" and earns extra Current.
+  // XP is NOT bonused. The bonus uses integer multiply-then-floor discipline (S7).
+  const baseCurrent = generateCurrent(command.durationSeconds);
+  const isActivatedToday = previousCell.lastBloomLocalDate === env.localDate;
+  const currentGenerated = isActivatedToday
+    ? baseCurrent + Math.floor((baseCurrent * ACTIVATION_CURRENT_BONUS_PERCENT) / 100)
+    : baseCurrent;
   const xpGained = generateXp(command.durationSeconds);
 
   // Advance daily milestone BEFORE bloom check so the check sees the new total.

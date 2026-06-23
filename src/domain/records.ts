@@ -29,10 +29,20 @@ export interface ClientRecord {
 export interface CellRecord {
   readonly id: CellId;
   readonly name: string;
+  // --- D-10 additions (identity / UI fields) ---
+  readonly color: string; // hex, e.g. '#6b7280'
+  readonly icon: string | null; // lucide name | emoji | null
+  readonly archivedAt: IsoDateTimeString | null; // null = active (D-12)
+  // --- D-05 (active-session marker stored on the Cell) ---
+  readonly activeSessionStartedAt: IsoDateTimeString | null;
+  // --- existing economy fields (unchanged order) ---
   readonly xp: IntNonNegative;
   readonly current: IntNonNegative;
   readonly charge: IntNonNegative;
   readonly momentum: IntNonNegative;
+  // `activation` is a MONOTONIC LIFETIME counter (incremented each Bloom).
+  // "Activated today" is *derived* from lastBloomLocalDate === env.localDate.
+  // Day-rollover MUST NOT reset it (Pitfall 7).
   readonly activation: IntNonNegative;
   readonly dailyMilestoneProgressSeconds: IntNonNegative;
   readonly dailyMilestoneTargetSeconds: IntNonNegative;

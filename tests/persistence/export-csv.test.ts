@@ -41,6 +41,11 @@ test('exportSessionCsv emits the D-10 header, floored minutes, quoted cell name,
   const cell: CellRecord = {
     id: CELL_ID,
     name: CELL_NAME,
+    // D-10 fields (Phase 3). Defaults match starter-state.ts / upgradeCellsV1ToV2.
+    color: '#6b7280',
+    icon: null,
+    archivedAt: null,
+    activeSessionStartedAt: null,
     xp: 0,
     current: 0,
     charge: 0,

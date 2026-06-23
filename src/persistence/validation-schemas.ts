@@ -31,6 +31,11 @@ export const clientSchema = z.object({
 export const cellSchema = z.object({
   id: z.string(),
   name: z.string(),
+  // D-10 identity/UI fields (Phase 3).
+  color: z.string(),
+  icon: z.string().nullable(),
+  archivedAt: z.string().datetime().nullable(),
+  activeSessionStartedAt: z.string().datetime().nullable(),
   xp: z.number().int().nonnegative(),
   current: z.number().int().nonnegative(),
   charge: z.number().int().nonnegative(),

@@ -85,6 +85,12 @@ export function createStarterFlowgridState(
         {
           id: cellId,
           name: STARTER_CELL_NAME,
+          // D-10 identity/UI fields. These are the defaults the Dexie v2 migration
+          // also writes for existing v1 cells (database.ts upgradeCellsV1ToV2).
+          color: '#6b7280',
+          icon: null,
+          archivedAt: null,
+          activeSessionStartedAt: null,
           xp: 0,
           current: 0,
           charge: 0,

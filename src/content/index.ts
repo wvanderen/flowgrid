@@ -10,6 +10,7 @@ export {
   getStarterModuleDefinitionByKind,
 } from './starter-modules.js';
 export {
+  ACTIVATION_CURRENT_BONUS_PERCENT,
   ALLOCATION_TOTAL_PERCENT,
   CORE_CONVERT_RATE,
   CORE_STORE_RATE,
