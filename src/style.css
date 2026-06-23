@@ -1,0 +1,16 @@
+/* Tailwind v4 CSS-first entry (RESEARCH State of the Art line 728, PATTERNS E1–E6).
+   No tailwind.config.js — design tokens live in `@theme` and are readable from JS via
+   `getComputedStyle`, so the Pixi scene and React shell share the same values. */
+
+@import 'tailwindcss';
+
+@theme {
+  /* Flowgrid palette. Shared with the Pixi scene via the literals below. */
+  --color-flowgrid-bg: #0f172a;
+  --color-flowgrid-surface: #1e293b;
+  --color-core: #fbbf24;
+  --color-cell-default: #6b7280;
+  --color-cell-activated: #f59e0b;
+  --color-cell-route: #475569;
+  --color-error: #ef4444;
+}
