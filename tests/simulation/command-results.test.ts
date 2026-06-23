@@ -37,6 +37,9 @@ import {
 
 import { operationFromCommand } from '../../src/simulation/index.js';
 
+import { createStarterFlowgridState } from '../../src/content/index.js';
+import { createTestIds } from '../helpers/fixtures.js';
+
 const NOW: IsoDateTimeString = '2026-01-01T00:00:00.000Z';
 
 // Plan 01-02 Task 2 tests the SimulationResult shape and event/operation constructors
@@ -176,4 +179,61 @@ test('operationFromCommand carries stable command-supplied operation ID', () => 
   expect(op.updatedAt).toBe(NOW);
   expect(op.status).toBe('applied');
   expect(op.payload).toEqual({ foo: 1 });
+});
+
+test('createStarterFlowgridState: deterministic for identical input params', () => {
+  const ids = createTestIds('determinism');
+  const params = {
+    now: NOW,
+    localDate: '2026-01-01',
+    clientId: ids.clientId,
+    cellId: ids.cellId,
+    coreId: ids.coreId,
+    generatorModuleInstanceId: ids.generatorModuleInstanceId,
+    chargeCoreModuleInstanceId: ids.chargeCoreModuleInstanceId,
+    outputModuleInstanceId: ids.outputModuleInstanceId,
+    bloomModuleInstanceId: ids.bloomModuleInstanceId,
+    outputRouteId: ids.outputRouteId,
+    settingsId: ids.settingsId,
+    forgeHistoryId: ids.forgeHistoryId,
+  };
+
+  const a = createStarterFlowgridState(params);
+  const b = createStarterFlowgridState(params);
+
+  expect(a).toEqual(b);
+});
+
+test('createStarterFlowgridState: produces one Cell, one Core, four starter module instances, and a default route', () => {
+  const ids = createTestIds('starter-shape');
+  const state = createStarterFlowgridState({
+    now: NOW,
+    localDate: '2026-01-01',
+    clientId: ids.clientId,
+    cellId: ids.cellId,
+    coreId: ids.coreId,
+    generatorModuleInstanceId: ids.generatorModuleInstanceId,
+    chargeCoreModuleInstanceId: ids.chargeCoreModuleInstanceId,
+    outputModuleInstanceId: ids.outputModuleInstanceId,
+    bloomModuleInstanceId: ids.bloomModuleInstanceId,
+    outputRouteId: ids.outputRouteId,
+    settingsId: ids.settingsId,
+    forgeHistoryId: ids.forgeHistoryId,
+  });
+
+  expect(state.cells.size).toBe(1);
+  expect(state.cells.get(ids.cellId)?.name).toBe('Starter Cell');
+  expect(state.core.id).toBe(ids.coreId);
+  expect(state.core.convertAllocationPercent + state.core.storeAllocationPercent).toBe(100);
+  expect(state.moduleInstances.size).toBe(4);
+  expect([...state.moduleInstances.values()].map((m) => m.definitionId).sort()).toEqual([
+    'flowgrid:module-definition:bloom',
+    'flowgrid:module-definition:charge-core',
+    'flowgrid:module-definition:generator',
+    'flowgrid:module-definition:output',
+  ]);
+  expect(state.routes.size).toBe(1);
+  expect(state.sessions).toEqual([]);
+  expect(state.operations).toEqual([]);
+  expect(state.forgeHistory).toEqual([]);
 });

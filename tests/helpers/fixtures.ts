@@ -26,22 +26,26 @@ export type TestIds = {
 };
 
 export function createTestIds(prefix: string): TestIds {
+  const clientId = `${prefix}:client`;
+  const cellId = `${prefix}:cell`;
+  // Slot IDs follow the factory convention `${cellId}:slot:${kind}` so tests can
+  // reference installed slots without the factory having to accept them as params.
   return {
-    clientId: `${prefix}:client`,
-    cellId: `${prefix}:cell`,
+    clientId,
+    cellId,
     coreId: `${prefix}:core`,
-    generatorModuleDefinitionId: `${prefix}:module-definition:generator`,
-    chargeCoreModuleDefinitionId: `${prefix}:module-definition:charge-core`,
-    outputModuleDefinitionId: `${prefix}:module-definition:output`,
-    bloomModuleDefinitionId: `${prefix}:module-definition:bloom`,
+    generatorModuleDefinitionId: 'flowgrid:module-definition:generator',
+    chargeCoreModuleDefinitionId: 'flowgrid:module-definition:charge-core',
+    outputModuleDefinitionId: 'flowgrid:module-definition:output',
+    bloomModuleDefinitionId: 'flowgrid:module-definition:bloom',
     generatorModuleInstanceId: `${prefix}:module-instance:generator`,
     chargeCoreModuleInstanceId: `${prefix}:module-instance:charge-core`,
     outputModuleInstanceId: `${prefix}:module-instance:output`,
     bloomModuleInstanceId: `${prefix}:module-instance:bloom`,
-    generatorSlotId: `${prefix}:slot:generator`,
-    chargeCoreSlotId: `${prefix}:slot:charge-core`,
-    outputSlotId: `${prefix}:slot:output`,
-    bloomSlotId: `${prefix}:slot:bloom`,
+    generatorSlotId: `${cellId}:slot:generator`,
+    chargeCoreSlotId: `${cellId}:slot:charge-core`,
+    outputSlotId: `${cellId}:slot:output`,
+    bloomSlotId: `${cellId}:slot:bloom`,
     outputRouteId: `${prefix}:route:output-to-core`,
     settingsId: `${prefix}:settings`,
     forgeHistoryId: `${prefix}:forge-history`,

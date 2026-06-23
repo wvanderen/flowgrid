@@ -1,39 +1,32 @@
-// Plan 01-01 placeholder barrel.
-//
-// Plan 01-02 replaces this file with re-exports from content-version.ts,
-// starter-modules.ts, starter-state.ts, formulas.ts.
-//
-// `createStarterFlowgridState` is a typed stub: it throws at runtime because the
-// real starter content factory lands in Plan 01-02. The signature is shaped to match
-// the foundation-loop test contract so the test compiles and fails only at runtime.
+// src/content public barrel.
 
-import type {
-  ContentVersion,
-  IsoDateTimeString,
-  FlowgridSnapshot,
-} from '../domain/index.js';
-
-export type CreateStarterFlowgridStateParams = {
-  readonly now: IsoDateTimeString;
-  readonly localDate: IsoDateTimeString;
-  readonly clientId: string;
-  readonly cellId: string;
-  readonly coreId: string;
-  readonly generatorModuleInstanceId: string;
-  readonly chargeCoreModuleInstanceId: string;
-  readonly outputModuleInstanceId: string;
-  readonly bloomModuleInstanceId: string;
-  readonly outputRouteId: string;
-  readonly settingsId: string;
-  readonly forgeHistoryId: string;
-};
-
-export const STARTER_CONTENT_VERSION: ContentVersion = 'phase-1-starter-v1';
-
-export function createStarterFlowgridState(
-  _params: CreateStarterFlowgridStateParams,
-): FlowgridSnapshot {
-  throw new Error(
-    'Plan 01-01 stub: createStarterFlowgridState is implemented in Plan 01-02.',
-  );
-}
+export { STARTER_CONTENT_VERSION } from './content-version.js';
+export {
+  BLOOM_MODULE_DEFINITION_ID,
+  CHARGE_CORE_MODULE_DEFINITION_ID,
+  GENERATOR_MODULE_DEFINITION_ID,
+  OUTPUT_MODULE_DEFINITION_ID,
+  STARTER_MODULE_DEFINITIONS,
+  getStarterModuleDefinitionByKind,
+} from './starter-modules.js';
+export {
+  ALLOCATION_TOTAL_PERCENT,
+  CORE_CONVERT_RATE,
+  CORE_STORE_RATE,
+  CURRENT_PER_SECOND,
+  DEFAULT_CONVERT_ALLOCATION_PERCENT,
+  DEFAULT_DAILY_MILESTONE_TARGET_SECONDS,
+  DEFAULT_DAILY_TARGET_SECONDS,
+  DEFAULT_LOCAL_DAY_BOUNDARY,
+  DEFAULT_SESSION_LENGTH_SECONDS,
+  DEFAULT_STORE_ALLOCATION_PERCENT,
+  SECONDS_PER_MINUTE,
+  STARTER_CELL_NAME,
+  XP_PER_MINUTE,
+  focusToCurrent,
+  focusToXp,
+  isDailyMilestoneComplete,
+  splitCoreCurrent,
+} from './formulas.js';
+export { createStarterFlowgridState } from './starter-state.js';
+export type { CreateStarterFlowgridStateParams } from './starter-state.js';
