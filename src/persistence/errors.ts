@@ -102,7 +102,7 @@ export function mapDomException(e: unknown): PersistenceError {
 }
 
 export function conflictError(
-  kind: 'session_conflict' | 'operation_conflict',
+  kind: PersistenceErrorKind,
   message: string,
   cause?: unknown,
 ): PersistenceError {
