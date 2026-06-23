@@ -30,7 +30,11 @@ Flowgrid v1 is a vertical MVP that proves the first loop before expanding into a
   3. Command outputs consistently include changed state, economy events, visual events, sync-ready operations, and validation issues.
   4. Validation and property-based tests catch negative resources, invalid references, duplicate installs, allocation errors, token regressions, and forge count regressions.
   5. Starter ModuleDefinitions are versioned separately from user-owned ModuleInstances and can be used by deterministic tests with injected time and RNG.
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — Tooling, package verification checkpoint, strict source layout, and walking skeleton tests.
+- [ ] 01-02-PLAN.md — Domain records, command/result contracts, deterministic env, and versioned starter content.
+- [ ] 01-03-PLAN.md — Executable foundation loop, invariant validators, and unit/property safety tests.
 
 ### Phase 2: Durable Local-First Spine
 **Goal**: User-owned Flowgrid data is durable, reloadable, exportable, migration-aware, and stored as normalized local-first records with append-only history and sync-ready operation rows.
