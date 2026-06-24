@@ -14,7 +14,7 @@ Flowgrid v1 is a vertical MVP that proves the first loop before expanding into a
 - [ ] **Phase 1: Deterministic Foundation Slice** - Establish strict TypeScript boundaries, pure command contracts, starter content, invariants, and simulation tests.
 - [x] **Phase 2: Durable Local-First Spine** - Persist normalized records, migrations, append-only history, exports, restore validation, and sync-ready operations. (completed 2026-06-23)
 - [x] **Phase 3: Playable Generator Flowgrid** - Deliver the first visible loop: create a Cell, start/finish focus, see Current/Bloom/Activation, and inspect the starter board. (completed 2026-06-24)
-- [ ] **Phase 4: Core Alternation and Rejuvenation Economy** - Route effort through the Core, split Current into Energy/Core Charge, process rejuvenation, and earn Module Tokens.
+- [x] **Phase 4: Core Alternation and Rejuvenation Economy** - Route effort through the Core, split Current into Energy/Core Charge, process rejuvenation, and earn Module Tokens. (completed 2026-06-24)
 - [ ] **Phase 5: Module Forge and Starter Customization** - Let users spend Module Tokens on curated Forge choices and apply rewards into starter slots.
 - [ ] **Phase 6: Hardening, Accessibility, and Trust** - Verify the full browser flow, accessible semantic controls, renderer safety, settings, recovery UX, and release-readiness checks.
 
@@ -112,7 +112,7 @@ Plans:
   4. User can log rejuvenation that processes existing Core Charge into Integration progress and cannot meaningfully progress without prior activity.
   5. Opening Flowgrid after a gap surfaces useful return cues such as stored Core Charge, available Energy, token progress, Cells near Bloom, and recent history without shame language.
 
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans complete
 
 **Wave 1**
 
@@ -124,7 +124,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 04-03-PLAN.md — App store + dispatch projections, /core route, CorePanel, RejuvenationSummary, RejuvenationTimer, ReturnCues stat-chip rail on FlowgridHome
+- [x] 04-03-PLAN.md — App store + dispatch projections, /core route, CorePanel, RejuvenationSummary, RejuvenationTimer, ReturnCues stat-chip rail on FlowgridHome
 
 **UI hint**: yes
 
@@ -176,6 +176,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Deterministic Foundation Slice | 3/3 | Complete | 2026-06-23 |
 | 2. Durable Local-First Spine | 3/3 | Complete   | 2026-06-23 |
 | 3. Playable Generator Flowgrid | 5/5 | Complete   | 2026-06-24 |
-| 4. Core Alternation and Rejuvenation Economy | 2/3 | In Progress|  |
+| 4. Core Alternation and Rejuvenation Economy | 3/3 | Complete   | 2026-06-24 |
 | 5. Module Forge and Starter Customization | 0/TBD | Not started | - |
 | 6. Hardening, Accessibility, and Trust | 0/TBD | Not started | - |

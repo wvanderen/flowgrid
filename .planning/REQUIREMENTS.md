@@ -42,11 +42,11 @@
 
 ### Core
 
-- [ ] **CORE-01**: Current from Cells can route to the Core through starter Output behavior.
-- [ ] **CORE-02**: User can set the Core convert/store allocation while the invariant `convertAllocationPercent + storeAllocationPercent = 100` is always enforced.
-- [ ] **CORE-03**: The Core can convert incoming Current into spendable Energy.
-- [ ] **CORE-04**: The Core can store incoming Current as Core Charge.
-- [ ] **CORE-05**: User can see Energy, Core Charge, allocation settings, Integration progress, Module Tokens, and useful next actions in Core-oriented UI.
+- [x] **CORE-01**: Current from Cells can route to the Core through starter Output behavior.
+- [x] **CORE-02**: User can set the Core convert/store allocation while the invariant `convertAllocationPercent + storeAllocationPercent = 100` is always enforced.
+- [x] **CORE-03**: The Core can convert incoming Current into spendable Energy.
+- [x] **CORE-04**: The Core can store incoming Current as Core Charge.
+- [x] **CORE-05**: User can see Energy, Core Charge, allocation settings, Integration progress, Module Tokens, and useful next actions in Core-oriented UI.
 - [x] **CORE-06**: User can spend Energy on a small set of early upgrades or forge-related actions.
 
 ### Rejuvenation
@@ -55,7 +55,7 @@
 - [x] **REJ-02**: Rejuvenation processes existing Core Charge into Integration progress.
 - [x] **REJ-03**: Rejuvenation cannot create meaningful Module Token progress without prior Core Charge from activity.
 - [x] **REJ-04**: Integration thresholds grant Module Tokens and advance the next threshold.
-- [ ] **REJ-05**: User can see how much Core Charge was processed and how close Integration is to the next Module Token.
+- [x] **REJ-05**: User can see how much Core Charge was processed and how close Integration is to the next Module Token.
 
 ### Modules and Forge
 
@@ -75,7 +75,7 @@
 - [ ] **UI-04**: Dropping, reducing, replaying, or skipping visual events never changes durable economy state.
 - [x] **UI-05**: User can open a Cell Board or inspector that shows starter modules, ports/slots, Cell Charge, Bloom progress, and installed rewards.
 - [ ] **UI-06**: User can access minimal settings for default session length, daily target defaults, local day boundary, reduced motion, and export.
-- [ ] **UI-07**: Opening Flowgrid after a gap surfaces useful return cues such as stored Core Charge, available Energy, token progress, Cells near Bloom, and recent history without shame language.
+- [x] **UI-07**: Opening Flowgrid after a gap surfaces useful return cues such as stored Core Charge, available Energy, token progress, Cells near Bloom, and recent history without shame language.
 
 ### Persistence and Ownership
 
@@ -165,17 +165,17 @@
 | SIM-06 | Phase 3 | Pending |
 | SIM-07 | Phase 3 | Pending |
 | SIM-08 | Phase 1 | Pending |
-| CORE-01 | Phase 4 | Pending |
-| CORE-02 | Phase 4 | Pending |
-| CORE-03 | Phase 4 | Pending |
-| CORE-04 | Phase 4 | Pending |
-| CORE-05 | Phase 4 | Pending |
+| CORE-01 | Phase 4 | Complete |
+| CORE-02 | Phase 4 | Complete |
+| CORE-03 | Phase 4 | Complete |
+| CORE-04 | Phase 4 | Complete |
+| CORE-05 | Phase 4 | Complete |
 | CORE-06 | Phase 4 | Complete |
 | REJ-01 | Phase 4 | Complete |
 | REJ-02 | Phase 4 | Complete |
 | REJ-03 | Phase 4 | Complete |
 | REJ-04 | Phase 4 | Complete |
-| REJ-05 | Phase 4 | Pending |
+| REJ-05 | Phase 4 | Complete |
 | MOD-01 | Phase 1 | Pending |
 | MOD-02 | Phase 5 | Pending |
 | MOD-03 | Phase 5 | Pending |
@@ -189,7 +189,7 @@
 | UI-04 | Phase 6 | Pending |
 | UI-05 | Phase 3 | Complete |
 | UI-06 | Phase 6 | Pending |
-| UI-07 | Phase 4 | Pending |
+| UI-07 | Phase 4 | Complete |
 | DATA-01 | Phase 2 | Complete |
 | DATA-02 | Phase 2 | Complete |
 | DATA-03 | Phase 2 | Complete |
