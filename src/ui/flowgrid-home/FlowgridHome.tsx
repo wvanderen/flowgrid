@@ -12,22 +12,25 @@
 // while the canvas is still loading.
 
 import { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import * as Dialog from '@radix-ui/react-dialog';
 
 import { useFlowgridStore } from '../../app/store/dispatch.js';
 
 import { CreateCellForm } from '../cell-board/CreateCellForm.js';
 import { ResumeSessionPrompt } from '../cell-board/ResumeSessionPrompt.js';
+import { RejuvenationResumePrompt } from '../core-panel/RejuvenationResumePrompt.js';
 import { ErrorBanner } from '../shared/ErrorBanner.js';
 import { ArchivedCellsFilter } from './ArchivedCellsFilter.js';
 import { FlowgridCanvas } from './FlowgridCanvas.js';
+import { ReturnCues } from './ReturnCues.js';
 
 export function FlowgridHome() {
   const navigate = useNavigate();
   const status = useFlowgridStore((s) => s.status);
   const snapshot = useFlowgridStore((s) => s.snapshot);
   const lastError = useFlowgridStore((s) => s.lastError);
+  const activeRejuvenation = useFlowgridStore((s) => s.activeRejuvenation);
   const [createOpen, setCreateOpen] = useState(false);
 
   // D-03: tap a Cell hex → React Router navigation to the Cell Board route. The
@@ -72,7 +75,11 @@ export function FlowgridHome() {
 
   return (
     <section aria-label="Flowgrid home" className="mx-auto max-w-5xl px-4 py-6 space-y-6">
-      <h1 className="text-3xl font-bold text-core">Flowgrid</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-core">Flowgrid</h1>
+        {/* Reachable /core navigation (peer to / and /cells/:id). */}
+        <Link to="/core" className="text-sm text-slate-400 underline">Core</Link>
+      </div>
 
       {/* D-05: interrupted-session recovery banner (mounted, not just defined). */}
       {interruptedCell !== undefined && interruptedCell.activeSessionStartedAt !== null ? (
@@ -82,6 +89,19 @@ export function FlowgridHome() {
           startedAt={interruptedCell.activeSessionStartedAt}
         />
       ) : null}
+
+      {/* D-02: interrupted-rejuvenation recovery banner. D-02 mutual exclusion means at
+          most ONE of (focus resume prompt, rejuvenation resume prompt) is mounted at a
+          time — only one marker can be non-null app-wide. Placed alongside the focus
+          resume prompt so interrupted-session recovery surfaces first. */}
+      {activeRejuvenation !== null ? (
+        <RejuvenationResumePrompt startedAt={activeRejuvenation.startedAt} />
+      ) : null}
+
+      {/* UI-07 return-cue rail: above the canvas, below the resume banners. Must not
+          obstruct the New Cell button or the canvas tap-Cell flow (D-08 protected
+          interaction). Renders nothing when there is no actionable state. */}
+      <ReturnCues />
 
       {/* CELL-01 reachability: the New Cell button is always present so the user
           can create a Cell even before any exist. CreateCellForm lives inside the
