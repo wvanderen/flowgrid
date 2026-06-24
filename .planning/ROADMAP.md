@@ -13,7 +13,7 @@ Flowgrid v1 is a vertical MVP that proves the first loop before expanding into a
 
 - [ ] **Phase 1: Deterministic Foundation Slice** - Establish strict TypeScript boundaries, pure command contracts, starter content, invariants, and simulation tests.
 - [x] **Phase 2: Durable Local-First Spine** - Persist normalized records, migrations, append-only history, exports, restore validation, and sync-ready operations. (completed 2026-06-23)
-- [ ] **Phase 3: Playable Generator Flowgrid** - Deliver the first visible loop: create a Cell, start/finish focus, see Current/Bloom/Activation, and inspect the starter board.
+- [x] **Phase 3: Playable Generator Flowgrid** - Deliver the first visible loop: create a Cell, start/finish focus, see Current/Bloom/Activation, and inspect the starter board. (completed 2026-06-24)
 - [ ] **Phase 4: Core Alternation and Rejuvenation Economy** - Route effort through the Core, split Current into Energy/Core Charge, process rejuvenation, and earn Module Tokens.
 - [ ] **Phase 5: Module Forge and Starter Customization** - Let users spend Module Tokens on curated Forge choices and apply rewards into starter slots.
 - [ ] **Phase 6: Hardening, Accessibility, and Trust** - Verify the full browser flow, accessible semantic controls, renderer safety, settings, recovery UX, and release-readiness checks.
@@ -75,19 +75,19 @@ Plans:
   4. User can see completion feedback for duration, Current, XP, milestone progress, Energy/Core outcome, Bloom/Activation effects, and the next useful action.
   5. Cell XP, forgiving Momentum, daily milestone reset, once-per-day Bloom, visible Activation, and starter module benefits behave consistently from partial sessions.
 
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 Plans:
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — Simulation truth: CellRecord extension, six new commands, Dexie v2 migration, day-rollover system, Bloom Momentum, Activation bonus
+- [x] 03-01-PLAN.md — Simulation truth: CellRecord extension, six new commands, Dexie v2 migration, day-rollover system, Bloom Momentum, Activation bonus
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 03-02-PLAN.md — App shell, locked stack install, PixiJS 8 stub scene renderer, Flowgrid Home with hex lattice
+- [x] 03-02-PLAN.md — App shell, locked stack install, PixiJS 8 stub scene renderer, Flowgrid Home with hex lattice
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 03-03-PLAN.md — Cell Board UI, session lifecycle, completion summary, Cell CRUD forms, resume prompt, day-rollover invocation
+- [x] 03-03-PLAN.md — Cell Board UI, session lifecycle, completion summary, Cell CRUD forms, resume prompt, day-rollover invocation
 
 **UI hint**: yes
 
@@ -155,7 +155,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Deterministic Foundation Slice | 3/3 | Complete | 2026-06-23 |
 | 2. Durable Local-First Spine | 3/3 | Complete   | 2026-06-23 |
-| 3. Playable Generator Flowgrid | 0/3 | Not started | - |
+| 3. Playable Generator Flowgrid | 3/3 | Complete   | 2026-06-24 |
 | 4. Core Alternation and Rejuvenation Economy | 0/TBD | Not started | - |
 | 5. Module Forge and Starter Customization | 0/TBD | Not started | - |
 | 6. Hardening, Accessibility, and Trust | 0/TBD | Not started | - |
