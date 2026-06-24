@@ -583,19 +583,19 @@ this.version(3).stores({
 
 **If this table were empty:** all claims would be verified/cited. The 8 items above are Agent's-Discretion or reconciliation calls with clear recommended defaults — none block planning.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Does the user want the `/core` route to be reachable from FlowgridHome nav, or only via direct URL / the return-cue chips?**
+1. **Does the user want the `/core` route to be reachable from FlowgridHome nav, or only via direct URL / the return-cue chips?** — RESOLVED: 04-03 Task 3 adds a "Core" nav link on FlowgridHome (and a Back-to-Home link on CorePanel in Task 2).
    - What we know: D-05/D-06 put a stat-chip rail on Home; near-Bloom navigates to `/cells/:id`. The Core route needs an entry point.
    - What's unclear: whether Energy/Charge/Tokens chips are also tappable → `/core` (CONTEXT Q2 rejected "all chips tappable" — they stay flat). So `/core` needs a separate nav link.
    - Recommendation: Add a "Core" nav link on FlowgridHome (and a Return-to-Home link on CorePanel, mirroring CellBoard's `Link to="/"`). Minimal, keeps Home uncluttered. Planner decides exact placement.
 
-2. **Should a sub-minute rejuvenation finish be treated as a no-op rest (zero-gain record) or routed through cancel?**
+2. **Should a sub-minute rejuvenation finish be treated as a no-op rest (zero-gain record) or routed through cancel?** — RESOLVED: 04-01 Task 2 always appends a record on finish (zero-gain if sub-minute or 0-Charge); only explicit Cancel appends nothing.
    - What we know: D-03's 0-Charge rule appends a zero-gain record. Phase 3 D-08 routes sub-second focus finish through cancel.
    - What's unclear: the rejuvenation parallel — a 30-second rest that the user "finished".
    - Recommendation (Agent's Discretion in CONTEXT): a finished rejuvenation ALWAYS appends a record (even zero-gain); only explicit Cancel appends nothing. This is consistent with D-03 ("rest honored, not rewarded") and avoids a confusing "your finish was secretly a cancel" path. Document in plan.
 
-3. **Should the geometric threshold ratio (`1.5`) ever produce a non-integer before `Math.floor`?**
+3. **Should the geometric threshold ratio (`1.5`) ever produce a non-integer before `Math.floor`?** — RESOLVED: 04-01 Task 3 asserts the first-five threshold sequence [50, 75, 112, 168, 252] (each `Math.floor`-ed; the float never persists).
    - What we know: `Math.pow(1.5, n)` is a float; `Math.floor` snaps it. The float never persists.
    - What's unclear: nothing operationally — the floor guarantees integer thresholds. This is documented to preempt a "no floats in durable values" review concern.
    - Recommendation: add a code comment + a test asserting the first 5 thresholds are exactly `[50, 75, 112, 168, 252]`.
@@ -716,10 +716,10 @@ this.version(3).stores({
 | Pitfalls | HIGH | SPEC/CONTEXT reconciliation gaps + documented Phase 1–3 gotchas. |
 | Command trio (A3) | MEDIUM | Faithful reading of D-01/D-02; flagged because SPEC names only `log_rejuvenation`. |
 
-### Open Questions
-- `/core` route entry point on FlowgridHome (recommend a "Core" nav link).
-- Sub-minute rejuvenation finish handling (recommend: always append zero-gain record on finish; only Cancel appends nothing).
-- Threshold float-before-floor documentation (recommend: comment + test asserting `[50,75,112,168,252]`).
+### Open Questions (RESOLVED)
+- `/core` route entry point on FlowgridHome — RESOLVED: 04-03 Task 3 adds a "Core" nav link.
+- Sub-minute rejuvenation finish handling — RESOLVED: 04-01 Task 2 always appends a record on finish (zero-gain if sub-minute).
+- Threshold float-before-floor documentation — RESOLVED: 04-01 Task 3 asserts the sequence [50, 75, 112, 168, 252].
 
 ### Ready for Planning
 Research complete. The planner can translate the Architecture Patterns (project structure + 4 patterns), Code Examples (exact field/command/migration shapes), and Pitfalls (7 named risks with mitigations) directly into a 3-wave PLAN.md mirroring Phase 3's proven structure.
