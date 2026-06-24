@@ -98,6 +98,12 @@ export function buildFlowgridScene(
   // it by label and tears the whole subtree down in one call.
   const container = new Container();
   container.label = FLOWGRID_SCENE_LABEL;
+  // Center the cluster in the canvas viewport. axialToPixel({0,0}) returns {0,0}
+  // (Core at container origin), so translating the container to canvas center puts
+  // the Core at viewport center and ring hexes radiate symmetrically around it
+  // instead of clipping at the top-left frame edge (UAT test 2 / test 15 root cause 3c).
+  container.x = app.screen.width / 2;
+  container.y = app.screen.height / 2;
 
   const corePos = axialToPixel({ q: 0, r: 0 }, HEX_SIZE);
   const activeCells = pickActiveCells(snapshot);
