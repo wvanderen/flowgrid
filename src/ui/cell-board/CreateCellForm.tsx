@@ -90,8 +90,8 @@ export function CreateCellForm({ onCreated }: CreateCellFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} aria-label="Create Cell form">
-      <label>
+    <form onSubmit={handleSubmit} aria-label="Create Cell form" className="space-y-4">
+      <label className="block text-sm font-medium text-slate-300">
         Cell name
         <input
           type="text"
@@ -99,15 +99,16 @@ export function CreateCellForm({ onCreated }: CreateCellFormProps) {
           onChange={(e) => setName(e.target.value)}
           aria-label="Cell name"
           autoComplete="off"
+          className="mt-1 block w-full rounded-md border border-slate-600 bg-slate-900/50 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-core focus:outline-none focus-visible:ring-1 focus-visible:ring-core"
         />
       </label>
       {errors.name ? (
-        <p role="alert" data-error="name">
+        <p role="alert" data-error="name" className="mt-1 text-sm text-error">
           {errors.name}
         </p>
       ) : null}
 
-      <label>
+      <label className="block text-sm font-medium text-slate-300">
         Color (hex)
         <input
           type="text"
@@ -115,15 +116,16 @@ export function CreateCellForm({ onCreated }: CreateCellFormProps) {
           onChange={(e) => setColor(e.target.value)}
           aria-label="Cell color"
           autoComplete="off"
+          className="mt-1 block w-full rounded-md border border-slate-600 bg-slate-900/50 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-core focus:outline-none focus-visible:ring-1 focus-visible:ring-core"
         />
       </label>
       {errors.color ? (
-        <p role="alert" data-error="color">
+        <p role="alert" data-error="color" className="mt-1 text-sm text-error">
           {errors.color}
         </p>
       ) : null}
 
-      <label>
+      <label className="block text-sm font-medium text-slate-300">
         Icon (optional)
         <input
           type="text"
@@ -131,10 +133,11 @@ export function CreateCellForm({ onCreated }: CreateCellFormProps) {
           onChange={(e) => setIcon(e.target.value)}
           aria-label="Cell icon (optional)"
           autoComplete="off"
+          className="mt-1 block w-full rounded-md border border-slate-600 bg-slate-900/50 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-core focus:outline-none focus-visible:ring-1 focus-visible:ring-core"
         />
       </label>
 
-      <label>
+      <label className="block text-sm font-medium text-slate-300">
         Daily target (seconds)
         <input
           type="number"
@@ -143,15 +146,16 @@ export function CreateCellForm({ onCreated }: CreateCellFormProps) {
           value={dailyTargetSeconds}
           onChange={(e) => setDailyTargetSeconds(Number(e.target.value))}
           aria-label="Daily target (seconds)"
+          className="mt-1 block w-full rounded-md border border-slate-600 bg-slate-900/50 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-core focus:outline-none focus-visible:ring-1 focus-visible:ring-core"
         />
       </label>
       {errors.dailyTargetSeconds ? (
-        <p role="alert" data-error="dailyTargetSeconds">
+        <p role="alert" data-error="dailyTargetSeconds" className="mt-1 text-sm text-error">
           {errors.dailyTargetSeconds}
         </p>
       ) : null}
 
-      <button type="submit">Create Cell</button>
+      <button type="submit" className="inline-flex w-full items-center justify-center rounded-md bg-core px-4 py-2 font-semibold text-flowgrid-bg transition hover:bg-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-core">Create Cell</button>
     </form>
   );
 }

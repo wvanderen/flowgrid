@@ -65,18 +65,18 @@ export function CellActions({ cellId }: CellActionsProps) {
   };
 
   return (
-    <section aria-label={`Actions for ${cell.name}`}>
+    <section aria-label={`Actions for ${cell.name}`} className="flex flex-wrap items-center gap-2">
       <Dialog.Root open={editOpen} onOpenChange={setEditOpen}>
         <Dialog.Trigger asChild>
-          <button type="button">Edit</button>
+          <button type="button" className="inline-flex items-center justify-center rounded-md border border-slate-600 px-4 py-2 text-slate-200 transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Edit</button>
         </Dialog.Trigger>
         <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content aria-label={`Edit ${cell.name}`}>
-            <Dialog.Title>Edit {cell.name}</Dialog.Title>
+          <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60" />
+          <Dialog.Content aria-label={`Edit ${cell.name}`} className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-700 bg-flowgrid-surface p-6 shadow-2xl space-y-4">
+            <Dialog.Title className="text-lg font-semibold text-slate-100">Edit {cell.name}</Dialog.Title>
             <EditCellForm cell={cell} onDone={() => setEditOpen(false)} />
             <Dialog.Close asChild>
-              <button type="button" aria-label="Close edit dialog">
+              <button type="button" aria-label="Close edit dialog" className="inline-flex items-center justify-center rounded-md border border-slate-600 px-4 py-2 text-slate-200 transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">
                 Close
               </button>
             </Dialog.Close>
@@ -85,11 +85,11 @@ export function CellActions({ cellId }: CellActionsProps) {
       </Dialog.Root>
 
       {cell.archivedAt === null ? (
-        <button type="button" onClick={handleArchive}>
+        <button type="button" onClick={handleArchive} className="inline-flex items-center justify-center rounded-md border border-error/60 px-4 py-2 text-error transition hover:bg-error/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-error">
           Archive
         </button>
       ) : (
-        <button type="button" onClick={handleUnarchive}>
+        <button type="button" onClick={handleUnarchive} className="inline-flex items-center justify-center rounded-md border border-slate-600 px-4 py-2 text-slate-200 transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">
           Unarchive
         </button>
       )}

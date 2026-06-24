@@ -61,35 +61,38 @@ export function EditCellForm({ cell, onDone }: EditCellFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} aria-label={`Edit ${cell.name}`}>
-      <label>
+    <form onSubmit={handleSubmit} aria-label={`Edit ${cell.name}`} className="space-y-4">
+      <label className="block text-sm font-medium text-slate-300">
         Name
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           aria-label="Name"
+          className="mt-1 block w-full rounded-md border border-slate-600 bg-slate-900/50 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-core focus:outline-none focus-visible:ring-1 focus-visible:ring-core"
         />
       </label>
-      <label>
+      <label className="block text-sm font-medium text-slate-300">
         Color (hex)
         <input
           type="text"
           value={color}
           onChange={(e) => setColor(e.target.value)}
           aria-label="Color (hex)"
+          className="mt-1 block w-full rounded-md border border-slate-600 bg-slate-900/50 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-core focus:outline-none focus-visible:ring-1 focus-visible:ring-core"
         />
       </label>
-      <label>
+      <label className="block text-sm font-medium text-slate-300">
         Icon (optional)
         <input
           type="text"
           value={icon}
           onChange={(e) => setIcon(e.target.value)}
           aria-label="Icon (optional)"
+          className="mt-1 block w-full rounded-md border border-slate-600 bg-slate-900/50 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-core focus:outline-none focus-visible:ring-1 focus-visible:ring-core"
         />
       </label>
-      <label>
+      <label className="block text-sm font-medium text-slate-300">
         Daily target (seconds)
         <input
           type="number"
@@ -98,9 +101,10 @@ export function EditCellForm({ cell, onDone }: EditCellFormProps) {
           value={dailyTargetSeconds}
           onChange={(e) => setDailyTargetSeconds(Number(e.target.value))}
           aria-label="Daily target (seconds)"
+          className="mt-1 block w-full rounded-md border border-slate-600 bg-slate-900/50 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-core focus:outline-none focus-visible:ring-1 focus-visible:ring-core"
         />
       </label>
-      <button type="submit">Save</button>
+      <button type="submit" className="inline-flex w-full items-center justify-center rounded-md bg-core px-4 py-2 font-semibold text-flowgrid-bg transition hover:bg-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-core">Save</button>
     </form>
   );
 }
