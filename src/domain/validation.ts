@@ -14,6 +14,9 @@ export type ValidationIssueCode =
   | 'invalid_core_allocation_total'
   | 'token_regression'
   | 'forge_count_regression'
+  // Phase 4 monotonic-counter guards (parallel to token_regression / forge_count_regression).
+  | 'integration_regression'
+  | 'activation_boost_regression'
   | 'invalid_operation_shape';
 
 export type ValidationSeverity = 'error' | 'warning';

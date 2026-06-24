@@ -22,6 +22,12 @@ function entityTypeForCommand(command: SimulationCommand): EntityType {
       return 'core';
     case 'log_rejuvenation':
       return 'core';
+    case 'start_rejuvenation':
+      return 'core';
+    case 'cancel_rejuvenation':
+      return 'core';
+    case 'purchase_activation_boost':
+      return 'core';
     case 'run_forge':
       return 'forge_history';
     case 'install_module':
@@ -48,6 +54,12 @@ function entityIdForCommand(command: SimulationCommand, fallback: string): strin
     case 'set_core_allocation':
       return fallback;
     case 'log_rejuvenation':
+      return fallback;
+    case 'start_rejuvenation':
+      return fallback;
+    case 'cancel_rejuvenation':
+      return fallback;
+    case 'purchase_activation_boost':
       return fallback;
     case 'run_forge':
       return fallback;

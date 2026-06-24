@@ -5,10 +5,11 @@
 // NEVER repair state — they only report. The engine composes them via
 // `validateFlowgridSnapshot` and runs the composition after each applied command.
 //
-// Validation issue codes are the eight enumerated in `src/domain/validation.ts`:
+// Validation issue codes are the ten enumerated in `src/domain/validation.ts`:
 // negative_resource, invalid_reference, duplicate_module_install,
 // invalid_route_allocation, invalid_core_allocation_total, token_regression,
-// forge_count_regression, invalid_operation_shape.
+// forge_count_regression, integration_regression, activation_boost_regression,
+// invalid_operation_shape.
 
 import type { FlowgridSnapshot } from './records.js';
 import type { SyncOperation } from './operation-records.js';
@@ -68,6 +69,7 @@ export function validateNoNegativeResources(snapshot: FlowgridSnapshot): readonl
     [core.integration, 'core.integration'],
     [core.moduleTokens, 'core.moduleTokens'],
     [core.forgeCount, 'core.forgeCount'],
+    [core.activationBoostLevel, 'core.activationBoostLevel'],
   ];
   for (const [value, path] of coreNumericChecks) {
     if (!isNonNegativeInt(value)) {
@@ -224,6 +226,14 @@ export function validateMonotonicCounters(
   }
   if (next.core.lifetimeEnergy < previous.core.lifetimeEnergy) {
     issues.push(issue('negative_resource', 'error', 'core', next.core.id, `Core lifetimeEnergy regressed from ${previous.core.lifetimeEnergy} to ${next.core.lifetimeEnergy}.`, 'core.lifetimeEnergy'));
+  }
+  // Phase 4 monotonic guards: Integration and Activation-boost level never decrease
+  // (parallels token_regression / forge_count_regression — prohibition 3).
+  if (next.core.integration < previous.core.integration) {
+    issues.push(issue('integration_regression', 'error', 'core', next.core.id, `Core integration regressed from ${previous.core.integration} to ${next.core.integration}.`, 'core.integration'));
+  }
+  if (next.core.activationBoostLevel < previous.core.activationBoostLevel) {
+    issues.push(issue('activation_boost_regression', 'error', 'core', next.core.id, `Core activationBoostLevel regressed from ${previous.core.activationBoostLevel} to ${next.core.activationBoostLevel}.`, 'core.activationBoostLevel'));
   }
   return issues;
 }

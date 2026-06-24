@@ -15,6 +15,7 @@ export type ModuleInstanceId = string;
 export type ModuleSlotId = string;
 export type RouteId = string;
 export type SessionId = string;
+export type RejuvenationId = string;
 export type OperationId = string;
 export type SettingsId = string;
 export type ForgeHistoryId = string;
@@ -29,6 +30,7 @@ export type EntityType =
   | 'module_slot'
   | 'route'
   | 'session'
+  | 'rejuvenation'
   | 'operation'
   | 'settings'
   | 'forge_history';

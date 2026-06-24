@@ -58,6 +58,11 @@ export const coreSchema = z.object({
   convertAllocationPercent: z.number().int().nonnegative(),
   storeAllocationPercent: z.number().int().nonnegative(),
   forgeCount: z.number().int().nonnegative(),
+  // Phase 4 fields. `.default(...)` keeps v1 archives (exported before Phase 4)
+  // parseable: an old archive without these fields gets the Pitfall-6 backward-compat
+  // defaults (level 0 / no active rejuvenation). Plan 04-02 owns the full schema bump.
+  activationBoostLevel: z.number().int().nonnegative().default(0),
+  activeRejuvenationStartedAt: z.string().datetime().nullable().default(null),
   updatedAt: z.string().datetime(),
 });
 

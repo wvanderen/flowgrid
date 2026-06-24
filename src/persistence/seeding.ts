@@ -52,6 +52,9 @@ export function seedStarterState(tx: Transaction): void {
     convertAllocationPercent: DEFAULT_CONVERT_ALLOCATION_PERCENT,
     storeAllocationPercent: DEFAULT_STORE_ALLOCATION_PERCENT,
     forgeCount: 0,
+    // Phase 4 defaults (Pitfall 6 backward-compat — matches starter-state.ts).
+    activationBoostLevel: 0,
+    activeRejuvenationStartedAt: null,
     updatedAt: now,
   };
 

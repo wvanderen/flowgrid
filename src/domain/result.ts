@@ -48,10 +48,35 @@ export interface SetCoreAllocationCommand {
   readonly storeAllocationPercent: IntPercent;
 }
 
+// Phase 4 rejuvenation command trio (D-01/D-02 live-timed session model) + CORE-06.
+// `log_rejuvenation` carries startedAt/endedAt; duration is DERIVED at finish time
+// inside the handler (D-04 diff-for-truth). The prior shape `{ durationSeconds }`
+// was a Phase 1 placeholder that returned not_implemented — no durable data depends
+// on it, so the refactor is safe.
 export interface LogRejuvenationCommand {
   readonly type: 'log_rejuvenation';
   readonly operationId: OperationId;
-  readonly durationSeconds: IntSeconds;
+  readonly startedAt: IsoDateTimeString;
+  readonly endedAt: IsoDateTimeString;
+}
+
+// D-01/D-02: starts the live-timed rejuvenation session by setting the Core marker.
+// Mutually exclusive with any active focus session (cross-type one-active-session).
+export interface StartRejuvenationCommand {
+  readonly type: 'start_rejuvenation';
+  readonly operationId: OperationId;
+}
+
+// D-07/Pitfall 6: clears the Core marker and writes NOTHING durable beyond the diff.
+export interface CancelRejuvenationCommand {
+  readonly type: 'cancel_rejuvenation';
+  readonly operationId: OperationId;
+}
+
+// CORE-06: spends Energy to increment the persisted Activation-bonus level (cap 3).
+export interface PurchaseActivationBoostCommand {
+  readonly type: 'purchase_activation_boost';
+  readonly operationId: OperationId;
 }
 
 export interface RunForgeCommand {
@@ -117,6 +142,9 @@ export type SimulationCommand =
   | CompleteFocusSessionCommand
   | SetCoreAllocationCommand
   | LogRejuvenationCommand
+  | StartRejuvenationCommand
+  | CancelRejuvenationCommand
+  | PurchaseActivationBoostCommand
   | RunForgeCommand
   | InstallModuleCommand
   | CreateCellCommand
@@ -162,6 +190,10 @@ export const ECONOMY_EVENT_NAMES = {
   coreCurrentConverted: 'core_current_converted',
   coreChargeStored: 'core_charge_stored',
   stateValidated: 'state_validated',
+  // Phase 4 economy events (rejuvenation + threshold grant + activation boost).
+  rejuvenationCompleted: 'rejuvenation_completed',
+  tokenGranted: 'token_granted',
+  activationBoostPurchased: 'activation_boost_purchased',
 } as const;
 
 export type EconomyEventName = (typeof ECONOMY_EVENT_NAMES)[keyof typeof ECONOMY_EVENT_NAMES];

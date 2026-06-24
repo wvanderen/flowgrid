@@ -9,6 +9,9 @@ import type {
   LogRejuvenationCommand,
   RunForgeCommand,
   InstallModuleCommand,
+  StartRejuvenationCommand,
+  CancelRejuvenationCommand,
+  PurchaseActivationBoostCommand,
   SimulationCommand,
   SimulationEnv,
   SimulationResult,
@@ -48,6 +51,12 @@ export function runSimulationCommand(
       return cancelFocusSession(previousState, command, env);
     case 'log_rejuvenation':
       return logRejuvenationNotImplemented(previousState, command);
+    case 'start_rejuvenation':
+      return startRejuvenationNotImplemented(previousState, command);
+    case 'cancel_rejuvenation':
+      return cancelRejuvenationNotImplemented(previousState, command);
+    case 'purchase_activation_boost':
+      return purchaseActivationBoostNotImplemented(previousState, command);
     case 'run_forge':
       return runForgeNotImplemented(previousState, command);
     case 'install_module':
@@ -64,6 +73,44 @@ function logRejuvenationNotImplemented(
     command.operationId,
     command.type,
     'log_rejuvenation is not implemented until Phase 4 (Core Alternation and Rejuvenation Economy).',
+  );
+}
+
+// Phase 4 stubs — Task 2 replaces each with its real handler. Kept here so the
+// dispatcher's exhaustive switch compiles at the Task 1 type-layer boundary.
+function startRejuvenationNotImplemented(
+  state: FlowgridSnapshot,
+  command: StartRejuvenationCommand,
+): SimulationResult {
+  return notImplementedResult(
+    state,
+    command.operationId,
+    command.type,
+    'start_rejuvenation is not implemented until Phase 4 (plan 04-01 Task 2).',
+  );
+}
+
+function cancelRejuvenationNotImplemented(
+  state: FlowgridSnapshot,
+  command: CancelRejuvenationCommand,
+): SimulationResult {
+  return notImplementedResult(
+    state,
+    command.operationId,
+    command.type,
+    'cancel_rejuvenation is not implemented until Phase 4 (plan 04-01 Task 2).',
+  );
+}
+
+function purchaseActivationBoostNotImplemented(
+  state: FlowgridSnapshot,
+  command: PurchaseActivationBoostCommand,
+): SimulationResult {
+  return notImplementedResult(
+    state,
+    command.operationId,
+    command.type,
+    'purchase_activation_boost is not implemented until Phase 4 (plan 04-01 Task 2).',
   );
 }
 

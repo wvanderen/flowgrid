@@ -164,6 +164,10 @@ export class FlowgridRepository {
       moduleInstances,
       routes,
       sessions,
+      // Phase 4 shim — the Dexie `rejuvenations` store arrives in plan 04-02, which
+      // swaps this empty array for `await this.db.rejuvenations.toArray()`. Until then
+      // returning [] keeps loadSnapshot's FlowgridSnapshot construction well-typed.
+      rejuvenations: [],
       operations,
       settings,
       forgeHistory,

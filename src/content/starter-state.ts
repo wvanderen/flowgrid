@@ -114,6 +114,10 @@ export function createStarterFlowgridState(
       convertAllocationPercent: DEFAULT_CONVERT_ALLOCATION_PERCENT,
       storeAllocationPercent: DEFAULT_STORE_ALLOCATION_PERCENT,
       forgeCount: 0,
+      // Phase 4 defaults — Pitfall 6 backward-compat: level 0 means existing
+      // activation-bonus tests stay byte-identical to Phase 3 (bonus = 10%).
+      activationBoostLevel: 0,
+      activeRejuvenationStartedAt: null,
       updatedAt: now,
     },
     moduleInstances: new Map([
@@ -181,6 +185,7 @@ export function createStarterFlowgridState(
       ],
     ]),
     sessions: [],
+    rejuvenations: [],
     operations: [],
     settings: {
       id: settingsId,

@@ -198,7 +198,12 @@ test('log_rejuvenation, run_forge, install_module return not_implemented with un
 
   const rej = runSimulationCommand(
     state,
-    { type: 'log_rejuvenation', operationId: `${ids.clientId}:op:rej-1`, durationSeconds: 600 },
+    {
+      type: 'log_rejuvenation',
+      operationId: `${ids.clientId}:op:rej-1`,
+      startedAt: NOW,
+      endedAt: '2026-01-01T00:10:00.000Z',
+    },
     env,
   );
   expect(rej.status).toBe('not_implemented');

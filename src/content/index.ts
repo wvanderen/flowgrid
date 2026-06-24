@@ -10,6 +10,9 @@ export {
   getStarterModuleDefinitionByKind,
 } from './starter-modules.js';
 export {
+  ACTIVATION_BOOST_COSTS,
+  ACTIVATION_BOOST_MAX_LEVEL,
+  ACTIVATION_BOOST_PER_LEVEL,
   ACTIVATION_CURRENT_BONUS_PERCENT,
   ALLOCATION_TOTAL_PERCENT,
   CORE_CONVERT_RATE,
@@ -21,12 +24,18 @@ export {
   DEFAULT_LOCAL_DAY_BOUNDARY,
   DEFAULT_SESSION_LENGTH_SECONDS,
   DEFAULT_STORE_ALLOCATION_PERCENT,
+  INTEGRATION_THRESHOLD_BASE,
+  INTEGRATION_THRESHOLD_RATIO,
+  REJUVENATION_CHARGE_PER_MINUTE,
   SECONDS_PER_MINUTE,
   STARTER_CELL_NAME,
   XP_PER_MINUTE,
+  activationBonusPercent,
+  activationBoostCost,
   focusToCurrent,
   focusToXp,
   isDailyMilestoneComplete,
+  nextIntegrationThreshold,
   splitCoreCurrent,
 } from './formulas.js';
 export { createStarterFlowgridState } from './starter-state.js';

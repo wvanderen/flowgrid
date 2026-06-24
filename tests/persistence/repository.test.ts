@@ -145,7 +145,12 @@ test('applyResult on a not_implemented result writes nothing', async () => {
   const env = createTestSimulationEnv({ now: NOW, localDate: LOCAL_DATE, seed: 'repo-notimpl' });
   const result = runSimulationCommand(
     state,
-    { type: 'log_rejuvenation', operationId: `${ids.clientId}:op:rej`, durationSeconds: 600 },
+    {
+      type: 'log_rejuvenation',
+      operationId: `${ids.clientId}:op:rej`,
+      startedAt: '2026-01-01T00:00:00.000Z',
+      endedAt: '2026-01-01T00:10:00.000Z',
+    },
     env,
   );
   expect(result.status).toBe('not_implemented');

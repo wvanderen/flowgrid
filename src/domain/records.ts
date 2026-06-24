@@ -14,6 +14,7 @@ import type {
   ModuleDefinitionId,
   ModuleInstanceId,
   ModuleSlotId,
+  RejuvenationId,
   RouteId,
   SessionId,
   SettingsId,
@@ -61,6 +62,12 @@ export interface CoreRecord {
   readonly convertAllocationPercent: IntPercent;
   readonly storeAllocationPercent: IntPercent;
   readonly forgeCount: IntNonNegative;
+  // CORE-06: Energy-spend Activation-bonus upgrade level (cap ACTIVATION_BOOST_MAX_LEVEL).
+  // Monotonic — never decreases; guarded by activation_boost_regression invariant.
+  readonly activationBoostLevel: IntNonNegative;
+  // D-01/D-02 live-timed rejuvenation marker (stored on the Core, mirrors Cell.activeSessionStartedAt).
+  // Non-null means a rejuvenation session is in progress; mutually exclusive with any Cell focus session.
+  readonly activeRejuvenationStartedAt: IsoDateTimeString | null;
   readonly updatedAt: IsoDateTimeString;
 }
 
@@ -115,6 +122,20 @@ export interface SessionRecord {
   readonly createdAt: IsoDateTimeString;
 }
 
+// REJ-01 append-only history row for a completed rejuvenation session (SPEC R6).
+// `id` is 1:1 with the command `operationId` so replays are idempotent. Records are
+// never mutated or deleted after creation (history is sacred — prohibition 5).
+export interface RejuvenationRecord {
+  readonly id: RejuvenationId;
+  readonly startedAt: IsoDateTimeString;
+  readonly endedAt: IsoDateTimeString;
+  readonly durationSeconds: IntSeconds;
+  readonly chargeConsumed: IntNonNegative;
+  readonly integrationGained: IntNonNegative;
+  readonly tokensGranted: IntNonNegative;
+  readonly createdAt: IsoDateTimeString;
+}
+
 export interface SettingsRecord {
   readonly id: SettingsId;
   readonly defaultSessionLengthSeconds: IntSeconds;
@@ -136,6 +157,8 @@ export interface FlowgridSnapshot {
   readonly moduleInstances: ReadonlyMap<ModuleInstanceId, ModuleInstance>;
   readonly routes: ReadonlyMap<RouteId, RouteRecord>;
   readonly sessions: readonly SessionRecord[];
+  // REJ-01: append-only rejuvenation history, parallel to `sessions`.
+  readonly rejuvenations: readonly RejuvenationRecord[];
   readonly operations: readonly SyncOperation[];
   readonly settings: SettingsRecord;
   readonly forgeHistory: readonly ForgeHistoryRecord[];
