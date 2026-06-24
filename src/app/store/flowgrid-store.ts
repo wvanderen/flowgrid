@@ -10,7 +10,12 @@
 
 import { createStore } from 'zustand/vanilla';
 
-import type { FlowgridSnapshot, IsoDateTimeString, VisualEvent } from '../../domain/index.js';
+import type {
+  FlowgridSnapshot,
+  IsoDateTimeString,
+  SessionRecord,
+  VisualEvent,
+} from '../../domain/index.js';
 import type { PersistenceError } from '../../persistence/errors.js';
 
 export interface ActiveSessionMarker {
@@ -31,6 +36,10 @@ export interface FlowgridState {
   // received and dropped (no animation), which proves the renderer/simulation safety
   // boundary from day one.
   readonly pendingVisualEvents: readonly VisualEvent[];
+  // The most recently completed focus session. Set by dispatch after a successful
+  // complete_focus_session so CellBoard can render SessionSummary (SESS-05). Null
+  // initially; stays set but is only shown when its cellId matches the viewed Cell.
+  readonly lastCompletedSession: SessionRecord | null;
   // Drives FlowgridHome's loading/ready/error rendering. 'loading' on cold boot before
   // loadSnapshot resolves; 'ready' once a snapshot exists; 'error' if a typed
   // PersistenceError surfaces and FlowgridHome must render ErrorBanner instead.
@@ -42,6 +51,7 @@ export const flowgridStore = createStore<FlowgridState>(() => ({
   snapshot: null,
   activeSession: null,
   pendingVisualEvents: [],
+  lastCompletedSession: null,
   status: 'loading',
   lastError: null,
 }));

@@ -16,12 +16,16 @@ import { useStore } from 'zustand';
 import type {
   CellRecord,
   FlowgridSnapshot,
+  SessionRecord,
   SimulationCommand,
   SimulationEnv,
   SimulationResult,
 } from '../../domain/index.js';
 import { runSimulationCommand } from '../../simulation/engine.js';
+import { reconcileDayRollover } from '../../simulation/systems/day-rollover.js';
 import { FlowgridRepository } from '../../persistence/index.js';
+import { mapDomException } from '../../persistence/errors.js';
+import { makeEnv } from '../env.js';
 
 import {
   flowgridStore,
@@ -81,14 +85,30 @@ export async function dispatch(
 
   // Successful write: emit the new snapshot, append visual events, sync the active-
   // session marker, and clear any prior error (the new dispatch supersedes it).
+  const lastCompletedSession = captureCompletedSession(command, result);
   flowgridStore.setState((s) => ({
     snapshot: result.nextState,
     pendingVisualEvents: [...s.pendingVisualEvents, ...result.visualEvents],
     activeSession: deriveActiveSession(result.nextState),
     lastError: null,
+    ...(lastCompletedSession !== undefined ? { lastCompletedSession } : {}),
   }));
 
   return result;
+}
+
+// After a successful complete_focus_session, surface the newly-appended session so
+// CellBoard can render SessionSummary (SESS-05). The session id is 1:1 with the
+// command operationId in Phase 1, so we match by id and fall back to the last entry.
+function captureCompletedSession(
+  command: SimulationCommand,
+  result: SimulationResult,
+): SessionRecord | undefined {
+  if (command.type !== 'complete_focus_session') return undefined;
+  const sessions = result.nextState.sessions;
+  const matched = sessions.find((s) => s.id === command.operationId);
+  if (matched !== undefined) return matched;
+  return sessions[sessions.length - 1];
 }
 
 // Exposed so tests can reset to a known state without going through dispatch.
@@ -101,4 +121,35 @@ export function hydrateStoreForTests(snapshot: FlowgridSnapshot, cells: Iterable
     lastError: null,
   });
   void cells;
+}
+
+// App-open sequence (D-13). Opens the repository, loads the durable snapshot,
+// runs the belt-and-suspenders day-rollover reconciliation so the Flowgrid is
+// correct immediately, and transitions the store loading→ready before React
+// mounts (main.tsx awaits this). On any failure the store lands in 'error' with a
+// typed PersistenceError so FlowgridHome renders ErrorBanner.
+export async function initApp(repository: FlowgridRepository): Promise<void> {
+  try {
+    await repository.open();
+    const snapshot = await repository.loadSnapshot();
+    const env = makeEnv(
+      new Date().toISOString(),
+      { localDayBoundary: snapshot.settings.localDayBoundary },
+      'flowgrid-app-seed',
+    );
+    const reconciled = reconcileDayRollover(snapshot, env);
+    flowgridStore.setState({
+      snapshot: reconciled,
+      pendingVisualEvents: [],
+      activeSession: deriveActiveSession(reconciled),
+      lastCompletedSession: null,
+      status: 'ready',
+      lastError: null,
+    });
+  } catch (e) {
+    flowgridStore.setState({
+      status: 'error',
+      lastError: mapDomException(e),
+    });
+  }
 }

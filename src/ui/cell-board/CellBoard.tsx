@@ -11,7 +11,9 @@ import { Link, useParams } from 'react-router';
 
 import type { ModuleDefinitionKind } from '../../domain/index.js';
 import { getCellById } from '../../simulation/selectors.js';
+import { deriveLocalDate } from '../../simulation/systems/day-rollover.js';
 import { useFlowgridStore } from '../../app/store/dispatch.js';
+import { SessionSummary } from '../session-summary/SessionSummary.js';
 
 import { CellActions } from './CellActions.js';
 import { CellInspector } from './CellInspector.js';
@@ -50,6 +52,7 @@ const STARTER_TILES: readonly StarterTileSpec[] = [
 export function CellBoard() {
   const { cellId } = useParams<{ cellId: string }>();
   const snapshot = useFlowgridStore((s) => s.snapshot);
+  const lastCompletedSession = useFlowgridStore((s) => s.lastCompletedSession);
 
   if (snapshot === null || cellId === undefined) {
     return (
@@ -71,11 +74,30 @@ export function CellBoard() {
     );
   }
 
+  // SESS-05: show the inline SessionSummary only when the latest completed session
+  // belongs to THIS cell. The store field persists across navigation, so a cellId
+  // mismatch naturally hides it on other Cells.
+  const showSummary =
+    lastCompletedSession !== null && lastCompletedSession.cellId === cellId;
+  const localDate = deriveLocalDate(
+    new Date().toISOString(),
+    snapshot.settings.localDayBoundary,
+  );
+
   return (
     <section aria-label={`Cell Board for ${cell.name}`}>
       <h1>{cell.name}</h1>
 
       <CellInspector cell={cell} snapshot={snapshot} settings={snapshot.settings} />
+
+      {showSummary ? (
+        <SessionSummary
+          session={lastCompletedSession!}
+          cell={cell}
+          settings={snapshot.settings}
+          localDate={localDate}
+        />
+      ) : null}
 
       <section aria-label="Modules">
         {STARTER_TILES.map((tile) => (

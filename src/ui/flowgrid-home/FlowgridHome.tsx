@@ -18,7 +18,9 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useFlowgridStore } from '../../app/store/dispatch.js';
 
 import { CreateCellForm } from '../cell-board/CreateCellForm.js';
+import { ResumeSessionPrompt } from '../cell-board/ResumeSessionPrompt.js';
 import { ErrorBanner } from '../shared/ErrorBanner.js';
+import { ArchivedCellsFilter } from './ArchivedCellsFilter.js';
 import { FlowgridCanvas } from './FlowgridCanvas.js';
 
 export function FlowgridHome() {
@@ -61,9 +63,25 @@ export function FlowgridHome() {
   const activeCells = [...snapshot.cells.values()].filter((c) => c.archivedAt === null);
   const activeCellCount = activeCells.length;
 
+  // D-05: scan for a Cell with an interrupted (non-null) activeSessionStartedAt so
+  // the resume-or-discard banner surfaces after a reload. The one-active-session
+  // invariant means at most one such Cell exists.
+  const interruptedCell = [...snapshot.cells.values()].find(
+    (c) => c.activeSessionStartedAt !== null,
+  );
+
   return (
     <section aria-label="Flowgrid home">
       <h1>Flowgrid</h1>
+
+      {/* D-05: interrupted-session recovery banner (mounted, not just defined). */}
+      {interruptedCell !== undefined && interruptedCell.activeSessionStartedAt !== null ? (
+        <ResumeSessionPrompt
+          cellId={interruptedCell.id}
+          cellName={interruptedCell.name}
+          startedAt={interruptedCell.activeSessionStartedAt}
+        />
+      ) : null}
 
       {/* CELL-01 reachability: the New Cell button is always present so the user
           can create a Cell even before any exist. CreateCellForm lives inside the
@@ -97,6 +115,9 @@ export function FlowgridHome() {
           <FlowgridCanvas snapshot={snapshot} onCellTap={handleCellTap} />
         </>
       )}
+
+      {/* D-12: archived-Cells management surface (hidden from canvas, reachable here). */}
+      <ArchivedCellsFilter />
     </section>
   );
 }
