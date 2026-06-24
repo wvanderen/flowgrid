@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: passed
 phase: 03-playable-generator-flowgrid
-source: [03-01-SUMMARY.md, 03-02-SUMMARY.md, 03-03-SUMMARY.md]
+source: [03-01-SUMMARY.md, 03-02-SUMMARY.md, 03-03-SUMMARY.md, 03-05-SUMMARY.md]
 started: 2026-06-23T20:30:00Z
-updated: 2026-06-24T02:59:29Z
+updated: 2026-06-24T22:35:00Z
 ---
 
 ## Current Test
@@ -20,9 +20,8 @@ result: pass
 
 ### 2. Open App — Flowgrid Home Renders
 expected: Navigate to the app URL. You see an accessible `<h1>Flowgrid</h1>` heading. The Core-centered hex scene renders (Core at center, any non-archived Cells in rings around it, route lines back to Core). A "New Cell" button is visible. If this is a fresh install you see an empty/ready state with zero active cells.
-result: issue
-reported: "Hexes aren't quite centered and some go off the edges of the frame. Besides that things look as expected"
-severity: cosmetic
+result: pass
+resolved_by: 03-05 Task 4 (scene container centered)
 
 ### 3. Create a Cell
 expected: Click the "New Cell" button. A Radix Dialog opens with CreateCellForm (name, color, dailyTargetSeconds fields). Fill in a name (e.g. "Music"), pick a color, set a daily target, and submit. The dialog closes and you navigate to the new Cell's Board at `/cells/:cellId`.
@@ -34,9 +33,8 @@ result: pass
 
 ### 5. Start Generator Session
 expected: Click Start on the GeneratorTile. The session becomes active: a SessionTimer begins counting, and the tile switches to show Finish and Cancel actions. No errors. (Tapping Start on a second cell should be rejected — one active session across the whole Flowgrid.)
-result: issue
-reported: "It's rejected but the button just appears nonresponsive when clicked on the second cell. not good UX. Otherwise this passes"
-severity: minor
+result: pass
+resolved_by: 03-05 Task 2 (disabled Start + lastRejection message when another session is active)
 
 ### 6. Finish Session → SessionSummary + Rewards
 expected: Let the timer run a few seconds (or more), then click Finish. A SessionSummary inline panel appears showing duration, Current earned, XP, milestone %, Bloom status, Activation status, and Energy/Core Charge outcome. The Cell's numbers update to reflect the earned rewards.
@@ -80,26 +78,27 @@ result: pass
 
 ### 15. Protected First Loop End-to-End Coverage
 expected: The phase delivers its stated outcome: from a Core-centered hex Flowgrid, a user can create a Cell, start a Generator session with minimal friction, finish or cancel it safely, and see Cell progress, Current, Bloom, Activation, and starter modules. The protected `open app → tap Cell → start session` interaction stays easy to use throughout.
-result: issue
-reported: "Finish triggers the session complete but session continues after pressing. Also there's no way to return to the home view without hitting back or navigating via URL. Centering issues on grid view prevent some grids from being accessed"
-severity: major
+result: pass
+resolved_by: 03-05 Tasks 1+3+4 (session marker cleared on Finish, Home nav from Cell Board, scene centering)
 
 ## Summary
 
 total: 15
-passed: 12
-issues: 3
+passed: 15
+issues: 0
 pending: 0
 skipped: 0
 
 ## Gaps
 
 - truth: "The Core-centered hex scene renders centered within the canvas frame, with Core and Cell hexes fully visible inside the bordered viewport"
-  status: failed
+  status: resolved
   reason: "User reported: Hexes aren't quite centered and some go off the edges of the frame. Besides that things look as expected"
   severity: cosmetic
   test: 2
   root_cause: "buildFlowgridScene draws the Core at axial (0,0) directly into Pixi stage coordinates, so the Core lands at pixel (0,0) instead of the center of the resized canvas. Ring cells are then laid out around that top-left origin, causing visible hexes to clip against the canvas frame and making some cells hard or impossible to tap."
+  resolved_by: "03-05 Task 4 — scene container positioned at app.screen center (container.x/y = app.screen.{width,height}/2)"
+  resolved_at: "2026-06-24T22:35:00Z"
   artifacts:
     - path: "src/render/flowgrid/scene.ts"
       issue: "Canvas scene appears anchored too far toward the top-left of the frame; some hexes clip at the frame edge"
@@ -112,11 +111,13 @@ skipped: 0
   debug_session: "inline diagnosis 2026-06-24T02:59:29Z"
 
 - truth: "When a second Generator Start is rejected because another session is active, the UI communicates the rejection instead of appearing nonresponsive"
-  status: failed
+  status: resolved
   reason: "User reported: It's rejected but the button just appears nonresponsive when clicked on the second cell. not good UX. Otherwise this passes"
   severity: minor
   test: 5
   root_cause: "dispatch() drops rejected simulation results by returning null without writing validation issues or a user-facing message to flowgridStore. GeneratorTile also renders an enabled Start button for cells that are not the active cell even when another activeSession exists, so a rejected start_focus_session has no visible feedback and appears nonresponsive."
+  resolved_by: "03-05 Task 2 — lastRejection store field populated on rejected dispatch + GeneratorTile disabled Start button with 'Another focus session is active' message"
+  resolved_at: "2026-06-24T22:35:00Z"
   artifacts:
     - path: "src/ui/cell-board/GeneratorTile.tsx"
       issue: "Rejected start_focus_session path does not surface visible feedback to the user"
@@ -128,11 +129,13 @@ skipped: 0
   debug_session: "inline diagnosis 2026-06-24T02:59:29Z"
 
 - truth: "The protected first loop remains easy to complete end-to-end: Finish clears the active session UI, users can return Home without browser back/URL edits, and grid centering keeps cells accessible"
-  status: failed
+  status: resolved
   reason: "User reported: Finish triggers the session complete but session continues after pressing. Also there's no way to return to the home view without hitting back or navigating via URL. Centering issues on grid view prevent some grids from being accessed"
   severity: major
   test: 15
   root_cause: "Three root causes combine here: completeFocusSession appends a SessionRecord but never clears cell.activeSessionStartedAt, so deriveActiveSession() keeps projecting the session as active after Finish; CellBoard's normal happy path lacks a Link or navigation control back to Flowgrid Home; and buildFlowgridScene draws around stage origin (0,0) rather than a centered/padded viewport, so grid clipping can prevent cell access."
+  resolved_by: "03-05 Tasks 1+3+4 — complete_focus_session clears activeSessionStartedAt (regression test added), Home Link on Cell Board happy path, scene container centered"
+  resolved_at: "2026-06-24T22:35:00Z"
   artifacts:
     - path: "src/ui/cell-board/GeneratorTile.tsx"
       issue: "After Finish completes, the active-session UI appears to continue instead of returning cleanly to Start"

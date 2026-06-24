@@ -1,32 +1,22 @@
 ---
 phase: 03-playable-generator-flowgrid
-verified: 2026-06-24T01:30:00Z
-status: human_needed
-score: 37/38 must-haves verified
-behavior_unverified: 1
+verified: 2026-06-24T22:35:00Z
+status: verified
+score: 38/38 must-haves verified
+behavior_unverified: 0
 overrides_applied: 0
 mvp_mode: true
 mvp_goal_format_discrepancy: "Phase goal is NOT in canonical 'As a [role], I want [capability], so that [outcome]' form; substantive outcome is still verifiable and UAT.md already derives a User-Flow Walk-Through. Surface for future `/gsd mvp-phase` tidying; not blocking."
-behavior_unverified_items:
-  - truth: "The app reads as a cohesive dark-themed product: dark slate page background, surface cards/panels, gold Core accents, visible buttons, usable forms, centered Radix Dialogs with a backdrop overlay (Plan 03-04 truth 3; UAT test 2)"
-    test: "Run `npm run dev`, open the app URL, and visually confirm Flowgrid Home renders as a styled dark-theme product (not raw HTML). Then walk UAT tests 3–11 (create Cell, see board, start/finish/cancel session, see progress, resume, edit, archive)."
-    expected: "Dark slate background, gold Core accents, visible buttons, centered Radix Dialogs with backdrop overlay, readable forms. No raw unstyled HTML."
-    why_human: "Automated evidence proves the root cause is closed (CSS bundle grew from Preflight-only to 19.04 kB; all 14 Phase-3 components carry className utilities; all 6 @theme tokens are consumed across multiple files; build/tsc/eslint/vitest 170/170 all green). Whether the result *reads as a cohesive product* is a holistic visual judgment no grep or unit test can certify. This is UAT test 2, explicitly deferred by Plan 03-04 to the human visual smoke."
-human_verification:
-  - test: "Visual smoke — Flowgrid Home renders as cohesive dark-themed product (UAT test 2, deferred from 03-04)"
-    expected: "Dark slate page background, surface cards/panels, gold Core accents on the Generator tile, visible Start/Finish/Cancel buttons, centered Radix Dialog with backdrop overlay for Create/Edit Cell. Not raw unstyled HTML."
-    why_human: "Build artifacts prove Tailwind emits utilities (CSS bundle 19.04 kB, up from Preflight-only), but the holistic 'reads as a product' judgment needs human eyes. This was Plan 03-04's explicitly deferred UAT item."
-  - test: "Complete UAT user-flow walk-through tests 3–11 (create Cell → see board with starter modules → start Generator session → finish for rewards → cancel safely → see progress/Current/Bloom/Activation → resume interrupted → edit identity → archive/unarchive)"
-    expected: "Each user-flow step behaves as described in 03-UAT.md Section 1. One-active-session invariant holds (test 12). Sub-second finish routes to cancel (test 13). Edit form cannot inject economy fields (test 14)."
-    why_human: "These are end-to-end browser interactions (clicks, navigation, timer counting, dialog open/close, reload-to-resume) that require a running dev server and human observation. Unit tests cover the underlying command/selector contracts; the integrated user flow does not."
+reverification_note: "Re-verified after gap-closure plan 03-05 fixed the 3 UAT issues (tests 2/5/15) and the human visual smoke confirmed all 15 UAT tests pass. Plan 03-04 truth 3 (holistic dark-theme product judgment) is now human-verified. Test suite is 171/171 (03-05 added the complete-clears-marker regression test)."
+human_verification: []
 ---
 
 # Phase 3: Playable Generator Flowgrid — Verification Report
 
 **Phase Goal:** User can complete the protected first loop from a Core-centered hex Flowgrid: create a Cell, start a Generator session with minimal friction, finish or cancel it safely, and see Cell progress, Current, Bloom, Activation, and starter modules.
-**Verified:** 2026-06-24T01:30:00Z
-**Status:** human_needed
-**Re-verification:** No — initial verification
+**Verified:** 2026-06-24T22:35:00Z
+**Status:** verified
+**Re-verification:** Yes — re-verified after gap-closure plan 03-05 + human visual smoke (all 15 UAT tests pass)
 **Mode:** MVP (goal-backward narrowed to user-story outcome)
 
 ## Goal Achievement
@@ -109,11 +99,11 @@ User-story outcome (paraphrased from the non-canonical goal): *complete the prot
 |---|-------|--------|----------|
 | 1 | Every Phase-3 component renders with Tailwind utility classes | ✓ VERIFIED | All 14 components carry className (126 total uses); counts: FlowgridHome 15, CellInspector 19, SessionSummary 29, CreateCellForm 13, etc. |
 | 2 | @theme tokens consumed by ≥1 component each | ✓ VERIFIED | `bg-flowgrid-surface` (8 files), `text-core` (6), `bg-core` (5), `text-error` (5), `text-cell-activated` (1); `bg-flowgrid-bg` via `style.css:22` body layer |
-| 3 | App reads as cohesive dark-themed product | ⚠️ PRESENT_BEHAVIOR_UNVERIFIED | All automated preconditions met (classes present, tokens consumed, CSS bundle 19.04 kB, all gates green). Holistic "reads as a product" is a visual judgment → human verification (UAT test 2) |
+| 3 | App reads as cohesive dark-themed product | ✓ VERIFIED (human smoke 2026-06-24) | All automated preconditions met (classes present, tokens consumed, CSS bundle 19.04 kB, all gates green). Human visual smoke confirmed the cohesive dark-theme product read; Plan 03-04's deferral cleared |
 | 4 | Semantic markup / ARIA / handlers unchanged (className only) | ✓ VERIFIED | `h1/h2/dl/ol/time`, `role=alertdialog`, `aria-live`, `aria-pressed` all present alongside new className; vitest UI tests (170/170) still pass byte-for-byte behavior |
 | 5 | tsc / eslint / vitest 170 / build all pass | ✓ VERIFIED | tsc exit 0; eslint exit 0; vitest 170/170 pass; build exit 0 (CSS 19.04 kB) |
 
-**Score:** 37/38 truths verified (1 present, behavior-unverified: holistic visual styling judgment)
+**Score:** 38/38 truths verified (gap-closure plan 03-05 resolved the 3 UAT issues + the human visual smoke cleared Plan 03-04 truth 3)
 
 ### Required Artifacts
 
@@ -167,9 +157,10 @@ All declared artifacts across the 4 plans exist, are substantive, and are wired.
 |----------|---------|--------|--------|
 | tsc strict | `npx tsc --noEmit` | exit 0 | ✓ PASS |
 | eslint | `npx eslint .` | exit 0 | ✓ PASS |
-| Full test suite | `npx vitest run` | 170/170 pass (32 files) | ✓ PASS |
+| Full test suite | `npx vitest run` | 171/171 pass (33 files; +1 regression test from 03-05 Task 1) | ✓ PASS |
 | Production build | `npm run build` | exit 0; CSS 19.04 kB | ✓ PASS |
 | Cancel writes nothing | `session-lifecycle.test.ts:134` | passes | ✓ PASS |
+| Complete clears active marker (03-05 regression) | `session-lifecycle.test.ts` | passes (test #10) | ✓ PASS |
 | One-active-session invariant | `session-lifecycle.test.ts:96` | passes | ✓ PASS |
 | Activation bonus applied | `activation-bonus.test.ts:51` | passes | ✓ PASS |
 | Bloom momentum +1 | `activation-bonus.test.ts:168` | passes | ✓ PASS |
@@ -233,23 +224,25 @@ All 18 Phase-3 requirement IDs map to concrete implementation evidence. REQUIREM
 |------|---------|--------|
 | TypeScript strict | `npx tsc --noEmit` | ✓ exit 0 |
 | ESLint | `npx eslint .` | ✓ exit 0 |
-| Unit/property/UI tests | `npx vitest run` | ✓ 170/170 pass (32 files) |
+| Unit/property/UI tests | `npx vitest run` | ✓ 171/171 pass (33 files; +1 from 03-05 gap-closure) |
 | Production build | `npm run build` | ✓ exit 0; CSS bundle 19.04 kB (up from Preflight-only — proves Tailwind emits utilities) |
 
 ### Human Verification Required
 
-1. **Visual smoke — Flowgrid Home renders as cohesive dark-themed product (UAT test 2, deferred from 03-04).** Run `npm run dev`. Expected: dark slate background, gold Core accents on Generator tile, visible Start/Finish/Cancel buttons, centered Radix Dialog with backdrop overlay for Create/Edit Cell, readable forms — not raw unstyled HTML. *Why human:* build artifacts prove utilities emit (CSS 19.04 kB), but the holistic "reads as a product" judgment needs eyes. Plan 03-04 explicitly deferred this flip.
-2. **Complete UAT user-flow walk-through tests 3–15** (create Cell → see board → start/finish/cancel session → see progress/Bloom/Activation → resume interrupted → edit identity → archive/unarchive; plus technical checks 12–14 for one-active-session, sub-second-cancel, edit-form economy-injection). *Why human:* these are end-to-end browser interactions (clicks, navigation, timer, dialogs, reload-to-resume) requiring a running dev server. Unit tests cover the underlying contracts; the integrated user flow does not.
+**All cleared.** The human visual smoke was run on 2026-06-24 after gap-closure plan 03-05 landed. All 15 UAT tests in `03-UAT.md` now report `result: pass` (see UAT summary: 15 passed / 0 issues). The previously-deferred items are resolved:
+
+1. ~~Visual smoke — Flowgrid Home renders as cohesive dark-themed product (UAT test 2).~~ **Cleared** — human confirmed cohesive dark-theme product read; Plan 03-04 truth 3 now ✓ VERIFIED.
+2. ~~UAT user-flow walk-through tests 3–15.~~ **Cleared** — all 15 UAT tests pass, including the three formerly-failing tests (2 centering, 5 rejection UX, 15 protected loop) fixed by gap-closure plan 03-05.
 
 ### Gaps Summary
 
-No code-level gaps. All 18 requirements verified against implementation. All 38 must-have truths across 4 plans are either VERIFIED (37) or PRESENT_BEHAVIOR_UNVERIFIED pending a holistic visual judgment (1 — Plan 03-04 truth 3 / UAT test 2). All automated gates green. All PROJECT.md constraints held (boundaries, Core interaction protection, economy safety, accessibility).
+**No gaps remain.** All 18 requirements verified against implementation. All 38 must-have truths across the 5 plans are VERIFIED (Plan 03-04 truth 3 cleared by human smoke; the 3 UAT behavioral gaps closed by plan 03-05). All automated gates green (171/171). All PROJECT.md constraints held (boundaries, Core interaction protection, economy safety, accessibility).
 
-The single human-needed item is the explicitly-deferred visual smoke plus the remaining UAT walk-through steps. Plan 03-04 closed the styling root cause at the build level (Tailwind now emits a 19.04 kB utility bundle, all 14 components carry className, all 6 @theme tokens are consumed); confirming the result reads as a cohesive product is a human visual judgment.
+Gap-closure plan 03-05 fixed three diagnosed UAT issues at their root causes: (1) `complete_focus_session` now clears `activeSessionStartedAt` — a simulation bug the original lifecycle suite missed (regression test added); (2) rejected `start_focus_session` is now perceivable via a `lastRejection` store field and a disabled Start button; (3) the Cell Board happy path now has a Home navigation affordance; and (4) the Flowgrid scene is centered in the viewport so hexes no longer clip.
 
 **MVP mode note:** the phase goal is not in canonical "As a [role], I want [capability], so that [outcome]." form (`user-story.validate → valid: false`). The substantive outcome is unambiguous and UAT.md already derives a User-Flow Walk-Through from it, so verification proceeded against the outcome. Surface for future `/gsd mvp-phase` tidying; not blocking.
 
 ---
 
-_Verified: 2026-06-24T01:30:00Z_
-_Verifier: the agent (gsd-verifier)_
+_Verified: 2026-06-24T22:35:00Z (re-verified post 03-05 gap-closure + human smoke; initial verification 2026-06-24T01:30:00Z)_
+_Verifier: the agent (gsd-verifier) + human visual smoke_
