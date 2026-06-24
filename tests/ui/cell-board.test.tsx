@@ -42,6 +42,7 @@ import { buildStarterSnapshot } from '../helpers/fixtures.js';
 import { CellBoard } from '../../src/ui/cell-board/CellBoard.js';
 import { EditCellForm } from '../../src/ui/cell-board/EditCellForm.js';
 import { SessionTimer } from '../../src/ui/cell-board/SessionTimer.js';
+import type { SessionRecord } from '../../src/domain/index.js';
 
 const PREFIX = 'cb';
 const NOW_ISO = '2026-01-02T09:00:00.000Z';
@@ -309,3 +310,52 @@ test('SessionTimer: displays elapsed time and updates via cosmetic setInterval (
 
 // Keep ReactNode import meaningful for future JSX-typed helpers exports.
 export type _UiNode = ReactNode;
+
+// --- Task 2: SessionSummary mount (SESS-05 reachability) ---
+
+function makeCompletedSession(cellId: string): SessionRecord {
+  return {
+    id: 'flowgrid:session:completed-1',
+    cellId,
+    startedAt: NOW_ISO,
+    endedAt: '2026-06-23T10:00:00.000Z',
+    durationSeconds: 1500,
+    xpGained: 25,
+    currentGenerated: 1500,
+    bloomFired: true,
+    activationGranted: true,
+    energyGained: 0,
+    coreChargeGained: 0,
+    createdAt: '2026-06-23T10:00:00.000Z',
+  };
+}
+
+test('CellBoard: renders SessionSummary when lastCompletedSession is non-null AND its cellId matches (SESS-05)', () => {
+  const { ids, state } = buildStarterSnapshot(PREFIX);
+  flowgridStore.setState({
+    snapshot: state,
+    activeSession: null,
+    pendingVisualEvents: [],
+    status: 'ready',
+    lastError: null,
+    lastCompletedSession: makeCompletedSession(ids.cellId),
+  });
+  renderCellBoardAt(ids.cellId);
+
+  expect(screen.getByText(/session complete/i)).toBeInTheDocument();
+});
+
+test('CellBoard: does NOT render SessionSummary when lastCompletedSession belongs to a different cell', () => {
+  const { ids, state } = buildStarterSnapshot(PREFIX);
+  flowgridStore.setState({
+    snapshot: state,
+    activeSession: null,
+    pendingVisualEvents: [],
+    status: 'ready',
+    lastError: null,
+    lastCompletedSession: makeCompletedSession('flowgrid:cell:other'),
+  });
+  renderCellBoardAt(ids.cellId);
+
+  expect(screen.queryByText(/session complete/i)).toBeNull();
+});

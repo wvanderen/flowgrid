@@ -28,9 +28,24 @@ vi.mock('../../src/ui/cell-board/CreateCellForm.js', () => ({
   ),
 }));
 
+// Stub ResumeSessionPrompt and ArchivedCellsFilter so the FlowgridHome mounting
+// assertions are isolated from those components' own behaviour. They are reached
+// (rendered by FlowgridHome) but their internals are tested elsewhere.
+vi.mock('../../src/ui/cell-board/ResumeSessionPrompt.js', () => ({
+  ResumeSessionPrompt: (props: { cellName: string }): ReactNode => (
+    <div data-testid="resume-session-prompt-stub" data-cell={props.cellName} />
+  ),
+}));
+vi.mock('../../src/ui/flowgrid-home/ArchivedCellsFilter.js', () => ({
+  ArchivedCellsFilter: (): ReactNode => (
+    <div data-testid="archived-cells-filter-stub" />
+  ),
+}));
+
 import { FlowgridHome } from '../../src/ui/flowgrid-home/FlowgridHome.js';
 import { flowgridStore } from '../../src/app/store/flowgrid-store.js';
 import { buildStarterSnapshot } from '../helpers/fixtures.js';
+import type { CellRecord, FlowgridSnapshot } from '../../src/domain/index.js';
 
 // Render FlowgridHome inside a memory-router-backed RouterProvider so `useNavigate`
 // has the context it needs. Tests that need to assert navigation would extend
@@ -100,4 +115,30 @@ test('FlowgridHome: ready state renders a "New Cell" button that opens a Radix D
   // Dialog opens with the CreateCellForm stub inside.
   expect(screen.getByRole('dialog')).toBeInTheDocument();
   expect(screen.getByTestId('create-cell-form-stub')).toBeInTheDocument();
+});
+
+test('FlowgridHome: renders ResumeSessionPrompt banner when a cell has activeSessionStartedAt (D-05 reachability)', () => {
+  const { ids, state } = buildStarterSnapshot('home-resume');
+  const cells = new Map(state.cells);
+  const base = cells.get(ids.cellId)!;
+  cells.set(ids.cellId, { ...base, activeSessionStartedAt: '2026-06-23T08:00:00.000Z' });
+  const interrupted: FlowgridSnapshot = { ...state, cells };
+  flowgridStore.setState({
+    snapshot: interrupted,
+    activeSession: { cellId: ids.cellId, startedAt: '2026-06-23T08:00:00.000Z' },
+    status: 'ready',
+  });
+
+  renderHome();
+
+  expect(screen.getByTestId('resume-session-prompt-stub')).toBeInTheDocument();
+});
+
+test('FlowgridHome: renders the ArchivedCellsFilter section (D-12 reachability)', () => {
+  const { state } = buildStarterSnapshot('home-archived');
+  flowgridStore.setState({ snapshot: state, status: 'ready' });
+
+  renderHome();
+
+  expect(screen.getByTestId('archived-cells-filter-stub')).toBeInTheDocument();
 });
