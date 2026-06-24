@@ -7,7 +7,7 @@
 import { describe } from 'vitest';
 
 import { runMigrationFixture } from './migration-harness.js';
-import { upgradeCellsV1ToV2 } from '../../src/persistence/database.js';
+import { upgradeCellsV1ToV2, upgradeCoresV2ToV3 } from '../../src/persistence/database.js';
 
 describe('migration-fixture harness', () => {
   // Fixture 1: field rename. Synthetic "v0" CellRecord used `milestoneProgress`
@@ -125,6 +125,71 @@ describe('D-10 v1 -> v2 cell migration (upgradeCellsV1ToV2)', () => {
       icon: null,
       archivedAt: null,
       activeSessionStartedAt: null,
+    },
+  });
+});
+
+// --- Real Phase 4 v2 -> v3 core fixtures (upgradeCoresV2ToV3) -----------------
+// The real upgrade transform (upgradeCoresV2ToV3) is extracted from database.ts
+// so the harness can exercise it without a live IndexedDB connection. A v2 core
+// carries none of activationBoostLevel / activeRejuvenationStartedAt; the upgrade
+// must default both. Existing economy fields must be untouched (Pitfall 6 — level
+// 0 produces byte-identical Phase 3 economy output).
+describe('v2 -> v3 core migration (upgradeCoresV2ToV3)', () => {
+  interface V2Core {
+    readonly id: string;
+    readonly energy: number;
+    readonly coreCharge: number;
+    readonly lifetimeEnergy: number;
+    readonly integration: number;
+    readonly moduleTokens: number;
+    readonly convertAllocationPercent: number;
+    readonly storeAllocationPercent: number;
+    readonly forgeCount: number;
+    readonly updatedAt: string;
+  }
+
+  const v2Core: V2Core = {
+    id: 'real-migration:core',
+    energy: 500,
+    coreCharge: 120,
+    lifetimeEnergy: 1000,
+    integration: 48,
+    moduleTokens: 2,
+    convertAllocationPercent: 60,
+    storeAllocationPercent: 40,
+    forgeCount: 1,
+    updatedAt: '2026-01-01T10:00:00.000Z',
+  };
+
+  runMigrationFixture<V2Core, Record<string, unknown>>({
+    description: 'defaults activationBoostLevel=0 and activeRejuvenationStartedAt=null on a v2 core',
+    input: v2Core,
+    upgrade: (old) => upgradeCoresV2ToV3({ ...old }),
+    expected: {
+      ...v2Core,
+      activationBoostLevel: 0,
+      activeRejuvenationStartedAt: null,
+    },
+  });
+
+  runMigrationFixture<V2Core, Record<string, unknown>>({
+    description: 'preserves existing economy fields (energy, coreCharge, integration) unchanged',
+    input: v2Core,
+    upgrade: (old) => upgradeCoresV2ToV3({ ...old }),
+    expected: {
+      id: 'real-migration:core',
+      energy: 500,
+      coreCharge: 120,
+      lifetimeEnergy: 1000,
+      integration: 48,
+      moduleTokens: 2,
+      convertAllocationPercent: 60,
+      storeAllocationPercent: 40,
+      forgeCount: 1,
+      updatedAt: '2026-01-01T10:00:00.000Z',
+      activationBoostLevel: 0,
+      activeRejuvenationStartedAt: null,
     },
   });
 });

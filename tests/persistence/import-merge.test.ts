@@ -14,6 +14,7 @@ import type {
   CellRecord,
   CompleteFocusSessionCommand,
   FlowgridSnapshot,
+  LogRejuvenationCommand,
   SimulationResult,
 } from '../../src/domain/index.js';
 import { createStarterFlowgridState } from '../../src/content/index.js';
@@ -234,5 +235,67 @@ test('merge mode surfaces a PersistenceError on a session payload mismatch', asy
   if (!result.ok && 'error' in result) {
     expect(result.error.kind).toBe('session_conflict');
   }
+  repo.close();
+});
+
+// Phase 4 (plan 04-02): a RejuvenationRecord round-trips through merge mode and
+// re-merging the same archive is an idempotent no-op (no duplication).
+test('merge mode round-trips a RejuvenationRecord and re-merging the same archive does not duplicate', async () => {
+  // Build an archive carrying one rejuvenation record.
+  const buildDb = new FlowgridDatabase('merge-rejuv-build');
+  const buildRepo = new FlowgridRepository(buildDb);
+  await buildRepo.open();
+  const seeded = await buildRepo.loadSnapshot();
+  const previousState: FlowgridSnapshot = {
+    ...attachStarterCellToSeeded(seeded, 'merge-rejuv-build'),
+    core: { ...seeded.core, coreCharge: 100, updatedAt: NOW },
+  };
+  await writeStarterCellModulesRoutes(buildDb, previousState);
+  const rejuvCommand: LogRejuvenationCommand = {
+    type: 'log_rejuvenation',
+    operationId: 'merge-rejuv-build:op:rejuv-1',
+    startedAt: NOW,
+    endedAt: '2026-01-01T10:10:00.000Z',
+  };
+  const rejuvEnv = createTestSimulationEnv({ now: NOW, localDate: LOCAL_DATE, seed: 'merge-rejuv-build' });
+  const rejuvResult = runSimulationCommand(previousState, rejuvCommand, rejuvEnv) as SimulationResult;
+  expect(rejuvResult.status).toBe('applied');
+  await buildRepo.applyResult(rejuvResult);
+  const archiveWithRejuv = await exportJson(buildDb);
+  buildRepo.close();
+  expect(archiveWithRejuv.rejuvenations).toHaveLength(1);
+  const originalRecord = archiveWithRejuv.rejuvenations[0]!;
+
+  // Target DB: seed state A so singletons match (idempotent merge upsert no-op),
+  // then merge the rejuvenation-carrying archive back.
+  const db = new FlowgridDatabase('merge-rejuv-restore');
+  const repo = new FlowgridRepository(db);
+  await repo.open();
+  await seedStateA(db, repo, 'merge-rejuv-A');
+
+  // Re-export A's own state (now including the seeded focus session) and merge the
+  // rejuvenation archive's record on top. The singletons already match A's (identical
+  // payload -> idempotent no-op); the rejuvenation is a genuinely new id.
+  const archiveA = await exportJson(db);
+  const archiveWithExtraRejuv: JsonArchive = {
+    ...archiveA,
+    rejuvenations: [...archiveA.rejuvenations, originalRecord],
+  };
+
+  const first = await importArchive(db, archiveWithExtraRejuv, 'merge');
+  expect(first.ok, 'first merge must succeed').toBe(true);
+
+  const afterFirst = await repo.loadSnapshot();
+  expect(afterFirst.rejuvenations).toHaveLength(1);
+  expect(afterFirst.rejuvenations[0]).toEqual(originalRecord);
+
+  // Re-merging the SAME archive must be idempotent (identical payload -> no-op, no
+  // duplication, no conflict).
+  const second = await importArchive(db, archiveWithExtraRejuv, 'merge');
+  expect(second.ok, 're-merging identical payload must be an idempotent no-op').toBe(true);
+
+  const afterSecond = await repo.loadSnapshot();
+  expect(afterSecond.rejuvenations).toHaveLength(1);
+  expect(afterSecond.rejuvenations[0]).toEqual(originalRecord);
   repo.close();
 });

@@ -9,7 +9,7 @@
 import { beforeEach, expect, test } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
 
-import type { CompleteFocusSessionCommand, FlowgridSnapshot, SimulationResult } from '../../src/domain/index.js';
+import type { CompleteFocusSessionCommand, FlowgridSnapshot, LogRejuvenationCommand, SimulationResult } from '../../src/domain/index.js';
 import { createStarterFlowgridState } from '../../src/content/index.js';
 import { runSimulationCommand } from '../../src/simulation/index.js';
 import { FlowgridDatabase, FlowgridRepository, exportJson } from '../../src/persistence/index.js';
@@ -86,8 +86,8 @@ test('exportJson emits an archive with archiveVersion 1 and every collection dee
   const archive = await exportJson(db);
   repo.close();
 
-  // Envelope (D-09, fourth version axis).
-  expect(archive.archiveVersion).toBe(1);
+  // Envelope (D-09, fourth version axis). Phase 4 bumped ARCHIVE_VERSION to 2.
+  expect(archive.archiveVersion).toBe(2);
   expect(archive.exportedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 
   // Every collection deep-equals the applied result's nextState. Maps flatten to
@@ -106,9 +106,48 @@ test('exportJson emits an archive with archiveVersion 1 and every collection dee
   expect(archive.sessions).toEqual(result.nextState.sessions);
   expect(archive.operations).toEqual(result.nextState.operations);
   expect(archive.forgeHistory).toEqual(result.nextState.forgeHistory);
+  // Phase 4: the rejuvenations collection is present in the v2 envelope (empty
+  // here because no rejuvenation has run).
+  expect(archive.rejuvenations).toEqual([]);
 
   // The operation log is NOT stripped (D-09).
   expect(archive.operations.length).toBe(1);
   expect(archive.sessions.length).toBe(1);
   expect(archive.forgeHistory.length).toBe(0);
+});
+
+test('exportJson round-trips a RejuvenationRecord through the v2 archive envelope', async () => {
+  const dbName = 'export-json-rejuv';
+  const db = new FlowgridDatabase(dbName);
+  const repo = new FlowgridRepository(db);
+  await repo.open();
+
+  const seeded = await repo.loadSnapshot();
+  // Inject coreCharge so log_rejuvenation produces a non-trivial record.
+  const previousState: FlowgridSnapshot = {
+    ...attachStarterCellToSeeded(seeded, 'export-rejuv'),
+    core: { ...seeded.core, coreCharge: 100, updatedAt: NOW },
+  };
+  await writeStarterCellModulesRoutes(db, previousState);
+
+  const command: LogRejuvenationCommand = {
+    type: 'log_rejuvenation',
+    operationId: 'export-rejuv:op:rejuv-1',
+    startedAt: NOW,
+    endedAt: '2026-01-01T10:10:00.000Z',
+  };
+  const env = createTestSimulationEnv({ now: NOW, localDate: LOCAL_DATE, seed: 'export-rejuv' });
+  const result = runSimulationCommand(previousState, command, env) as SimulationResult;
+  expect(result.status, 'fixture rejuvenation command must apply').toBe('applied');
+
+  const applied = await repo.applyResult(result);
+  expect(applied.ok, 'applyResult must succeed').toBe(true);
+
+  const archive = await exportJson(db);
+  repo.close();
+
+  expect(archive.archiveVersion).toBe(2);
+  // The known RejuvenationRecord round-trips into the archive envelope byte-identical.
+  expect(archive.rejuvenations).toHaveLength(1);
+  expect(archive.rejuvenations[0]).toEqual(result.nextState.rejuvenations[0]);
 });

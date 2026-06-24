@@ -7,7 +7,7 @@
 import { beforeEach, expect, test } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
 
-import type { CompleteFocusSessionCommand, FlowgridSnapshot, SimulationResult } from '../../src/domain/index.js';
+import type { CompleteFocusSessionCommand, FlowgridSnapshot, LogRejuvenationCommand, SimulationResult } from '../../src/domain/index.js';
 import { createStarterFlowgridState } from '../../src/content/index.js';
 import { runSimulationCommand } from '../../src/simulation/index.js';
 import { FlowgridDatabase, FlowgridRepository } from '../../src/persistence/index.js';
@@ -172,5 +172,97 @@ test('applyResult on a not_implemented result writes nothing', async () => {
   expect(after.sessions).toHaveLength(beforeCounts.sessions);
   expect(after.operations).toHaveLength(beforeCounts.operations);
   expect(after.cells.size).toBe(beforeCounts.cells);
+  repo.close();
+});
+
+// --- Phase 4 (plan 04-02): rejuvenation persistence, reload, and idempotency ----
+// Builds an applied log_rejuvenation result (coreCharge pre-seeded so the payout
+// derivation processes real Charge), drives it through applyResult, and asserts
+// the RejuvenationRecord survives reload, replays do not duplicate, and the record
+// fields match what the simulation produced.
+
+function buildRejuvenationResult(prefix: string, seeded: FlowgridSnapshot): SimulationResult {
+  // Inject coreCharge so log_rejuvenation's payout derivation processes real Charge
+  // (a starter core has coreCharge=0, which would yield a 0-payout rest record —
+  // still valid, but we want a non-trivial record to assert field round-tripping).
+  const previousState: FlowgridSnapshot = {
+    ...attachStarterCellToSeeded(seeded, prefix, NOW, LOCAL_DATE),
+    core: { ...seeded.core, coreCharge: 100, updatedAt: NOW },
+  };
+  const env = createTestSimulationEnv({ now: NOW, localDate: LOCAL_DATE, seed: prefix });
+  const command: LogRejuvenationCommand = {
+    type: 'log_rejuvenation',
+    operationId: `${prefix}:op:rejuv-1`,
+    startedAt: NOW,
+    endedAt: '2026-01-01T10:10:00.000Z', // 10 minutes -> processes 100 Charge at 10/min
+  };
+  const result = runSimulationCommand(previousState, command, env);
+  if (result.status !== 'applied') {
+    throw new Error(
+      `fixture setup: expected applied rejuvenation, got ${result.status}: ${JSON.stringify(result.validationIssues)}`,
+    );
+  }
+  return result;
+}
+
+test('applyResult on an applied log_rejuvenation persists the RejuvenationRecord and it survives reload', async () => {
+  const dbName = 'repo-rejuv-reload';
+  const db = new FlowgridDatabase(dbName);
+  const repo = new FlowgridRepository(db);
+  await repo.open();
+
+  const seeded = await repo.loadSnapshot();
+  const result = buildRejuvenationResult('rejuv-reload', seeded);
+  await writeStarterCellModulesRoutes(db, result.previousState);
+
+  const seededBefore = await repo.loadSnapshot();
+  expect(seededBefore.rejuvenations).toHaveLength(0);
+
+  const applied = await repo.applyResult(result);
+  expect(applied.ok, 'applyResult on applied rejuvenation must succeed').toBe(true);
+  repo.close();
+
+  // Reopen the SAME database name to simulate a reload.
+  const reloadDb = new FlowgridDatabase(dbName);
+  const reloadRepo = new FlowgridRepository(reloadDb);
+  await reloadRepo.open();
+  const loaded = await reloadRepo.loadSnapshot();
+  reloadRepo.close();
+
+  // The record survived reload and is byte-identical to what the simulation produced.
+  expect(loaded.rejuvenations).toHaveLength(1);
+  expect(loaded.rejuvenations[0]).toEqual(result.nextState.rejuvenations[0]);
+  // Spot-check the record's derived fields match the simulation output.
+  const record = loaded.rejuvenations[0]!;
+  expect(record.chargeConsumed).toBe(result.nextState.rejuvenations[0]!.chargeConsumed);
+  expect(record.integrationGained).toBe(result.nextState.rejuvenations[0]!.integrationGained);
+  expect(record.tokensGranted).toBe(result.nextState.rejuvenations[0]!.tokensGranted);
+  expect(record.durationSeconds).toBe(result.nextState.rejuvenations[0]!.durationSeconds);
+});
+
+test('replaying the same log_rejuvenation operationId does not duplicate the record (idempotent append)', async () => {
+  const dbName = 'repo-rejuv-idempotent';
+  const db = new FlowgridDatabase(dbName);
+  const repo = new FlowgridRepository(db);
+  await repo.open();
+
+  const seeded = await repo.loadSnapshot();
+  const result = buildRejuvenationResult('rejuv-idem', seeded);
+  await writeStarterCellModulesRoutes(db, result.previousState);
+
+  const first = await repo.applyResult(result);
+  expect(first.ok).toBe(true);
+
+  const afterFirst = await repo.loadSnapshot();
+  expect(afterFirst.rejuvenations).toHaveLength(1);
+
+  // Replay the SAME result (same operationId -> same record id). idempotentAppend
+  // finds the identical payload and silently no-ops; no duplication, no conflict.
+  const second = await repo.applyResult(result);
+  expect(second.ok, 'replaying an identical result must be an idempotent no-op').toBe(true);
+
+  const afterSecond = await repo.loadSnapshot();
+  expect(afterSecond.rejuvenations).toHaveLength(1);
+  expect(afterSecond.rejuvenations[0]).toEqual(afterFirst.rejuvenations[0]);
   repo.close();
 });

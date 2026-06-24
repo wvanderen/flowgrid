@@ -12,6 +12,7 @@ import { IDBFactory } from 'fake-indexeddb';
 import type {
   CompleteFocusSessionCommand,
   FlowgridSnapshot,
+  LogRejuvenationCommand,
   SimulationResult,
 } from '../../src/domain/index.js';
 import { createStarterFlowgridState } from '../../src/content/index.js';
@@ -20,6 +21,7 @@ import {
   FlowgridDatabase,
   FlowgridRepository,
   exportJson,
+  importArchive,
   validateArchive,
 } from '../../src/persistence/index.js';
 import type { JsonArchive } from '../../src/persistence/index.js';
@@ -201,4 +203,73 @@ test('validateArchive performs no writes: the DB is byte-identical before and af
   repo.close();
 
   expect(after).toEqual(before);
+});
+
+// --- Phase 4 (plan 04-02): v1 archive backward-compat + v2 rejuvenation shape ---
+
+test('validateArchive accepts a v1 archive (archiveVersion: 1, no rejuvenations field) with zero issues', async () => {
+  // Build a valid v2 archive, then downgrade it to a v1 envelope by dropping the
+  // rejuvenations field and setting archiveVersion: 1. This simulates an archive
+  // exported by Phase 3 code (before the rejuvenations store existed).
+  const archive = await buildValidArchive('v1-compat');
+  const { rejuvenations: _drop, ...v1Archive } = archive;
+  void _drop;
+  const v1Envelope = { ...v1Archive, archiveVersion: 1 };
+
+  const issues = validateArchive(v1Envelope);
+  expect(issues, 'a v1 archive without rejuvenations must parse cleanly').toHaveLength(0);
+});
+
+test('importArchive on a v1 archive succeeds with stats.rejuvenations === 0', async () => {
+  const archive = await buildValidArchive('v1-import');
+  const { rejuvenations: _drop, ...v1Archive } = archive;
+  void _drop;
+  const v1Envelope = { ...v1Archive, archiveVersion: 1 };
+
+  const db = new FlowgridDatabase('import-v1-stats');
+  const repo = new FlowgridRepository(db);
+  await repo.open();
+
+  const result = await importArchive(db, v1Envelope, 'replace');
+  expect(result.ok, 'v1 archive import must succeed').toBe(true);
+  if (result.ok) {
+    expect(result.stats.rejuvenations).toBe(0);
+  }
+
+  const after = await repo.loadSnapshot();
+  expect(after.rejuvenations).toHaveLength(0);
+  repo.close();
+});
+
+test('validateArchive rejects a malformed rejuvenation record in a v2 archive with invalid_operation_shape', async () => {
+  // Build a valid v2 archive carrying one rejuvenation, then corrupt the record's
+  // chargeConsumed (negative -> fails the z.number().int().nonnegative() gate).
+  const buildDb = new FlowgridDatabase(`import-valid-malformed`);
+  const buildRepo = new FlowgridRepository(buildDb);
+  await buildRepo.open();
+  const seeded = await buildRepo.loadSnapshot();
+  const previousState: FlowgridSnapshot = {
+    ...attachStarterCellToSeeded(seeded, 'malformed'),
+    core: { ...seeded.core, coreCharge: 100, updatedAt: NOW },
+  };
+  await writeStarterCellModulesRoutes(buildDb, previousState);
+  const rejuvCommand: LogRejuvenationCommand = {
+    type: 'log_rejuvenation',
+    operationId: 'malformed:op:rejuv-1',
+    startedAt: NOW,
+    endedAt: '2026-01-01T10:10:00.000Z',
+  };
+  const rejuvEnv = createTestSimulationEnv({ now: NOW, localDate: LOCAL_DATE, seed: 'malformed' });
+  const rejuvResult = runSimulationCommand(previousState, rejuvCommand, rejuvEnv) as SimulationResult;
+  expect(rejuvResult.status).toBe('applied');
+  await buildRepo.applyResult(rejuvResult);
+  const archive = await exportJson(buildDb);
+  buildRepo.close();
+
+  const originalRejuv = archive.rejuvenations[0]!;
+  const malformedRejuv = { ...originalRejuv, chargeConsumed: -5 };
+  const malformedArchive = { ...archive, rejuvenations: [malformedRejuv] };
+
+  const issues = validateArchive(malformedArchive);
+  expectCode(issues, 'invalid_operation_shape');
 });

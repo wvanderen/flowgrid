@@ -18,7 +18,7 @@ beforeEach(() => {
   (globalThis as unknown as { indexedDB: unknown }).indexedDB = new IDBFactory();
 });
 
-test('a fresh FlowgridDatabase declares the nine expected stores and no moduleDefinitions', async () => {
+test('a fresh FlowgridDatabase declares the ten expected stores (v3 adds rejuvenations) and no moduleDefinitions', async () => {
   const db = new FlowgridDatabase('schema-stores');
   await db.open();
   const storeNames = db.tables.map((t) => t.name).sort();
@@ -30,16 +30,21 @@ test('a fresh FlowgridDatabase declares the nine expected stores and no moduleDe
       'forgeHistory',
       'moduleInstances',
       'operations',
+      'rejuvenations',
       'routes',
       'sessions',
       'settings',
     ].sort(),
   );
   expect(storeNames, 'moduleDefinitions store must NOT exist (D-06)').not.toContain('moduleDefinitions');
+  // Phase 4 / version(3): the rejuvenations store is declared and accessible as a
+  // typed table on the FlowgridDatabase instance.
+  expect(db.rejuvenations).toBeDefined();
+  expect(db.rejuvenations.name).toBe('rejuvenations');
   db.close();
 });
 
-test('first-run seeding populates the three singletons with starter values and leaves the other six stores empty', async () => {
+test('first-run seeding populates the three singletons with starter values and leaves the other seven stores empty', async () => {
   const db = new FlowgridDatabase('schema-seed');
   const repo = new FlowgridRepository(db);
   await repo.open();
@@ -53,6 +58,10 @@ test('first-run seeding populates the three singletons with starter values and l
   expect(snapshot.core.coreCharge).toBe(0);
   expect(snapshot.core.moduleTokens).toBe(0);
   expect(snapshot.core.forgeCount).toBe(0);
+  // Phase 4 defaults: the seeded core starts at activationBoostLevel 0 with no
+  // active rejuvenation marker (Pitfall 6 — byte-identical Phase 3 economy output).
+  expect(snapshot.core.activationBoostLevel).toBe(0);
+  expect(snapshot.core.activeRejuvenationStartedAt).toBeNull();
   expect(snapshot.settings.defaultSessionLengthSeconds).toBe(DEFAULT_SESSION_LENGTH_SECONDS);
 
   expect(snapshot.cells.size).toBe(0);
@@ -61,6 +70,7 @@ test('first-run seeding populates the three singletons with starter values and l
   expect(snapshot.sessions).toHaveLength(0);
   expect(snapshot.operations).toHaveLength(0);
   expect(snapshot.forgeHistory).toHaveLength(0);
+  expect(snapshot.rejuvenations).toHaveLength(0);
 
   repo.close();
 });

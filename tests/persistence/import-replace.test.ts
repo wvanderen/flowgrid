@@ -13,6 +13,7 @@ import { IDBFactory } from 'fake-indexeddb';
 import type {
   CompleteFocusSessionCommand,
   FlowgridSnapshot,
+  LogRejuvenationCommand,
   SimulationResult,
 } from '../../src/domain/index.js';
 import { createStarterFlowgridState } from '../../src/content/index.js';
@@ -211,4 +212,49 @@ test('a forced mid-transaction failure leaves no partial state (DB stays fully A
   expect(snapshotAfter.cells.size).toBe(snapshotBefore.cells.size);
   expect(snapshotAfter.sessions.length).toBe(snapshotBefore.sessions.length);
   expect(snapshotAfter.operations.length).toBe(snapshotBefore.operations.length);
+});
+
+// Phase 4 (plan 04-02): a RejuvenationRecord round-trips through export -> replace import.
+test('replace mode round-trips a RejuvenationRecord through export -> import byte-identical', async () => {
+  // Build an archive carrying one rejuvenation record.
+  const buildDb = new FlowgridDatabase('replace-rejuv-build');
+  const buildRepo = new FlowgridRepository(buildDb);
+  await buildRepo.open();
+  const seeded = await buildRepo.loadSnapshot();
+  const previousState: FlowgridSnapshot = {
+    ...attachStarterCellToSeeded(seeded, 'replace-rejuv-build'),
+    core: { ...seeded.core, coreCharge: 100, updatedAt: NOW },
+  };
+  await writeStarterCellModulesRoutes(buildDb, previousState);
+  const rejuvCommand: LogRejuvenationCommand = {
+    type: 'log_rejuvenation',
+    operationId: 'replace-rejuv-build:op:rejuv-1',
+    startedAt: NOW,
+    endedAt: '2026-01-01T10:10:00.000Z',
+  };
+  const rejuvEnv = createTestSimulationEnv({ now: NOW, localDate: LOCAL_DATE, seed: 'replace-rejuv-build' });
+  const rejuvResult = runSimulationCommand(previousState, rejuvCommand, rejuvEnv) as SimulationResult;
+  expect(rejuvResult.status).toBe('applied');
+  await buildRepo.applyResult(rejuvResult);
+  const archiveWithRejuv = await exportJson(buildDb);
+  buildRepo.close();
+  expect(archiveWithRejuv.rejuvenations).toHaveLength(1);
+  const originalRecord = archiveWithRejuv.rejuvenations[0]!;
+
+  // Import into a fresh DB via replace mode.
+  const db = new FlowgridDatabase('replace-rejuv-restore');
+  const repo = new FlowgridRepository(db);
+  await repo.open();
+  const result = await importArchive(db, archiveWithRejuv, 'replace');
+  expect(result.ok, 'replace must succeed for an archive with a rejuvenation').toBe(true);
+  if (result.ok) {
+    expect(result.stats.rejuvenations).toBe(1);
+  }
+
+  const after = await repo.loadSnapshot();
+  repo.close();
+
+  // The record is present and byte-identical to the exported one.
+  expect(after.rejuvenations).toHaveLength(1);
+  expect(after.rejuvenations[0]).toEqual(originalRecord);
 });
