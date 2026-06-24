@@ -70,8 +70,13 @@ export async function dispatch(
 
   if (result.status !== 'applied') {
     // Rejected / not_implemented results write nothing durable (Phase 2 D-02). Surface
-    // validation issues to the store so the UI can render them if needed; durable
-    // state is unchanged.
+    // the simulation's first validation issue (or a generic fallback) as a user-facing
+    // lastRejection message so the UI can render feedback instead of appearing
+    // nonresponsive; durable state is unchanged. Persistence failures still go to
+    // lastError below.
+    const message =
+      result.validationIssues[0]?.message ?? 'That action is not available right now.';
+    flowgridStore.setState({ lastRejection: message });
     return null;
   }
 
@@ -84,13 +89,14 @@ export async function dispatch(
   }
 
   // Successful write: emit the new snapshot, append visual events, sync the active-
-  // session marker, and clear any prior error (the new dispatch supersedes it).
+  // session marker, and clear any prior error/rejection (the new dispatch supersedes it).
   const lastCompletedSession = captureCompletedSession(command, result);
   flowgridStore.setState((s) => ({
     snapshot: result.nextState,
     pendingVisualEvents: [...s.pendingVisualEvents, ...result.visualEvents],
     activeSession: deriveActiveSession(result.nextState),
     lastError: null,
+    lastRejection: null,
     ...(lastCompletedSession !== undefined ? { lastCompletedSession } : {}),
   }));
 
@@ -119,6 +125,7 @@ export function hydrateStoreForTests(snapshot: FlowgridSnapshot, cells: Iterable
     activeSession: deriveActiveSession(snapshot),
     status: 'ready',
     lastError: null,
+    lastRejection: null,
   });
   void cells;
 }
@@ -145,6 +152,7 @@ export async function initApp(repository: FlowgridRepository): Promise<void> {
       lastCompletedSession: null,
       status: 'ready',
       lastError: null,
+      lastRejection: null,
     });
   } catch (e) {
     flowgridStore.setState({

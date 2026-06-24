@@ -45,6 +45,10 @@ export interface FlowgridState {
   // PersistenceError surfaces and FlowgridHome must render ErrorBanner instead.
   readonly status: FlowgridStatus;
   readonly lastError: PersistenceError | null;
+  // A user-facing message produced when a dispatched command is rejected by the
+  // simulation (e.g. starting a second focus session while one is already active).
+  // Distinct from lastError (persistence failures). Cleared on the next applied dispatch.
+  readonly lastRejection: string | null;
 }
 
 export const flowgridStore = createStore<FlowgridState>(() => ({
@@ -54,6 +58,7 @@ export const flowgridStore = createStore<FlowgridState>(() => ({
   lastCompletedSession: null,
   status: 'loading',
   lastError: null,
+  lastRejection: null,
 }));
 
 export type { FlowgridState as FlowgridStoreState };

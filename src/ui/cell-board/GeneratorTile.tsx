@@ -39,9 +39,14 @@ function buildSessionEnv(localDayBoundary: string) {
 export function GeneratorTile({ cell }: GeneratorTileProps) {
   const activeSession = useFlowgridStore((s) => s.activeSession);
   const snapshot = useFlowgridStore((s) => s.snapshot);
+  const lastRejection = useFlowgridStore((s) => s.lastRejection);
   const [tooShort, setTooShort] = useState(false);
 
   const isThisCellActive = activeSession?.cellId === cell.id;
+  // Another Cell holds the active session — the one-active-session invariant (D-05)
+  // means Start here would be rejected by the simulation. Disable the button and
+  // explain why, instead of letting the user click into a silent rejection.
+  const anotherCellActive = activeSession !== null && activeSession.cellId !== cell.id;
 
   if (!isThisCellActive || activeSession === null) {
     const handleStart = () => {
@@ -55,6 +60,26 @@ export function GeneratorTile({ cell }: GeneratorTileProps) {
       void dispatch(command, env, repository);
     };
 
+    if (anotherCellActive) {
+      return (
+        <section aria-label="Generator" className="rounded-lg border border-core/50 bg-flowgrid-surface p-4 space-y-3">
+          <h2 className="text-lg font-semibold text-core">Generator</h2>
+          <p className="text-slate-300">Tap to start a focus session.</p>
+          <button
+            type="button"
+            disabled
+            aria-describedby="generator-another-active"
+            className="inline-flex items-center justify-center rounded-md bg-core px-4 py-2 font-semibold text-flowgrid-bg opacity-50 cursor-not-allowed"
+          >
+            Start Focus Session
+          </button>
+          <p id="generator-another-active" role="status" aria-live="polite" className="text-sm text-slate-400">
+            Another focus session is active
+          </p>
+        </section>
+      );
+    }
+
     return (
       <section aria-label="Generator" className="rounded-lg border border-core/50 bg-flowgrid-surface p-4 space-y-3">
         <h2 className="text-lg font-semibold text-core">Generator</h2>
@@ -62,6 +87,11 @@ export function GeneratorTile({ cell }: GeneratorTileProps) {
         <button type="button" onClick={handleStart} className="inline-flex items-center justify-center rounded-md bg-core px-4 py-2 font-semibold text-flowgrid-bg transition hover:bg-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-core">
           Start Focus Session
         </button>
+        {lastRejection !== null ? (
+          <p role="status" aria-live="polite" className="text-sm text-slate-400">
+            {lastRejection}
+          </p>
+        ) : null}
       </section>
     );
   }
