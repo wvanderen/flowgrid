@@ -40,24 +40,25 @@ export function ArchivedCellsFilter() {
   };
 
   return (
-    <section aria-label="Archived Cells">
+    <section aria-label="Archived Cells" className="rounded-lg border border-slate-700 bg-flowgrid-surface p-4 space-y-3">
       <button
         type="button"
         aria-pressed={expanded}
         onClick={() => setExpanded((v) => !v)}
+        className="inline-flex items-center justify-center rounded-md border border-slate-600 px-4 py-2 text-slate-200 transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
       >
         {expanded ? 'Hide archived Cells' : 'Show archived Cells'}
       </button>
 
       {expanded ? (
         archivedCells.length === 0 ? (
-          <p>No archived Cells.</p>
+          <p className="text-sm text-slate-400">No archived Cells.</p>
         ) : (
-          <ul>
+          <ul className="divide-y divide-slate-700">
             {archivedCells.map((cell) => (
-              <li key={cell.id}>
-                <span>{cell.name}</span>
-                <button type="button" onClick={() => handleUnarchive(cell.id)}>
+              <li key={cell.id} className="flex items-center justify-between gap-3 py-2">
+                <span className="text-slate-200">{cell.name}</span>
+                <button type="button" onClick={() => handleUnarchive(cell.id)} className="inline-flex items-center justify-center rounded-md border border-slate-600 px-4 py-2 text-slate-200 transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">
                   Unarchive
                 </button>
               </li>

@@ -117,7 +117,7 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
   return (
     <div
       ref={containerRef}
-      className="w-full h-full"
+      className="relative h-[60vh] w-full overflow-hidden rounded-lg border border-slate-700 bg-slate-900/40 sm:h-[70vh]"
       aria-label="Flowgrid canvas"
       role="img"
     />

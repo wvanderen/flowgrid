@@ -14,3 +14,19 @@
   --color-cell-route: #475569;
   --color-error: #ef4444;
 }
+
+@layer base {
+  /* Single dark-theme body layer consuming the flowgrid-bg token centrally so
+     every route section inherits the dark background without repeating it. */
+  body {
+    @apply bg-flowgrid-bg text-slate-300;
+    min-height: 100vh;
+    font-family:
+      ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  /* #root fills the viewport so the route section's min-height flows naturally. */
+  #root {
+    min-height: 100vh;
+  }
+}

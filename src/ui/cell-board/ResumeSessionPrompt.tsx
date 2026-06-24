@@ -53,14 +53,15 @@ export function ResumeSessionPrompt({
     <section
       role="alertdialog"
       aria-label={`Resume focus session for ${cellName}`}
+      className="rounded-lg border border-core/50 bg-flowgrid-surface p-4 space-y-3"
     >
-      <p>
+      <p className="text-slate-200">
         You had a focus session in progress for {cellName}. Resume or discard?
       </p>
-      <button type="button" onClick={handleResume}>
+      <button type="button" onClick={handleResume} className="inline-flex items-center justify-center rounded-md bg-core px-4 py-2 font-semibold text-flowgrid-bg transition hover:bg-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-core">
         Resume
       </button>
-      <button type="button" onClick={handleDiscard}>
+      <button type="button" onClick={handleDiscard} className="inline-flex items-center justify-center rounded-md border border-error/60 px-4 py-2 text-error transition hover:bg-error/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-error">
         Discard
       </button>
     </section>
