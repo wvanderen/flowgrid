@@ -8,7 +8,7 @@
 
 import type { ReactNode } from 'react';
 import { beforeEach, expect, test, vi } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 // Mock FlowgridCanvas — happy-dom has no WebGL and FlowgridHome only needs to
@@ -17,6 +17,14 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 vi.mock('../../src/ui/flowgrid-home/FlowgridCanvas.js', () => ({
   FlowgridCanvas: (_props: { onCellTap: (cellId: string) => void; snapshot: unknown }): ReactNode => (
     <div data-testid="flowgrid-canvas-mock" />
+  ),
+}));
+
+// Stub CreateCellForm so the Dialog-open assertion is isolated from the form's own
+// (heavily tested) behaviour. When the Radix Dialog opens the stub renders inside.
+vi.mock('../../src/ui/cell-board/CreateCellForm.js', () => ({
+  CreateCellForm: (): ReactNode => (
+    <div data-testid="create-cell-form-stub">CreateCellForm</div>
   ),
 }));
 
@@ -70,4 +78,26 @@ test('FlowgridHome: renders without crashing in happy-dom (RTL smoke test)', () 
   expect(container).toBeDefined();
   // Even in ready state, the mock canvas should mount via FlowgridHome.
   expect(screen.getByTestId('flowgrid-canvas-mock')).toBeInTheDocument();
+});
+
+test('FlowgridHome: ready state renders a "New Cell" button that opens a Radix Dialog containing CreateCellForm (CELL-01 reachability)', () => {
+  const { state } = buildStarterSnapshot('home-new-cell');
+  flowgridStore.setState({ snapshot: state, status: 'ready' });
+
+  renderHome();
+
+  // The New Cell button is always present in the ready state.
+  const newCellButton = screen.getByRole('button', { name: /new cell/i });
+  expect(newCellButton).toBeInTheDocument();
+
+  // No dialog yet.
+  expect(screen.queryByRole('dialog')).toBeNull();
+
+  // Open it. fireEvent.click is the most reliable Radix trigger activator under
+  // happy-dom (full userEvent pointer sequences need pointer-capture APIs).
+  fireEvent.click(newCellButton);
+
+  // Dialog opens with the CreateCellForm stub inside.
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  expect(screen.getByTestId('create-cell-form-stub')).toBeInTheDocument();
 });
