@@ -56,9 +56,9 @@ export function CellBoard() {
 
   if (snapshot === null || cellId === undefined) {
     return (
-      <section aria-label="Cell Board">
-        <h1>Cell not found</h1>
-        <Link to="/">Return to Flowgrid</Link>
+      <section aria-label="Cell Board" className="mx-auto max-w-5xl px-4 py-6 space-y-6">
+        <h1 className="text-2xl font-bold text-slate-100">Cell not found</h1>
+        <Link to="/" className="inline-flex items-center font-medium text-core transition hover:underline">Return to Flowgrid</Link>
       </section>
     );
   }
@@ -66,10 +66,10 @@ export function CellBoard() {
   const cell = getCellById(snapshot, cellId);
   if (cell === undefined) {
     return (
-      <section aria-label="Cell Board">
-        <h1>Cell not found</h1>
-        <p>This Cell does not exist or has been removed.</p>
-        <Link to="/">Return to Flowgrid</Link>
+      <section aria-label="Cell Board" className="mx-auto max-w-5xl px-4 py-6 space-y-6">
+        <h1 className="text-2xl font-bold text-slate-100">Cell not found</h1>
+        <p className="text-sm text-slate-400">This Cell does not exist or has been removed.</p>
+        <Link to="/" className="inline-flex items-center font-medium text-core transition hover:underline">Return to Flowgrid</Link>
       </section>
     );
   }
@@ -85,8 +85,8 @@ export function CellBoard() {
   );
 
   return (
-    <section aria-label={`Cell Board for ${cell.name}`}>
-      <h1>{cell.name}</h1>
+    <section aria-label={`Cell Board for ${cell.name}`} className="mx-auto max-w-5xl px-4 py-6 space-y-6">
+      <h1 className="text-3xl font-bold text-slate-100">{cell.name}</h1>
 
       <CellInspector cell={cell} snapshot={snapshot} settings={snapshot.settings} />
 
@@ -99,7 +99,7 @@ export function CellBoard() {
         />
       ) : null}
 
-      <section aria-label="Modules">
+      <section aria-label="Modules" className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {STARTER_TILES.map((tile) => (
           <ModuleTile
             key={tile.kind}

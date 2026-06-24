@@ -48,46 +48,46 @@ export function SessionSummary({
   const coreRouted = session.energyGained > 0 || session.coreChargeGained > 0;
 
   return (
-    <section role="status" aria-live="polite" aria-label="Session summary">
-      <h2>Session Complete</h2>
-      <dl>
-        <div>
-          <dt>Duration</dt>
-          <dd>{formatDuration(session.durationSeconds)}</dd>
+    <section role="status" aria-live="polite" aria-label="Session summary" className="rounded-lg border border-core/50 bg-flowgrid-surface p-4 space-y-3">
+      <h2 className="text-lg font-semibold text-core">Session Complete</h2>
+      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Duration</dt>
+          <dd className="mt-1 text-base font-semibold text-slate-100">{formatDuration(session.durationSeconds)}</dd>
         </div>
-        <div>
-          <dt>Current</dt>
-          <dd>{session.currentGenerated}</dd>
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Current</dt>
+          <dd className="mt-1 text-base font-semibold text-slate-100">{session.currentGenerated}</dd>
         </div>
-        <div>
-          <dt>XP</dt>
-          <dd>{session.xpGained}</dd>
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">XP</dt>
+          <dd className="mt-1 text-base font-semibold text-slate-100">{session.xpGained}</dd>
         </div>
-        <div>
-          <dt>Milestone</dt>
-          <dd>{milestonePct}%</dd>
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Milestone</dt>
+          <dd className="mt-1 text-base font-semibold text-slate-100">{milestonePct}%</dd>
         </div>
-        <div>
-          <dt>Bloom</dt>
-          <dd>{session.bloomFired ? 'Bloom fired!' : 'No Bloom yet'}</dd>
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Bloom</dt>
+          <dd className="mt-1 text-base font-semibold text-slate-100">{session.bloomFired ? 'Bloom fired!' : 'No Bloom yet'}</dd>
         </div>
-        <div>
-          <dt>Activation</dt>
-          <dd>{session.activationGranted ? 'Cell Activated' : 'Not activated'}</dd>
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Activation</dt>
+          <dd className="mt-1 text-base font-semibold text-slate-100">{session.activationGranted ? 'Cell Activated' : 'Not activated'}</dd>
         </div>
-        <div>
-          <dt>Energy</dt>
-          <dd>{session.energyGained}</dd>
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Energy</dt>
+          <dd className="mt-1 text-base font-semibold text-slate-100">{session.energyGained}</dd>
         </div>
-        <div>
-          <dt>Core Charge</dt>
-          <dd>{session.coreChargeGained}</dd>
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Core Charge</dt>
+          <dd className="mt-1 text-base font-semibold text-slate-100">{session.coreChargeGained}</dd>
         </div>
       </dl>
 
-      {!coreRouted ? <p>Core routing arrives in Phase 4.</p> : null}
+      {!coreRouted ? <p className="text-sm text-slate-400">Core routing arrives in Phase 4.</p> : null}
 
-      <p aria-label="Next useful action">{action}</p>
+      <p aria-label="Next useful action" className="rounded-md bg-slate-900/40 px-3 py-2 text-sm text-core">{action}</p>
     </section>
   );
 }

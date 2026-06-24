@@ -30,35 +30,35 @@ export function CellInspector({ cell, snapshot, settings }: CellInspectorProps) 
   const recent = getRecentSessions(snapshot, 5);
 
   return (
-    <section aria-label={`Inspector for ${cell.name}`}>
-      <dl>
-        <div>
-          <dt>XP</dt>
-          <dd>{cell.xp}</dd>
+    <section aria-label={`Inspector for ${cell.name}`} className="rounded-lg border border-slate-700 bg-flowgrid-surface p-4 space-y-3">
+      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">XP</dt>
+          <dd className="mt-1 text-lg font-semibold text-slate-100">{cell.xp}</dd>
         </div>
-        <div>
-          <dt>Momentum</dt>
-          <dd>{cell.momentum}</dd>
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Momentum</dt>
+          <dd className="mt-1 text-lg font-semibold text-slate-100">{cell.momentum}</dd>
         </div>
-        <div>
-          <dt>Charge</dt>
-          <dd>{cell.charge}</dd>
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Charge</dt>
+          <dd className="mt-1 text-lg font-semibold text-slate-100">{cell.charge}</dd>
         </div>
-        <div>
-          <dt>Daily Milestone</dt>
-          <dd>
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Daily Milestone</dt>
+          <dd className="mt-1 text-lg font-semibold text-slate-100">
             {minutesLabel(cell.dailyMilestoneProgressSeconds)} /{' '}
             {minutesLabel(cell.dailyMilestoneTargetSeconds)}
           </dd>
         </div>
-        <div>
-          <dt>Activation</dt>
-          <dd>{activatedToday ? 'Activated today' : 'Not activated'}</dd>
+        <div className="rounded-md bg-slate-900/40 p-2">
+          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Activation</dt>
+          <dd className={activatedToday ? 'mt-1 text-lg font-semibold text-cell-activated' : 'mt-1 text-lg font-semibold text-slate-100'}>{activatedToday ? 'Activated today' : 'Not activated'}</dd>
         </div>
       </dl>
 
       {recent.length > 0 ? (
-        <ol aria-label="Recent sessions">
+        <ol aria-label="Recent sessions" className="space-y-1 text-sm text-slate-400">
           {recent.map((session) => (
             <li key={session.id}>
               <time dateTime={session.startedAt}>
@@ -70,7 +70,7 @@ export function CellInspector({ cell, snapshot, settings }: CellInspectorProps) 
           ))}
         </ol>
       ) : (
-        <p>No sessions yet.</p>
+        <p className="text-sm text-slate-400">No sessions yet.</p>
       )}
     </section>
   );

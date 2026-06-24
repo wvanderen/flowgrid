@@ -48,6 +48,7 @@ export function SessionTimer({ startedAt }: SessionTimerProps) {
       aria-live="polite"
       dateTime={`PT${wholeSeconds}S`}
       data-testid="session-timer"
+      className="font-mono text-lg font-semibold text-core"
     >
       {formatElapsed(elapsed)}
     </time>

@@ -26,10 +26,10 @@ interface ModuleTileProps {
 export function ModuleTile({ kind, label, description }: ModuleTileProps) {
   const Icon = KIND_ICONS[kind];
   return (
-    <div role="group" aria-label={label}>
-      <h2>{label}</h2>
-      <Icon aria-hidden="true" data-testid={`module-tile-icon-${kind}`} />
-      <p>{description}</p>
+    <div role="group" aria-label={label} className="rounded-lg border border-slate-700 bg-flowgrid-surface p-4 space-y-3">
+      <h2 className="text-base font-semibold text-slate-100">{label}</h2>
+      <Icon aria-hidden="true" data-testid={`module-tile-icon-${kind}`} className="h-8 w-8 text-core" />
+      <p className="text-sm text-slate-400">{description}</p>
     </div>
   );
 }

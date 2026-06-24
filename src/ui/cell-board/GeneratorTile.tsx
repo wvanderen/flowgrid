@@ -56,10 +56,10 @@ export function GeneratorTile({ cell }: GeneratorTileProps) {
     };
 
     return (
-      <section aria-label="Generator">
-        <h2>Generator</h2>
-        <p>Tap to start a focus session.</p>
-        <button type="button" onClick={handleStart}>
+      <section aria-label="Generator" className="rounded-lg border border-core/50 bg-flowgrid-surface p-4 space-y-3">
+        <h2 className="text-lg font-semibold text-core">Generator</h2>
+        <p className="text-slate-300">Tap to start a focus session.</p>
+        <button type="button" onClick={handleStart} className="inline-flex items-center justify-center rounded-md bg-core px-4 py-2 font-semibold text-flowgrid-bg transition hover:bg-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-core">
           Start Focus Session
         </button>
       </section>
@@ -110,18 +110,18 @@ export function GeneratorTile({ cell }: GeneratorTileProps) {
   };
 
   return (
-    <section aria-label="Generator">
-      <h2>Generator</h2>
-      <p>
+    <section aria-label="Generator" className="rounded-lg border border-core/50 bg-flowgrid-surface p-4 space-y-3">
+      <h2 className="text-lg font-semibold text-core">Generator</h2>
+      <p className="text-slate-300">
         Session in progress: <SessionTimer startedAt={activeSession.startedAt} />
       </p>
       {tooShort ? (
-        <p role="status">Session too short to record.</p>
+        <p role="status" className="text-sm text-error">Session too short to record.</p>
       ) : null}
-      <button type="button" onClick={handleFinish}>
+      <button type="button" onClick={handleFinish} className="inline-flex items-center justify-center rounded-md bg-core px-4 py-2 font-semibold text-flowgrid-bg transition hover:bg-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-core">
         Finish
       </button>
-      <button type="button" onClick={handleCancel}>
+      <button type="button" onClick={handleCancel} className="inline-flex items-center justify-center rounded-md border border-slate-600 px-4 py-2 text-slate-200 transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">
         Cancel
       </button>
     </section>
