@@ -86,6 +86,7 @@ export function CellBoard() {
 
   return (
     <section aria-label={`Cell Board for ${cell.name}`} className="mx-auto max-w-5xl px-4 py-6 space-y-6">
+      <Link to="/" className="inline-flex items-center font-medium text-core transition hover:underline">Return to Flowgrid</Link>
       <h1 className="text-3xl font-bold text-slate-100">{cell.name}</h1>
 
       <CellInspector cell={cell} snapshot={snapshot} settings={snapshot.settings} />
