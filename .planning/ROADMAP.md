@@ -75,7 +75,7 @@ Plans:
   4. User can see completion feedback for duration, Current, XP, milestone progress, Energy/Core outcome, Bloom/Activation effects, and the next useful action.
   5. Cell XP, forgiving Momentum, daily milestone reset, once-per-day Bloom, visible Activation, and starter module benefits behave consistently from partial sessions.
 
-**Plans:** 4/4 plans complete
+**Plans:** 5/5 plans complete
 Plans:
 
 - [x] 03-04-PLAN.md
@@ -91,6 +91,10 @@ Plans:
 **Wave 3** *(blocked on Wave 2 completion)*
 
 - [x] 03-03-PLAN.md — Cell Board UI, session lifecycle, completion summary, Cell CRUD forms, resume prompt, day-rollover invocation
+
+**Wave 5** *(gap-closure, post-UAT)*
+
+- [x] 03-05-PLAN.md — UAT gap closure: complete_focus_session clears activeSessionStartedAt (sim bug), perceivable rejected-start UX, Cell Board Home nav, scene centering
 
 **UI hint**: yes
 
@@ -158,7 +162,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Deterministic Foundation Slice | 3/3 | Complete | 2026-06-23 |
 | 2. Durable Local-First Spine | 3/3 | Complete   | 2026-06-23 |
-| 3. Playable Generator Flowgrid | 4/4 | Complete   | 2026-06-24 |
+| 3. Playable Generator Flowgrid | 5/5 | Complete   | 2026-06-24 |
 | 4. Core Alternation and Rejuvenation Economy | 0/TBD | Not started | - |
 | 5. Module Forge and Starter Customization | 0/TBD | Not started | - |
 | 6. Hardening, Accessibility, and Trust | 0/TBD | Not started | - |

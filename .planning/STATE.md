@@ -12,8 +12,8 @@ last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 11
+  completed_plans: 11
   percent: 50
 ---
 
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-06-23)
 ## Current Position
 
 Phase: 03 (playable-generator-flowgrid) — EXECUTING
-Plan: 2 of 4
+Plan: 5 of 5
 Status: Ready to execute
-Last activity: 2026-06-24 — Phase 03 execution started
+Last activity: 2026-06-24 — Phase 03 gap-closure plan 03-05 executed (UAT tests 2/5/15 root causes fixed)
 
 Progress: [██████░░░░] 50%
 
@@ -49,7 +49,7 @@ Progress: [██████░░░░] 50%
 |-------|-------|-------|----------|
 | 1. Deterministic Foundation Slice | 3/3 | TBD | n/a |
 | 2. Durable Local-First Spine | 0 | TBD | n/a |
-| 3. Playable Generator Flowgrid | 0 | TBD | n/a |
+| 3. Playable Generator Flowgrid | 5/5 | TBD | n/a |
 | 4. Core Alternation and Rejuvenation Economy | 0 | TBD | n/a |
 | 5. Module Forge and Starter Customization | 0 | TBD | n/a |
 | 6. Hardening, Accessibility, and Trust | 0 | TBD | n/a |
@@ -84,6 +84,7 @@ Recent decisions affecting current work:
 - [Phase 02]: 02-03: Merge mode conflicts on shared-id singletons (core id 'flowgrid:core') when merging divergent full archives; intended merge use is adding new records to existing state. — D-04 payload-mismatch applies to merge; singletons with same id but different post-session payloads surface write_failure
 - [Phase ?]: Plan 03-04: Single dark-theme body layer in @layer base (not per-route bg-flowgrid-bg) so every route section inherits the dark background; #root gets min-height: 100vh.
 - [Phase ?]: Plan 03-04: Did NOT flip 03-UAT.md test 2 from issue to pass — the plan defers that flip until the human visual smoke (npm run dev) confirms the styling renders; the autonomous agent verifies build green + root-cause closure (CSS bundle grows to 19.04kB).
+- [Phase 03]: Plan 03-05 (gap-closure): complete_focus_session never cleared activeSessionStartedAt — the original session-lifecycle suite covered start/cancel but not complete, so the "session continues after Finish" bug slipped through. One-line simulation fix + regression test (test #10 in session-lifecycle.test.ts). Also: rejected start_focus_session is now surfaced via lastRejection store field + disabled Start button with "Another focus session is active"; Cell Board happy path got a Home Link; Flowgrid scene container centered via container.x/y = app.screen.{width,height}/2. UAT tests 2/5/15 closure-ready pending human re-smoke.
 
 ### Pending Todos
 
@@ -106,5 +107,5 @@ Items acknowledged and carried forward from roadmap creation:
 ## Session Continuity
 
 Last session: 2026-06-24T02:19:30.135Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-playable-generator-flowgrid/03-CONTEXT.md
+Stopped at: Phase 3 gap-closure plan 03-05 executed (UAT 2/5/15 root causes fixed)
+Resume file: .planning/phases/03-playable-generator-flowgrid/03-05-SUMMARY.md
