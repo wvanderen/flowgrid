@@ -69,11 +69,11 @@
 
 ### Rendering and UI
 
-- [ ] **UI-01**: User can see a Core-centered hex Flowgrid Home with compact Cells and selection state.
+- [x] **UI-01**: User can see a Core-centered hex Flowgrid Home with compact Cells and selection state.
 - [ ] **UI-02**: User can use semantic non-canvas controls for every critical action: create Cell, start/finish session, inspect Cell, set Core allocation, log rejuvenation, forge, install reward, view history, and export.
 - [ ] **UI-03**: PixiJS or Canvas/WebGL visuals render Cells, Core, routes, Current movement, Bloom bursts, and Core conversion/storage feedback from simulation-emitted visual events.
 - [ ] **UI-04**: Dropping, reducing, replaying, or skipping visual events never changes durable economy state.
-- [ ] **UI-05**: User can open a Cell Board or inspector that shows starter modules, ports/slots, Cell Charge, Bloom progress, and installed rewards.
+- [x] **UI-05**: User can open a Cell Board or inspector that shows starter modules, ports/slots, Cell Charge, Bloom progress, and installed rewards.
 - [ ] **UI-06**: User can access minimal settings for default session length, daily target defaults, local day boundary, reduced motion, and export.
 - [ ] **UI-07**: Opening Flowgrid after a gap surfaces useful return cues such as stored Core Charge, available Energy, token progress, Cells near Bloom, and recent history without shame language.
 
@@ -183,11 +183,11 @@
 | MOD-05 | Phase 5 | Pending |
 | MOD-06 | Phase 5 | Pending |
 | MOD-07 | Phase 5 | Pending |
-| UI-01 | Phase 3 | Pending |
+| UI-01 | Phase 3 | Complete |
 | UI-02 | Phase 6 | Pending |
 | UI-03 | Phase 6 | Pending |
 | UI-04 | Phase 6 | Pending |
-| UI-05 | Phase 3 | Pending |
+| UI-05 | Phase 3 | Complete |
 | UI-06 | Phase 6 | Pending |
 | UI-07 | Phase 4 | Pending |
 | DATA-01 | Phase 2 | Complete |

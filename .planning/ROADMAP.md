@@ -75,8 +75,11 @@ Plans:
   4. User can see completion feedback for duration, Current, XP, milestone progress, Energy/Core outcome, Bloom/Activation effects, and the next useful action.
   5. Cell XP, forgiving Momentum, daily milestone reset, once-per-day Bloom, visible Activation, and starter module benefits behave consistently from partial sessions.
 
-**Plans:** 3/3 plans complete
+**Plans:** 4/4 plans complete
 Plans:
+
+- [x] 03-04-PLAN.md
+
 **Wave 1**
 
 - [x] 03-01-PLAN.md — Simulation truth: CellRecord extension, six new commands, Dexie v2 migration, day-rollover system, Bloom Momentum, Activation bonus
@@ -155,7 +158,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 |-------|----------------|--------|-----------|
 | 1. Deterministic Foundation Slice | 3/3 | Complete | 2026-06-23 |
 | 2. Durable Local-First Spine | 3/3 | Complete   | 2026-06-23 |
-| 3. Playable Generator Flowgrid | 3/3 | Complete   | 2026-06-24 |
+| 3. Playable Generator Flowgrid | 4/4 | Complete   | 2026-06-24 |
 | 4. Core Alternation and Rejuvenation Economy | 0/TBD | Not started | - |
 | 5. Module Forge and Starter Customization | 0/TBD | Not started | - |
 | 6. Hardening, Accessibility, and Trust | 0/TBD | Not started | - |
