@@ -16,6 +16,7 @@ import { useStore } from 'zustand';
 import type {
   CellRecord,
   FlowgridSnapshot,
+  RejuvenationRecord,
   SessionRecord,
   SimulationCommand,
   SimulationEnv,
@@ -29,6 +30,7 @@ import { makeEnv } from '../env.js';
 
 import {
   flowgridStore,
+  type ActiveRejuvenationMarker,
   type ActiveSessionMarker,
   type FlowgridState,
 } from './flowgrid-store.js';
@@ -49,6 +51,14 @@ function deriveActiveSession(snapshot: FlowgridSnapshot): ActiveSessionMarker | 
     }
   }
   return null;
+}
+
+// Project the Core's active-rejuvenation marker (core.activeRejuvenationStartedAt)
+// to the store's ActiveRejuvenationMarker. Returns null when no rejuvenation is in
+// progress. D-02: mutually exclusive with activeSession (at most one is non-null).
+function deriveActiveRejuvenation(snapshot: FlowgridSnapshot): ActiveRejuvenationMarker | null {
+  const startedAt = snapshot.core.activeRejuvenationStartedAt;
+  return startedAt === null ? null : { startedAt };
 }
 
 // The dispatch loop. Returns the applied SimulationResult on success (useful for
@@ -89,15 +99,21 @@ export async function dispatch(
   }
 
   // Successful write: emit the new snapshot, append visual events, sync the active-
-  // session marker, and clear any prior error/rejection (the new dispatch supersedes it).
+  // session + active-rejuvenation markers, and clear any prior error/rejection (the
+  // new dispatch supersedes it). lastCompletedSession / lastCompletedRejuvenation are
+  // set when this dispatch completed a session/rejuvenation; they persist (no
+  // auto-dismiss — D-10) until the next dispatch supersedes them.
   const lastCompletedSession = captureCompletedSession(command, result);
+  const lastCompletedRejuvenation = captureCompletedRejuvenation(command, result);
   flowgridStore.setState((s) => ({
     snapshot: result.nextState,
     pendingVisualEvents: [...s.pendingVisualEvents, ...result.visualEvents],
     activeSession: deriveActiveSession(result.nextState),
+    activeRejuvenation: deriveActiveRejuvenation(result.nextState),
     lastError: null,
     lastRejection: null,
     ...(lastCompletedSession !== undefined ? { lastCompletedSession } : {}),
+    ...(lastCompletedRejuvenation !== undefined ? { lastCompletedRejuvenation } : {}),
   }));
 
   return result;
@@ -117,12 +133,29 @@ function captureCompletedSession(
   return sessions[sessions.length - 1];
 }
 
+// After a successful log_rejuvenation, surface the newly-appended RejuvenationRecord
+// so CorePanel can render RejuvenationSummary (REJ-05, D-09). The record id is 1:1
+// with the command operationId, so we match by id and fall back to the last entry.
+function captureCompletedRejuvenation(
+  command: SimulationCommand,
+  result: SimulationResult,
+): RejuvenationRecord | undefined {
+  if (command.type !== 'log_rejuvenation') return undefined;
+  const rejuvs = result.nextState.rejuvenations;
+  const matched = rejuvs.find((r) => r.id === command.operationId);
+  if (matched !== undefined) return matched;
+  return rejuvs[rejuvs.length - 1];
+}
+
 // Exposed so tests can reset to a known state without going through dispatch.
 export function hydrateStoreForTests(snapshot: FlowgridSnapshot, cells: Iterable<CellRecord>): void {
   flowgridStore.setState({
     snapshot,
     pendingVisualEvents: [],
     activeSession: deriveActiveSession(snapshot),
+    activeRejuvenation: deriveActiveRejuvenation(snapshot),
+    lastCompletedSession: null,
+    lastCompletedRejuvenation: null,
     status: 'ready',
     lastError: null,
     lastRejection: null,
@@ -149,7 +182,9 @@ export async function initApp(repository: FlowgridRepository): Promise<void> {
       snapshot: reconciled,
       pendingVisualEvents: [],
       activeSession: deriveActiveSession(reconciled),
+      activeRejuvenation: deriveActiveRejuvenation(reconciled),
       lastCompletedSession: null,
+      lastCompletedRejuvenation: null,
       status: 'ready',
       lastError: null,
       lastRejection: null,

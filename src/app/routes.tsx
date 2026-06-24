@@ -5,6 +5,7 @@ import { createBrowserRouter } from 'react-router';
 
 import { FlowgridHome } from '../ui/flowgrid-home/FlowgridHome.js';
 import { CellBoard } from '../ui/cell-board/CellBoard.js';
+import { CorePanel } from '../ui/core-panel/CorePanel.js';
 
 export const router = createBrowserRouter([
   {
@@ -14,5 +15,9 @@ export const router = createBrowserRouter([
   {
     path: '/cells/:cellId',
     element: <CellBoard />,
+  },
+  {
+    path: '/core',
+    element: <CorePanel />,
   },
 ]);

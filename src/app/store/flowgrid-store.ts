@@ -13,6 +13,7 @@ import { createStore } from 'zustand/vanilla';
 import type {
   FlowgridSnapshot,
   IsoDateTimeString,
+  RejuvenationRecord,
   SessionRecord,
   VisualEvent,
 } from '../../domain/index.js';
@@ -20,6 +21,13 @@ import type { PersistenceError } from '../../persistence/errors.js';
 
 export interface ActiveSessionMarker {
   readonly cellId: string;
+  readonly startedAt: IsoDateTimeString;
+}
+
+// D-01/D-02: Core-scoped active-rejuvenation marker (parallels ActiveSessionMarker).
+// Rejuvenation is app-wide (no cellId) and mutually exclusive with any focus session
+// (at most one of activeSession / activeRejuvenation is non-null app-wide — D-02).
+export interface ActiveRejuvenationMarker {
   readonly startedAt: IsoDateTimeString;
 }
 
@@ -40,6 +48,14 @@ export interface FlowgridState {
   // complete_focus_session so CellBoard can render SessionSummary (SESS-05). Null
   // initially; stays set but is only shown when its cellId matches the viewed Cell.
   readonly lastCompletedSession: SessionRecord | null;
+  // D-09: the most recently completed rejuvenation. Set by dispatch after a successful
+  // log_rejuvenation so CorePanel can render RejuvenationSummary (REJ-05). Persists
+  // until the next dispatch clears it (no auto-dismiss — D-10). Null initially.
+  readonly lastCompletedRejuvenation: RejuvenationRecord | null;
+  // D-01/D-02: derived from the Core's active-rejuvenation marker
+  // (core.activeRejuvenationStartedAt !== null). Mirrored at the store level so the
+  // CorePanel / RejuvenationResumePrompt can read it without touching the snapshot.
+  readonly activeRejuvenation: ActiveRejuvenationMarker | null;
   // Drives FlowgridHome's loading/ready/error rendering. 'loading' on cold boot before
   // loadSnapshot resolves; 'ready' once a snapshot exists; 'error' if a typed
   // PersistenceError surfaces and FlowgridHome must render ErrorBanner instead.
@@ -56,6 +72,8 @@ export const flowgridStore = createStore<FlowgridState>(() => ({
   activeSession: null,
   pendingVisualEvents: [],
   lastCompletedSession: null,
+  lastCompletedRejuvenation: null,
+  activeRejuvenation: null,
   status: 'loading',
   lastError: null,
   lastRejection: null,
