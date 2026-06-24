@@ -112,7 +112,20 @@ Plans:
   4. User can log rejuvenation that processes existing Core Charge into Integration progress and cannot meaningfully progress without prior activity.
   5. Opening Flowgrid after a gap surfaces useful return cues such as stored Core Charge, available Energy, token progress, Cells near Bloom, and recent history without shame language.
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+**Wave 1**
+
+- [ ] 04-01-PLAN.md — Simulation truth: RejuvenationRecord + CoreRecord fields, rejuvenation command trio, Activation-boost upgrade, derived threshold system, invariants, simulation + property tests
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 04-02-PLAN.md — Persistence durable spine: Dexie v2->v3 migration, repository/diff rejuvenations handling, v2 archive envelope + export/import round-trip, Zod schemas
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 04-03-PLAN.md — App store + dispatch projections, /core route, CorePanel, RejuvenationSummary, RejuvenationTimer, ReturnCues stat-chip rail on FlowgridHome
+
 **UI hint**: yes
 
 ### Phase 5: Module Forge and Starter Customization
