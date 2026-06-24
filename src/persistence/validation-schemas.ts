@@ -19,7 +19,7 @@
 
 import { z } from 'zod';
 
-import type { SessionRecord, SyncOperation } from '../domain/index.js';
+import type { RejuvenationRecord, SessionRecord, SyncOperation } from '../domain/index.js';
 
 export const clientSchema = z.object({
   id: z.string(),
@@ -115,6 +115,20 @@ export const forgeHistorySchema = z.object({
   createdAt: z.string().datetime(),
 });
 
+// Phase 4 / REJ-01: append-only rejuvenation history row. Mirrors RejuvenationRecord
+// field-for-field (src/domain/records.ts). Every economy field is a nonnegative
+// integer; timestamps are ISO datetime strings.
+export const rejuvenationSchema = z.object({
+  id: z.string(),
+  startedAt: z.string().datetime(),
+  endedAt: z.string().datetime(),
+  durationSeconds: z.number().int().nonnegative(),
+  chargeConsumed: z.number().int().nonnegative(),
+  integrationGained: z.number().int().nonnegative(),
+  tokensGranted: z.number().int().nonnegative(),
+  createdAt: z.string().datetime(),
+});
+
 export const operationSchema = z.object({
   id: z.string(),
   commandType: z.string(),
@@ -128,7 +142,10 @@ export const operationSchema = z.object({
 });
 
 export const archiveSchema = z.object({
-  archiveVersion: z.literal(1),
+  // Phase 4: the envelope version is now 1 | 2. v1 archives (exported before
+  // rejuvenations existed) are accepted; v2 archives carry the rejuvenations
+  // array. The optional rejuvenations field below is what lets a v1 archive parse.
+  archiveVersion: z.union([z.literal(1), z.literal(2)]),
   exportedAt: z.string(),
   client: clientSchema,
   cells: z.array(cellSchema),
@@ -139,6 +156,9 @@ export const archiveSchema = z.object({
   operations: z.array(operationSchema),
   settings: settingsSchema,
   forgeHistory: z.array(forgeHistorySchema),
+  // Optional so a v1 archive (no rejuvenations field) parses; a v2 archive
+  // includes it. import-validation.ts defaults a missing field to [].
+  rejuvenations: z.array(rejuvenationSchema).optional(),
 });
 
 // Drift guards: a record-shape change in src/domain that is not mirrored here
@@ -152,10 +172,13 @@ export const archiveSchema = z.object({
 // validateOperationShape would also accept. The operation guard therefore omits
 // entityType and checks every other field — the structural drift we care about.
 const _sessionSchemaCheck = null as unknown as z.infer<typeof sessionSchema> satisfies SessionRecord;
+const _rejuvenationSchemaCheck =
+  null as unknown as z.infer<typeof rejuvenationSchema> satisfies RejuvenationRecord;
 const _operationSchemaCheck =
   null as unknown as Omit<z.infer<typeof operationSchema>, 'entityType'> satisfies Omit<
     SyncOperation,
     'entityType'
   >;
 void _sessionSchemaCheck;
+void _rejuvenationSchemaCheck;
 void _operationSchemaCheck;

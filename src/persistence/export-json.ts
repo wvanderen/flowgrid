@@ -27,6 +27,7 @@ import type {
   ForgeHistoryRecord,
   IsoDateTimeString,
   ModuleInstance,
+  RejuvenationRecord,
   RouteRecord,
   SessionRecord,
   SettingsRecord,
@@ -35,10 +36,13 @@ import type {
 
 import { FlowgridDatabase } from './database.js';
 
-export const ARCHIVE_VERSION = 1;
+// Phase 4 (REJ-01): bumped to 2 — the envelope now carries the append-only
+// rejuvenations history. A v1 archive (no rejuvenations) is still accepted on
+// import by archiveSchema's version union + optional rejuvenations field.
+export const ARCHIVE_VERSION = 2;
 
 export interface JsonArchive {
-  readonly archiveVersion: 1;
+  readonly archiveVersion: 2;
   readonly exportedAt: IsoDateTimeString;
   readonly client: ClientRecord;
   readonly cells: readonly CellRecord[];
@@ -49,10 +53,11 @@ export interface JsonArchive {
   readonly operations: readonly SyncOperation[];
   readonly settings: SettingsRecord;
   readonly forgeHistory: readonly ForgeHistoryRecord[];
+  readonly rejuvenations: readonly RejuvenationRecord[];
 }
 
 export async function exportJson(db: FlowgridDatabase): Promise<JsonArchive> {
-  const [client, cells, core, moduleInstances, routes, sessions, operations, settings, forgeHistory] =
+  const [client, cells, core, moduleInstances, routes, sessions, operations, settings, forgeHistory, rejuvenations] =
     await Promise.all([
       db.client.toArray(),
       db.cells.toArray(),
@@ -63,6 +68,7 @@ export async function exportJson(db: FlowgridDatabase): Promise<JsonArchive> {
       db.operations.toArray(),
       db.settings.toArray(),
       db.forgeHistory.toArray(),
+      db.rejuvenations.toArray(),
     ]);
 
   const clientRecord = client[0];
@@ -87,5 +93,6 @@ export async function exportJson(db: FlowgridDatabase): Promise<JsonArchive> {
     operations,
     settings: settingsRecord,
     forgeHistory,
+    rejuvenations,
   };
 }

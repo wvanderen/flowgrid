@@ -8,7 +8,7 @@
 // Phase 3 UI subscribes and renders it.
 //
 // Four independent version axes (D-08) — each bumps for a different reason:
-//   1. Dexie schema version (below): store-shape changes only. Currently v2.
+//   1. Dexie schema version (below): store-shape changes only. Currently v3.
 //   2. ContentVersion (ClientRecord.contentVersion): starter content shape.
 //   3. SyncOperation.payloadVersion: operation payload shape (future sync transform).
 //   4. archiveVersion (JsonArchive, Phase 2 plan 02-02): archive envelope shape.
@@ -25,6 +25,8 @@ import type {
   ForgeHistoryRecord,
   ModuleInstanceId,
   ModuleInstance,
+  RejuvenationId,
+  RejuvenationRecord,
   RouteId,
   RouteRecord,
   SessionId,
@@ -63,6 +65,34 @@ export function upgradeCellsV1ToV2(
   return cell;
 }
 
+// Phase 4 / CORE-06 + REJ-01: defaults the v2→v3 migration writes for existing
+// CoreRecords that predate activationBoostLevel / activeRejuvenationStartedAt.
+// Exported for the migration test harness so the upgrade transform can be exercised
+// in isolation (PATTERNS C8). Level 0 = no Activation bonus (byte-identical to
+// Phase 3 economy output — Pitfall 6 backward-compat); null marker = no active
+// rejuvenation session.
+export const CORE_V3_DEFAULTS = {
+  activationBoostLevel: 0,
+  activeRejuvenationStartedAt: null,
+} as const;
+
+// Phase 4: the extracted v2→v3 core upgrade transform. Pure: mutates the record in
+// place (Dexie's `collection.modify` contract) and returns it. Exported so the
+// migration-harness can run it against a fixture without a live IndexedDB. Only
+// fills fields that are absent — a CoreRecord that already carries the fields
+// (e.g. re-seeded after a partial upgrade) is left untouched.
+export function upgradeCoresV2ToV3(
+  core: Record<string, unknown>,
+): Record<string, unknown> {
+  if (core.activationBoostLevel === undefined) {
+    core.activationBoostLevel = CORE_V3_DEFAULTS.activationBoostLevel;
+  }
+  if (core.activeRejuvenationStartedAt === undefined) {
+    core.activeRejuvenationStartedAt = CORE_V3_DEFAULTS.activeRejuvenationStartedAt;
+  }
+  return core;
+}
+
 export class FlowgridDatabase extends Dexie {
   client!: Table<ClientRecord, ClientId>;
   cells!: Table<CellRecord, CellId>;
@@ -76,6 +106,9 @@ export class FlowgridDatabase extends Dexie {
   operations!: Table<SyncOperation, OperationId>;
   settings!: Table<SettingsRecord, SettingsId>;
   forgeHistory!: Table<ForgeHistoryRecord, ForgeHistoryId>;
+  // Phase 4 / REJ-01: append-only rejuvenation history store. No collision with a
+  // Dexie built-in (unlike `core`), so it is declared as a typed Table property.
+  rejuvenations!: Table<RejuvenationRecord, RejuvenationId>;
 
   constructor(name: string) {
     super(name);
@@ -108,6 +141,30 @@ export class FlowgridDatabase extends Dexie {
       forgeHistory: 'id, createdAt',
     }).upgrade(async (tx) => {
       await tx.table('cells').toCollection().modify(upgradeCellsV1ToV2);
+    });
+
+    // Phase 4 (REJ-01 / CORE-06): v3 adds the append-only `rejuvenations` store and
+    // two non-indexed CoreRecord fields (activationBoostLevel,
+    // activeRejuvenationStartedAt). Indexes on prior stores are unchanged — only
+    // the stored core shape changes plus the new store. The upgrade defaults
+    // existing v2 cores via upgradeCoresV2ToV3 (level 0 / null marker → byte-
+    // identical Phase 3 economy output, Pitfall 6). Stores are repeated verbatim
+    // from v2 (Dexie requires the full store set when version(N).stores() replaces
+    // the prior declaration context); rejuvenations is indexed by createdAt for
+    // recency queries (mirrors sessions/forgeHistory).
+    this.version(3).stores({
+      client: 'id',
+      cells: 'id',
+      core: 'id',
+      moduleInstances: 'id, ownerCellId',
+      routes: 'id, sourceCellId',
+      sessions: 'id, cellId, startedAt',
+      operations: 'id, status, createdAt',
+      settings: 'id',
+      forgeHistory: 'id, createdAt',
+      rejuvenations: 'id, createdAt',
+    }).upgrade(async (tx) => {
+      await tx.table('core').toCollection().modify(upgradeCoresV2ToV3);
     });
 
     // First-run seed: writes the three singletons inside the populate transaction.

@@ -49,6 +49,7 @@ const ALL_STORE_NAMES = [
   'operations',
   'settings',
   'forgeHistory',
+  'rejuvenations',
 ] as const;
 
 // Sentinel thrown inside a transaction to abort it on a D-04 payload-mismatch
@@ -119,6 +120,12 @@ export class FlowgridRepository {
         for (const forge of plan.appendForgeHistory) {
           await idempotentAppend(this.db.forgeHistory, forge, 'write_failure', 'ForgeHistory');
         }
+        // Rejuvenation likewise has no dedicated conflict kind in the union; reuse
+        // write_failure (mirrors forgeHistory). History is append-only — there is
+        // no update/delete path (prohibition 5 / T-04-10).
+        for (const rejuv of plan.appendRejuvenations) {
+          await idempotentAppend(this.db.rejuvenations, rejuv, 'write_failure', 'Rejuvenation');
+        }
       });
       return { ok: true };
     } catch (e) {
@@ -150,6 +157,7 @@ export class FlowgridRepository {
     const sessions = await this.db.sessions.toArray();
     const operations = await this.db.operations.toArray();
     const forgeHistory = await this.db.forgeHistory.toArray();
+    const rejuvenations = await this.db.rejuvenations.toArray();
 
     const cells = new Map<CellId, CellRecord>(cellsArray.map((c) => [c.id, c] as const));
     const moduleInstances = new Map<ModuleInstanceId, ModuleInstance>(
@@ -164,10 +172,7 @@ export class FlowgridRepository {
       moduleInstances,
       routes,
       sessions,
-      // Phase 4 shim — the Dexie `rejuvenations` store arrives in plan 04-02, which
-      // swaps this empty array for `await this.db.rejuvenations.toArray()`. Until then
-      // returning [] keeps loadSnapshot's FlowgridSnapshot construction well-typed.
-      rejuvenations: [],
+      rejuvenations,
       operations,
       settings,
       forgeHistory,

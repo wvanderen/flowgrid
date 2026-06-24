@@ -18,6 +18,7 @@ import type {
   ForgeHistoryRecord,
   ModuleInstanceId,
   ModuleInstance,
+  RejuvenationRecord,
   RouteId,
   RouteRecord,
   SessionRecord,
@@ -38,6 +39,7 @@ export interface FlowgridWritePlan {
   readonly appendSessions: readonly SessionRecord[];
   readonly appendOperations: readonly SyncOperation[];
   readonly appendForgeHistory: readonly ForgeHistoryRecord[];
+  readonly appendRejuvenations: readonly RejuvenationRecord[];
 }
 
 const EMPTY_PLAN: FlowgridWritePlan = {
@@ -53,6 +55,7 @@ const EMPTY_PLAN: FlowgridWritePlan = {
   appendSessions: [],
   appendOperations: [],
   appendForgeHistory: [],
+  appendRejuvenations: [],
 };
 
 function diffMap<K, V>(
@@ -95,6 +98,7 @@ export function diffFlowgridSnapshots(
   const appendSessions = diffAppend(previous.sessions, next.sessions, (s) => s.id);
   const appendOperations = diffAppend(previous.operations, next.operations, (o) => o.id);
   const appendForgeHistory = diffAppend(previous.forgeHistory, next.forgeHistory, (f) => f.id);
+  const appendRejuvenations = diffAppend(previous.rejuvenations, next.rejuvenations, (r) => r.id);
 
   const clientPut = diffSingleton(previous.client, next.client);
   const corePut = diffSingleton(previous.core, next.core);
@@ -110,6 +114,7 @@ export function diffFlowgridSnapshots(
     appendSessions.length === 0 &&
     appendOperations.length === 0 &&
     appendForgeHistory.length === 0 &&
+    appendRejuvenations.length === 0 &&
     clientPut === null &&
     corePut === null &&
     settingsPut === null;
@@ -129,5 +134,6 @@ export function diffFlowgridSnapshots(
     appendSessions,
     appendOperations,
     appendForgeHistory,
+    appendRejuvenations,
   };
 }

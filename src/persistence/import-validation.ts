@@ -81,9 +81,10 @@ export function validateArchive(input: unknown): readonly ValidationIssue[] {
     ),
     routes: new Map<RouteId, RouteRecord>(archive.routes.map((r) => [r.id, r] as const)),
     sessions: archive.sessions,
-    // Phase 4 shim — the archive does not carry rejuvenations yet; plan 04-02 swaps
-    // this for `archive.rejuvenations` once the export/import shape is extended.
-    rejuvenations: [],
+    // archiveSchema makes rejuvenations optional so a v1 archive (exported before
+    // Phase 4) parses and defaults to an empty history. A v2 archive carries the
+    // array through unchanged.
+    rejuvenations: archive.rejuvenations ?? [],
     operations,
     settings: archive.settings,
     forgeHistory: archive.forgeHistory,

@@ -11,7 +11,12 @@
 // validation before any write). The validate-before-write gate is non-negotiable:
 // `validateArchive` is called BEFORE `db.transaction`. No `../simulation` import.
 
-import type { CoreId, CoreRecord, ValidationIssue } from '../domain/index.js';
+import type {
+  CoreId,
+  CoreRecord,
+  RejuvenationRecord,
+  ValidationIssue,
+} from '../domain/index.js';
 
 import { FlowgridDatabase } from './database.js';
 import { validateArchive } from './import-validation.js';
@@ -34,6 +39,7 @@ export interface ImportStats {
   readonly operations: number;
   readonly settings: number;
   readonly forgeHistory: number;
+  readonly rejuvenations: number;
 }
 
 export type ImportResult =
@@ -51,6 +57,7 @@ const ALL_STORE_NAMES = [
   'operations',
   'settings',
   'forgeHistory',
+  'rejuvenations',
 ] as const;
 
 // Sentinel thrown inside a merge transaction to abort it on a D-04 payload-mismatch
@@ -79,7 +86,7 @@ async function idempotentMergeUpsert<T extends { readonly id: string }>(
   await table.put(record);
 }
 
-function statsFor(archive: JsonArchive): ImportStats {
+function statsFor(archive: JsonArchive, rejuvenations: readonly RejuvenationRecord[]): ImportStats {
   return {
     client: 1,
     cells: archive.cells.length,
@@ -90,6 +97,7 @@ function statsFor(archive: JsonArchive): ImportStats {
     operations: archive.operations.length,
     settings: 1,
     forgeHistory: archive.forgeHistory.length,
+    rejuvenations: rejuvenations.length,
   };
 }
 
@@ -105,9 +113,17 @@ export async function importArchive(
     return { ok: false, issues };
   }
 
-  // The validator has confirmed the archive matches archiveSchema (archiveVersion 1,
-  // every record shape); cast to JsonArchive for the write path.
+  // The validator has confirmed the archive matches archiveSchema (archiveVersion
+  // 1 or 2, every record shape). Cast to JsonArchive for the write path.
   const validated = archive as unknown as JsonArchive;
+  // archiveSchema accepts v1 archives that omit the rejuvenations field entirely
+  // (optional in the schema); normalize to an empty array so the replace/merge
+  // write paths and stats treat v1 as "no rejuvenation history". The double cast
+  // mirrors the operations boundary bridge in import-validation.ts — honest about
+  // the v1 envelope lacking the field at runtime even though JsonArchive requires
+  // it at the type level.
+  const rejuvs: readonly RejuvenationRecord[] =
+    (validated as unknown as { rejuvenations?: readonly RejuvenationRecord[] }).rejuvenations ?? [];
 
   try {
     if (mode === 'replace') {
@@ -122,6 +138,7 @@ export async function importArchive(
           db.operations.clear(),
           db.settings.clear(),
           db.forgeHistory.clear(),
+          db.rejuvenations.clear(),
         ]);
         await db.client.put(validated.client);
         await db.cells.bulkPut(validated.cells);
@@ -132,6 +149,7 @@ export async function importArchive(
         await db.operations.bulkPut(validated.operations);
         await db.settings.put(validated.settings);
         await db.forgeHistory.bulkPut(validated.forgeHistory);
+        await db.rejuvenations.bulkPut(rejuvs);
       });
     } else {
       // merge: upsert every archive record by ID without wiping. D-04
@@ -164,9 +182,12 @@ export async function importArchive(
         for (const forge of validated.forgeHistory) {
           await idempotentMergeUpsert(db.forgeHistory, forge, 'write_failure', 'ForgeHistory');
         }
+        for (const rejuv of rejuvs) {
+          await idempotentMergeUpsert(db.rejuvenations, rejuv, 'write_failure', 'Rejuvenation');
+        }
       });
     }
-    return { ok: true, stats: statsFor(validated) };
+    return { ok: true, stats: statsFor(validated, rejuvs) };
   } catch (e) {
     if (e instanceof ConflictSignal) {
       return { ok: false, error: e.conflictError };
