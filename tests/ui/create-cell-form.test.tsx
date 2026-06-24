@@ -24,13 +24,32 @@ vi.mock('../../src/app/store/dispatch.js', async (importActual) => {
 });
 
 import { dispatch } from '../../src/app/store/dispatch.js';
+import { flowgridStore } from '../../src/app/store/flowgrid-store.js';
 import { CreateCellForm } from '../../src/ui/cell-board/CreateCellForm.js';
+import { buildStarterSnapshot } from '../helpers/fixtures.js';
 
 const mockedDispatch = dispatch as unknown as ReturnType<typeof vi.fn>;
 
+// dispatch(command, env, repository) is called with 3 args; assert on the command
+// (first arg) directly via toMatchObject for a clean partial-deep check. Returns
+// the sent command so callers can run further field-level assertions.
+function expectSentCommand(partial: Record<string, unknown>): Record<string, unknown> {
+  expect(mockedDispatch).toHaveBeenCalled();
+  const lastCall = mockedDispatch.mock.calls.at(-1);
+  expect(lastCall).toBeDefined();
+  const sentCommand = lastCall![0] as Record<string, unknown>;
+  expect(sentCommand).toMatchObject(partial);
+  return sentCommand;
+}
+
 function renderForm(): ReturnType<typeof render> {
   const router = createMemoryRouter(
-    [{ path: '/', element: <CreateCellForm /> }],
+    [
+      { path: '/', element: <CreateCellForm /> },
+      // CreateCellForm navigates to /cells/:cellId after dispatch; include the route
+      // so the post-dispatch navigation does not hit React Router's no-match boundary.
+      { path: '/cells/:cellId', element: <div aria-label="Cell Board stub" /> },
+    ],
     { initialEntries: ['/'] },
   );
   return render(<RouterProvider router={router} />);
@@ -39,6 +58,16 @@ function renderForm(): ReturnType<typeof render> {
 beforeEach(() => {
   cleanup();
   mockedDispatch.mockClear();
+  // CreateCellForm reads snapshot.settings.localDayBoundary to build the env, so
+  // seed a ready store with a starter snapshot before each form test.
+  const { state } = buildStarterSnapshot('ccf');
+  flowgridStore.setState({
+    snapshot: state,
+    activeSession: null,
+    pendingVisualEvents: [],
+    status: 'ready',
+    lastError: null,
+  });
 });
 
 afterEach(() => {
@@ -67,17 +96,14 @@ test('CreateCellForm: dispatches create_cell with name, color, icon, dailyTarget
     expect(mockedDispatch).toHaveBeenCalledTimes(1);
   });
 
-  expect(mockedDispatch).toHaveBeenCalledWith(
-    expect.objectContaining({
-      type: 'create_cell',
-      name: 'Music',
-      color: '#3b82f6',
-      icon: null,
-      dailyTargetSeconds: 1800,
-    }),
-  );
-  const sentCommand = mockedDispatch.mock.calls[0]![0] as { cellId: string };
-  expect(sentCommand.cellId).toMatch(/^flowgrid:cell:/);
+  const sent = expectSentCommand({
+    type: 'create_cell',
+    name: 'Music',
+    color: '#3b82f6',
+    icon: null,
+    dailyTargetSeconds: 1800,
+  }) as { cellId: string };
+  expect(sent.cellId).toMatch(/^flowgrid:cell:/);
 });
 
 test('CreateCellForm: rejects an empty name and does NOT dispatch', async () => {

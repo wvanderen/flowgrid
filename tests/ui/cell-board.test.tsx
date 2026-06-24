@@ -11,7 +11,7 @@
 
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, act } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 // Stub the repository singleton so importing src/app/repository.js (transitively,
@@ -48,6 +48,16 @@ const NOW_ISO = '2026-01-02T09:00:00.000Z';
 const BOUNDARY = '00:00';
 
 const mockedDispatch = dispatch as unknown as ReturnType<typeof vi.fn>;
+
+// dispatch(command, env, repository) is called with 3 args; assert on the command
+// (first arg) directly via toMatchObject for a clean partial-deep check.
+function expectSentCommand(partial: Record<string, unknown>): void {
+  expect(mockedDispatch).toHaveBeenCalled();
+  const lastCall = mockedDispatch.mock.calls.at(-1);
+  expect(lastCall).toBeDefined();
+  const sentCommand = lastCall![0] as Record<string, unknown>;
+  expect(sentCommand).toMatchObject(partial);
+}
 
 function resetStore(): void {
   flowgridStore.setState({
@@ -157,10 +167,10 @@ test('CellInspector: displays XP, Momentum, Charge, milestone progress, and Acti
   expect(screen.getByText(/not activated/i)).toBeInTheDocument();
   // Milestone progress surfaced as "Xm / Ym".
   expect(screen.getByText(/10m\s*\/\s*30m/i)).toBeInTheDocument();
-  // Term labels present.
-  expect(screen.getByText(/xp/i)).toBeInTheDocument();
-  expect(screen.getByText(/momentum/i)).toBeInTheDocument();
-  expect(screen.getByText(/charge/i)).toBeInTheDocument();
+  // Term labels present (exact match — "Charge" the <dt>, not "Charge Core" the <h2>).
+  expect(screen.getByText('XP')).toBeInTheDocument();
+  expect(screen.getByText('Momentum')).toBeInTheDocument();
+  expect(screen.getByText('Charge')).toBeInTheDocument();
 });
 
 test('CellInspector: shows "Activated today" when cell.lastBloomLocalDate === derived local date', () => {
@@ -184,12 +194,10 @@ test('GeneratorTile: shows a Start button when no session is active and dispatch
   fireEvent.click(startButton);
 
   expect(mockedDispatch).toHaveBeenCalledTimes(1);
-  expect(mockedDispatch).toHaveBeenCalledWith(
-    expect.objectContaining({
-      type: 'start_focus_session',
-      cellId: ids.cellId,
-    }),
-  );
+  expectSentCommand({
+    type: 'start_focus_session',
+    cellId: ids.cellId,
+  });
 });
 
 test('GeneratorTile: shows Finish and Cancel buttons when a session is active on this cell (SESS-02/SESS-03)', () => {
@@ -208,12 +216,10 @@ test('GeneratorTile: Cancel dispatches cancel_focus_session (writes nothing dura
 
   fireEvent.click(screen.getByRole('button', { name: /^cancel$/i }));
 
-  expect(mockedDispatch).toHaveBeenCalledWith(
-    expect.objectContaining({
-      type: 'cancel_focus_session',
-      cellId: ids.cellId,
-    }),
-  );
+  expectSentCommand({
+    type: 'cancel_focus_session',
+    cellId: ids.cellId,
+  });
 });
 
 test('GeneratorTile: Finish dispatches complete_focus_session with positive integer durationSeconds (SESS-02)', () => {
@@ -224,13 +230,11 @@ test('GeneratorTile: Finish dispatches complete_focus_session with positive inte
 
   fireEvent.click(screen.getByRole('button', { name: /^finish$/i }));
 
-  expect(mockedDispatch).toHaveBeenCalledWith(
-    expect.objectContaining({
-      type: 'complete_focus_session',
-      cellId: ids.cellId,
-      startedAt: NOW_ISO,
-    }),
-  );
+  expectSentCommand({
+    type: 'complete_focus_session',
+    cellId: ids.cellId,
+    startedAt: NOW_ISO,
+  });
   const sentCommand = mockedDispatch.mock.calls[0]![0] as {
     durationSeconds: number;
     endedAt: string;
@@ -246,12 +250,10 @@ test('CellActions: archive button dispatches archive_cell (CELL-04, D-12)', () =
 
   fireEvent.click(screen.getByRole('button', { name: /archive/i }));
 
-  expect(mockedDispatch).toHaveBeenCalledWith(
-    expect.objectContaining({
-      type: 'archive_cell',
-      cellId: ids.cellId,
-    }),
-  );
+  expectSentCommand({
+    type: 'archive_cell',
+    cellId: ids.cellId,
+  });
 });
 
 test('EditCellForm: dispatches edit_cell with identity fields only — never economy fields (CELL-03, D-11)', () => {
@@ -266,13 +268,11 @@ test('EditCellForm: dispatches edit_cell with identity fields only — never eco
   fireEvent.change(nameInput, { target: { value: 'Music' } });
   fireEvent.click(screen.getByRole('button', { name: /save/i }));
 
-  expect(mockedDispatch).toHaveBeenCalledWith(
-    expect.objectContaining({
-      type: 'edit_cell',
-      cellId: ids.cellId,
-      name: 'Music',
-    }),
-  );
+  expectSentCommand({
+    type: 'edit_cell',
+    cellId: ids.cellId,
+    name: 'Music',
+  });
   const sentCommand = mockedDispatch.mock.calls[0]![0] as Record<string, unknown>;
   // Economy fields are structurally impossible to send via the form (D-11).
   expect(sentCommand).not.toHaveProperty('xp');
@@ -290,12 +290,18 @@ test('SessionTimer: displays elapsed time and updates via cosmetic setInterval (
     // Elapsed 0 at t0 → "00:00".
     expect(screen.getByText('00:00')).toBeInTheDocument();
 
-    vi.advanceTimersBySeconds(5);
+    // Vitest 4 fake-timer API: advanceTimersByTime takes ms (no BySeconds alias).
+    // The interval's setElapsed must be flushed inside act() so React re-renders.
+    act(() => {
+      vi.advanceTimersByTime(5_000);
+    });
     expect(screen.getByText('00:05')).toBeInTheDocument();
 
     unmount();
     // Advancing after unmount must not throw — interval cleared (T-03-12).
-    vi.advanceTimersBySeconds(10);
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
   } finally {
     vi.useRealTimers();
   }

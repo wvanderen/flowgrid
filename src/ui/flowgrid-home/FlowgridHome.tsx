@@ -11,11 +11,13 @@
 // heading <h1>Flowgrid</h1> is always present so screen readers can orient even
 // while the canvas is still loading.
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router';
+import * as Dialog from '@radix-ui/react-dialog';
 
 import { useFlowgridStore } from '../../app/store/dispatch.js';
 
+import { CreateCellForm } from '../cell-board/CreateCellForm.js';
 import { ErrorBanner } from '../shared/ErrorBanner.js';
 import { FlowgridCanvas } from './FlowgridCanvas.js';
 
@@ -24,6 +26,7 @@ export function FlowgridHome() {
   const status = useFlowgridStore((s) => s.status);
   const snapshot = useFlowgridStore((s) => s.snapshot);
   const lastError = useFlowgridStore((s) => s.lastError);
+  const [createOpen, setCreateOpen] = useState(false);
 
   // D-03: tap a Cell hex → React Router navigation to the Cell Board route. The
   // callback identity changes when `navigate` changes (stable per RouterProvider
@@ -61,6 +64,29 @@ export function FlowgridHome() {
   return (
     <section aria-label="Flowgrid home">
       <h1>Flowgrid</h1>
+
+      {/* CELL-01 reachability: the New Cell button is always present so the user
+          can create a Cell even before any exist. CreateCellForm lives inside the
+          Radix Dialog; its own navigate handles routing after a successful create,
+          onCreated closes the dialog. */}
+      <Dialog.Root open={createOpen} onOpenChange={setCreateOpen}>
+        <Dialog.Trigger asChild>
+          <button type="button">New Cell</button>
+        </Dialog.Trigger>
+        <Dialog.Portal>
+          <Dialog.Overlay />
+          <Dialog.Content aria-label="Create a new Cell">
+            <Dialog.Title>Create a Cell</Dialog.Title>
+            <CreateCellForm onCreated={() => setCreateOpen(false)} />
+            <Dialog.Close asChild>
+              <button type="button" aria-label="Close create dialog">
+                Close
+              </button>
+            </Dialog.Close>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
       {activeCellCount === 0 ? (
         <p role="status">No active Cells yet. Create one to start playing.</p>
       ) : (

@@ -1,0 +1,129 @@
+// GeneratorTile — the protected primary action (SESS-01 / SESS-02 / SESS-03).
+//
+// One tile owns the Start → Finish/Cancel lifecycle for a focus session on this
+// Cell. This is the sacred core interaction from PROJECT.md: "open app → tap Cell
+// → start session" must stay protected, so the Start button is always the obvious
+// primary action when no session is active.
+//
+// D-06: the SessionTimer display is purely cosmetic (setInterval); the true
+// duration is computed here at Finish time as floor((endedAt - startedAt) / 1000).
+// D-07: Cancel writes nothing durable beyond clearing the marker.
+// D-08: a sub-second Finish routes through Cancel ("Session too short to record")
+// so no zero-length session is ever recorded.
+
+import { useState } from 'react';
+
+import type {
+  CancelFocusSessionCommand,
+  CellRecord,
+  CompleteFocusSessionCommand,
+  StartFocusSessionCommand,
+} from '../../domain/index.js';
+
+import { makeEnv } from '../../app/env.js';
+import { repository } from '../../app/repository.js';
+import { dispatch, useFlowgridStore } from '../../app/store/dispatch.js';
+
+import { SessionTimer } from './SessionTimer.js';
+
+interface GeneratorTileProps {
+  readonly cell: CellRecord;
+}
+
+const SESSION_SEED = 'flowgrid-session-seed';
+
+function buildSessionEnv(localDayBoundary: string) {
+  return makeEnv(new Date().toISOString(), { localDayBoundary }, SESSION_SEED);
+}
+
+export function GeneratorTile({ cell }: GeneratorTileProps) {
+  const activeSession = useFlowgridStore((s) => s.activeSession);
+  const snapshot = useFlowgridStore((s) => s.snapshot);
+  const [tooShort, setTooShort] = useState(false);
+
+  const isThisCellActive = activeSession?.cellId === cell.id;
+
+  if (!isThisCellActive || activeSession === null) {
+    const handleStart = () => {
+      if (snapshot === null) return;
+      const env = buildSessionEnv(snapshot.settings.localDayBoundary);
+      const command: StartFocusSessionCommand = {
+        type: 'start_focus_session',
+        operationId: crypto.randomUUID(),
+        cellId: cell.id,
+      };
+      void dispatch(command, env, repository);
+    };
+
+    return (
+      <section aria-label="Generator">
+        <h2>Generator</h2>
+        <p>Tap to start a focus session.</p>
+        <button type="button" onClick={handleStart}>
+          Start Focus Session
+        </button>
+      </section>
+    );
+  }
+
+  const handleFinish = () => {
+    if (snapshot === null) return;
+    const endedAt = new Date().toISOString();
+    const durationSeconds = Math.floor(
+      (new Date(endedAt).getTime() - new Date(activeSession.startedAt).getTime()) / 1000,
+    );
+    // D-08: sub-second finishes route through cancel — never record a zero session.
+    if (durationSeconds <= 0) {
+      setTooShort(true);
+      const cancelCommand: CancelFocusSessionCommand = {
+        type: 'cancel_focus_session',
+        operationId: crypto.randomUUID(),
+        cellId: cell.id,
+      };
+      const env = buildSessionEnv(snapshot.settings.localDayBoundary);
+      void dispatch(cancelCommand, env, repository);
+      return;
+    }
+    setTooShort(false);
+    const env = buildSessionEnv(snapshot.settings.localDayBoundary);
+    const command: CompleteFocusSessionCommand = {
+      type: 'complete_focus_session',
+      operationId: crypto.randomUUID(),
+      cellId: cell.id,
+      startedAt: activeSession.startedAt,
+      endedAt,
+      durationSeconds,
+    };
+    void dispatch(command, env, repository);
+  };
+
+  const handleCancel = () => {
+    if (snapshot === null) return;
+    setTooShort(false);
+    const env = buildSessionEnv(snapshot.settings.localDayBoundary);
+    const command: CancelFocusSessionCommand = {
+      type: 'cancel_focus_session',
+      operationId: crypto.randomUUID(),
+      cellId: cell.id,
+    };
+    void dispatch(command, env, repository);
+  };
+
+  return (
+    <section aria-label="Generator">
+      <h2>Generator</h2>
+      <p>
+        Session in progress: <SessionTimer startedAt={activeSession.startedAt} />
+      </p>
+      {tooShort ? (
+        <p role="status">Session too short to record.</p>
+      ) : null}
+      <button type="button" onClick={handleFinish}>
+        Finish
+      </button>
+      <button type="button" onClick={handleCancel}>
+        Cancel
+      </button>
+    </section>
+  );
+}
