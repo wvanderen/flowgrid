@@ -192,24 +192,31 @@ test('set_core_allocation: valid 100-total split applies; invalid totals reject 
   expect(rejected.validationIssues.some((i) => i.code === 'invalid_core_allocation_total')).toBe(true);
 });
 
-test('log_rejuvenation, run_forge, install_module return not_implemented with unchanged state', () => {
+test('run_forge and install_module return not_implemented; log_rejuvenation is now a real handler', () => {
   const { ids, state } = buildStarterState('foundation-loop-not-impl');
   const env = createTestSimulationEnv({ now: NOW, localDate: LOCAL_DATE, seed: 'not-impl' });
 
+  // log_rejuvenation was a not_implemented stub through Phase 3; Phase 4 (plan 04-01)
+  // replaces it with a real handler. The starter snapshot has 0 Core Charge, so a
+  // rejuvenation applies as a no-op rest (REJ-03): a zero-gain RejuvenationRecord is
+  // appended, Integration/Module Tokens unchanged, one operation emitted.
   const rej = runSimulationCommand(
     state,
     {
       type: 'log_rejuvenation',
       operationId: `${ids.clientId}:op:rej-1`,
-      startedAt: NOW,
+      startedAt: '2026-01-01T00:00:00.000Z',
       endedAt: '2026-01-01T00:10:00.000Z',
     },
     env,
   );
-  expect(rej.status).toBe('not_implemented');
-  expect(rej.nextState).toBe(state);
-  expect(rej.economyEvents).toEqual([]);
-  expect(rej.operations).toEqual([]);
+  expect(rej.status).toBe('applied');
+  expect(rej.nextState).not.toBe(state);
+  expect(rej.nextState.core.integration).toBe(0);
+  expect(rej.nextState.core.moduleTokens).toBe(0);
+  expect(rej.nextState.rejuvenations).toHaveLength(1);
+  expect(rej.nextState.rejuvenations[0]?.chargeConsumed).toBe(0);
+  expect(rej.operations).toHaveLength(1);
 
   const forge = runSimulationCommand(
     state,

@@ -52,10 +52,18 @@ export const ACTIVATION_BOOST_COSTS = [50, 100, 200] as const;
 // REJ-04: derive the next Integration threshold from the monotonic moduleTokens
 // counter (Don't-Hand-Roll — never persist a nextThreshold field, it cannot drift).
 // Bounded because each grant increments moduleTokens, which advances the threshold.
+//
+// The curve is the iterative geometric sequence floor(prev * RATIO): 50, 75, 112, 168,
+// 252, ... Each step floors BEFORE multiplying the next, so the .5 fractional loss
+// compounds — this is what yields the documented 252 (not 253) at the 5th threshold.
+// The naive closed form floor(BASE * RATIO^n) would give 253 because it preserves the
+// fraction across exponents; the iterative floor matches the SPEC-mandated sequence.
 export function nextIntegrationThreshold(moduleTokens: number): number {
-  return Math.floor(
-    INTEGRATION_THRESHOLD_BASE * Math.pow(INTEGRATION_THRESHOLD_RATIO, moduleTokens),
-  );
+  let threshold = INTEGRATION_THRESHOLD_BASE;
+  for (let i = 0; i < moduleTokens; i++) {
+    threshold = Math.floor(threshold * INTEGRATION_THRESHOLD_RATIO);
+  }
+  return threshold;
 }
 
 // CORE-06: Energy cost to advance from `currentLevel` to the next, or null when at
