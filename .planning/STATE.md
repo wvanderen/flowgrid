@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 03
-current_phase_name: playable-generator-flowgrid
-status: verified
-stopped_at: Phase 4 context gathered
-last_updated: "2026-06-24T15:26:50.341Z"
+current_phase: 04
+current_phase_name: core-alternation-and-rejuvenation-economy
+status: planned
+stopped_at: Phase 4 planned (3 plans, 3 waves, plan-checker APPROVED)
+last_updated: "2026-06-24T16:05:00.000Z"
 last_activity: 2026-06-24
-last_activity_desc: Phase 03 verified after 03-05 gap-closure + human visual smoke
+last_activity_desc: Phase 04 planned — 3 vertical-slice plans, plan-checker approved after 1 revision (D-02 resume prompt)
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 11
+  total_plans: 14
   completed_plans: 11
   percent: 50
 ---
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-23)
 
 **Core value:** Tap a Cell, do a real thing, and feel that effort become visible, useful signal in a modular system that makes returning feel powerful and forgiving.
-**Current focus:** Phase 03 — playable-generator-flowgrid (verified complete; ready for Phase 04)
+**Current focus:** Phase 04 — core-alternation-and-rejuvenation-economy (planned; ready for execution)
 
 ## Current Position
 
-Phase: 03 (playable-generator-flowgrid) — VERIFIED COMPLETE
-Plan: 5 of 5 (gap-closure 03-05 landed; all 15 UAT tests pass)
-Status: Ready for Phase 4
-Last activity: 2026-06-24 — Phase 03 verified after 03-05 gap-closure + human visual smoke
+Phase: 04 (core-alternation-and-rejuvenation-economy) — PLANNED
+Plan: 3 plans across 3 waves (04-01 simulation truth, 04-02 durable spine, 04-03 browser-playable UI + return cues)
+Status: Ready for execution
+Last activity: 2026-06-24 — Phase 04 planned (3 vertical-slice plans, plan-checker APPROVED after 1 revision closing D-02 resume-prompt gap)
 
 Progress: [██████░░░░] 50%
 
@@ -106,6 +106,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-24T15:26:50.333Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-core-alternation-and-rejuvenation-economy/04-CONTEXT.md
+Last session: 2026-06-24T16:05:00.000Z
+Stopped at: Phase 4 planned (3 plans, 3 waves, plan-checker APPROVED)
+Resume file: .planning/phases/04-core-alternation-and-rejuvenation-economy/04-01-PLAN.md
