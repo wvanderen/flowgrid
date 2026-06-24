@@ -77,6 +77,19 @@ export function startFocusSession(
     }
   }
 
+  // Phase 4 Pitfall 2 (cross-type mutual exclusion): a focus session also cannot
+  // start while a rejuvenation session is in progress. Rest XOR focus, app-wide.
+  if (issues.length === 0 && previousState.core.activeRejuvenationStartedAt !== null) {
+    issues.push({
+      code: 'invalid_reference',
+      severity: 'error',
+      entityType: 'core',
+      entityId: previousState.core.id,
+      message: `start_focus_session: a rejuvenation session is already in progress.`,
+      path: 'state.core.activeRejuvenationStartedAt',
+    });
+  }
+
   if (issues.length > 0) {
     return rejectWith(previousState, issues);
   }

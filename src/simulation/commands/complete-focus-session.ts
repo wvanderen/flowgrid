@@ -51,7 +51,7 @@ import { hasStarterModulesForCell } from '../systems/modules.js';
 import { findRoutesFromCellToCore, routeCurrentThroughRoutes } from '../systems/routes.js';
 import { isCoreAllocationValid } from '../systems/core-allocation.js';
 import { operationFromCommand } from '../operation-events.js';
-import { ACTIVATION_CURRENT_BONUS_PERCENT } from '../../content/index.js';
+import { activationBonusPercent } from '../../content/index.js';
 
 function rejectWith(
   state: FlowgridSnapshot,
@@ -155,10 +155,14 @@ export function completeFocusSession(
   // D-15 / SIM-07: Activation +% Current bonus. When the Cell already bloomed today
   // (lastBloomLocalDate === env.localDate) it is "Activated" and earns extra Current.
   // XP is NOT bonused. The bonus uses integer multiply-then-floor discipline (S7).
+  // CORE-06 (Phase 4): the bonus PERCENT is now derived from the persisted
+  // activationBoostLevel so the purchased upgrade takes effect here. Level 0 yields
+  // the Phase-3 baseline of 10% (Pitfall 6 backward-compat — existing tests stay green).
   const baseCurrent = generateCurrent(command.durationSeconds);
   const isActivatedToday = previousCell.lastBloomLocalDate === env.localDate;
+  const activationBonusPct = activationBonusPercent(previousState.core.activationBoostLevel);
   const currentGenerated = isActivatedToday
-    ? baseCurrent + Math.floor((baseCurrent * ACTIVATION_CURRENT_BONUS_PERCENT) / 100)
+    ? baseCurrent + Math.floor((baseCurrent * activationBonusPct) / 100)
     : baseCurrent;
   const xpGained = generateXp(command.durationSeconds);
 

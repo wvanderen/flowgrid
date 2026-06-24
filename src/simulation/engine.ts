@@ -6,12 +6,8 @@
 
 import type {
   FlowgridSnapshot,
-  LogRejuvenationCommand,
   RunForgeCommand,
   InstallModuleCommand,
-  StartRejuvenationCommand,
-  CancelRejuvenationCommand,
-  PurchaseActivationBoostCommand,
   SimulationCommand,
   SimulationEnv,
   SimulationResult,
@@ -26,6 +22,10 @@ import { archiveCell } from './commands/archive-cell.js';
 import { unarchiveCell } from './commands/unarchive-cell.js';
 import { startFocusSession } from './commands/start-focus-session.js';
 import { cancelFocusSession } from './commands/cancel-focus-session.js';
+import { logRejuvenation } from './commands/log-rejuvenation.js';
+import { startRejuvenation } from './commands/start-rejuvenation.js';
+import { cancelRejuvenation } from './commands/cancel-rejuvenation.js';
+import { purchaseActivationBoost } from './commands/purchase-activation-boost.js';
 
 export function runSimulationCommand(
   previousState: FlowgridSnapshot,
@@ -50,68 +50,18 @@ export function runSimulationCommand(
     case 'cancel_focus_session':
       return cancelFocusSession(previousState, command, env);
     case 'log_rejuvenation':
-      return logRejuvenationNotImplemented(previousState, command);
+      return logRejuvenation(previousState, command, env);
     case 'start_rejuvenation':
-      return startRejuvenationNotImplemented(previousState, command);
+      return startRejuvenation(previousState, command, env);
     case 'cancel_rejuvenation':
-      return cancelRejuvenationNotImplemented(previousState, command);
+      return cancelRejuvenation(previousState, command, env);
     case 'purchase_activation_boost':
-      return purchaseActivationBoostNotImplemented(previousState, command);
+      return purchaseActivationBoost(previousState, command, env);
     case 'run_forge':
       return runForgeNotImplemented(previousState, command);
     case 'install_module':
       return installModuleNotImplemented(previousState, command);
   }
-}
-
-function logRejuvenationNotImplemented(
-  state: FlowgridSnapshot,
-  command: LogRejuvenationCommand,
-): SimulationResult {
-  return notImplementedResult(
-    state,
-    command.operationId,
-    command.type,
-    'log_rejuvenation is not implemented until Phase 4 (Core Alternation and Rejuvenation Economy).',
-  );
-}
-
-// Phase 4 stubs — Task 2 replaces each with its real handler. Kept here so the
-// dispatcher's exhaustive switch compiles at the Task 1 type-layer boundary.
-function startRejuvenationNotImplemented(
-  state: FlowgridSnapshot,
-  command: StartRejuvenationCommand,
-): SimulationResult {
-  return notImplementedResult(
-    state,
-    command.operationId,
-    command.type,
-    'start_rejuvenation is not implemented until Phase 4 (plan 04-01 Task 2).',
-  );
-}
-
-function cancelRejuvenationNotImplemented(
-  state: FlowgridSnapshot,
-  command: CancelRejuvenationCommand,
-): SimulationResult {
-  return notImplementedResult(
-    state,
-    command.operationId,
-    command.type,
-    'cancel_rejuvenation is not implemented until Phase 4 (plan 04-01 Task 2).',
-  );
-}
-
-function purchaseActivationBoostNotImplemented(
-  state: FlowgridSnapshot,
-  command: PurchaseActivationBoostCommand,
-): SimulationResult {
-  return notImplementedResult(
-    state,
-    command.operationId,
-    command.type,
-    'purchase_activation_boost is not implemented until Phase 4 (plan 04-01 Task 2).',
-  );
 }
 
 function runForgeNotImplemented(

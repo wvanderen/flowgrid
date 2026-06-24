@@ -129,3 +129,42 @@ export function stateValidatedEvent(
     ECONOMY_EVENT_NAMES.stateValidated,
   );
 }
+
+// --- Phase 4 economy event constructors ---
+
+export function rejuvenationCompletedEvent(
+  at: IsoDateTimeString,
+  coreId: string,
+  rejuvenationId: string,
+  chargeConsumed: number,
+  integrationGained: number,
+): EconomyEvent {
+  return make(
+    { at, entityType: 'core', entityId: coreId, payload: { rejuvenationId, chargeConsumed, integrationGained } },
+    ECONOMY_EVENT_NAMES.rejuvenationCompleted,
+  );
+}
+
+export function tokenGrantedEvent(
+  at: IsoDateTimeString,
+  coreId: string,
+  tokensGranted: number,
+  moduleTokensAfter: number,
+): EconomyEvent {
+  return make(
+    { at, entityType: 'core', entityId: coreId, payload: { tokensGranted, moduleTokensAfter } },
+    ECONOMY_EVENT_NAMES.tokenGranted,
+  );
+}
+
+export function activationBoostPurchasedEvent(
+  at: IsoDateTimeString,
+  coreId: string,
+  energyCost: number,
+  newLevel: number,
+): EconomyEvent {
+  return make(
+    { at, entityType: 'core', entityId: coreId, payload: { energyCost, newLevel } },
+    ECONOMY_EVENT_NAMES.activationBoostPurchased,
+  );
+}
