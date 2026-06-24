@@ -45,7 +45,7 @@ vi.mock('../../src/ui/flowgrid-home/ArchivedCellsFilter.js', () => ({
 import { FlowgridHome } from '../../src/ui/flowgrid-home/FlowgridHome.js';
 import { flowgridStore } from '../../src/app/store/flowgrid-store.js';
 import { buildStarterSnapshot } from '../helpers/fixtures.js';
-import type { CellRecord, FlowgridSnapshot } from '../../src/domain/index.js';
+import type { FlowgridSnapshot } from '../../src/domain/index.js';
 
 // Render FlowgridHome inside a memory-router-backed RouterProvider so `useNavigate`
 // has the context it needs. Tests that need to assert navigation would extend

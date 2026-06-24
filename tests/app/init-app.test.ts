@@ -18,7 +18,6 @@ import { buildStarterSnapshot } from '../helpers/fixtures.js';
 import { flowgridStore } from '../../src/app/store/flowgrid-store.js';
 import { initApp } from '../../src/app/store/dispatch.js';
 
-const NOW = '2026-06-23T10:00:00.000Z';
 const YESTERDAY_DATE = '2026-06-22';
 
 function resetStore(): void {
