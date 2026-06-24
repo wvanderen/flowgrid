@@ -37,9 +37,9 @@ Downstream agents MUST read `04-SPEC.md` before planning or implementing. Requir
 - Cloud sync reconciliation — v1 local-first; operation rows still emitted.
 - Editing the Core upgrade beyond the single Activation-bonus boost.
 
-### ⚠ SPEC R3 AMENDMENT (supersedes SPEC R3 + Interview Log Round 1)
+### ⚠ SPEC R3 AMENDMENT (supersedes original SPEC R3 + Interview Log Round 1)
 
-**The user re-opened SPEC R3 during discussion.** The SPEC as written makes rejuvenation payout `f(available Core Charge)` with duration as a history-only artifact. **This is superseded:** payout is now **duration-gated**. Planner and researcher MUST plan/research to the amended mechanic, and the SPEC R3 acceptance criteria must be read as amended.
+**The user re-opened SPEC R3 during discussion.** The original SPEC made rejuvenation payout `f(available Core Charge)` with duration as a history-only artifact. **This is superseded:** payout is now **duration-gated**. `04-SPEC.md` has been **updated directly** to reflect this (R3, its Acceptance line, the Acceptance Criteria bullets, Constraints, Edge Coverage R1 rows, and Interview Log all amended on 2026-06-24), so SPEC and this CONTEXT now agree — read either. The canonical mechanic is:
 
 - **Mechanic:** `chargeProcessed = min(core.coreCharge, floor(durationMinutes × REJUVENATION_CHARGE_PER_MINUTE))` where `REJUVENATION_CHARGE_PER_MINUTE = 10` (new content constant in `src/content`, tunable).
 - `integrationGained = floor(chargeProcessed / 2)` (the 2:1 ratio is RETAINED).

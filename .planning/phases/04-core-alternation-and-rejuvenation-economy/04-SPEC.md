@@ -1,12 +1,15 @@
 # Phase 4: Core Alternation and Rejuvenation Economy — Specification
 
 **Created:** 2026-06-24
+**Amended:** 2026-06-24 (during `/gsd-discuss-phase 4` — see `04-CONTEXT.md` `<spec_lock>`)
 **Ambiguity score:** 0.13 (gate: ≤ 0.20)
 **Requirements:** 9 locked
 
+> ⚠ **AMENDMENT (2026-06-24):** Requirement R3 and its mechanics were re-opened during phase discussion. Rejuvenation payout is now **duration-gated** (a live timed session whose duration caps how much Core Charge is processed), NOT `f(available Charge)` with duration as a history-only artifact as originally written. R3, its Acceptance line, the Acceptance Criteria bullets, Constraints (Integer discipline + Tunability), the Edge Coverage R1 rows, and Interview Log rows for Rounds 1 & 3 have been updated below. The 2:1 ratio, geometric threshold curve (50, 75, 112 …), 0-Charge no-op rest, and all other requirements are UNCHANGED.
+
 ## Goal
 
-User can route Cell effort into the Core (already-working Current→Energy/Core Charge split), see and adjust that economy in a Core panel, spend Energy on an Activation-bonus upgrade, and process prior activity through rejuvenation that consumes stored Core Charge into Integration and grants Module Tokens at geometric thresholds — with a Core panel, rejuvenation summary, and contextual return cues completing the activity/rest alternation loop.
+User can route Cell effort into the Core (already-working Current→Energy/Core Charge split), see and adjust that economy in a Core panel, spend Energy on an Activation-bonus upgrade, and process prior activity through a **live-timed rejuvenation session whose duration gates how much stored Core Charge is converted into Integration** and grants Module Tokens at geometric thresholds — with a Core panel, rejuvenation summary, and contextual return cues completing the activity/rest alternation loop.
 
 ## Background
 
@@ -16,7 +19,7 @@ The simulation scaffolding for this phase is largely already in place from Phase
 - `applyCoreAllocation` + `splitCoreCurrent` already split incoming Current into Energy + Core Charge with integer floor-once discipline (`src/simulation/systems/core-allocation.ts`, `src/content/formulas.ts:59`).
 - `set_core_allocation` is fully implemented and enforces the `convert + store === 100` invariant (`src/simulation/commands/set-core-allocation.ts`).
 - `complete_focus_session` already routes Cell Current → Core via the Output route and applies the allocation split — Energy and Core Charge already increment on focus completion (`src/simulation/commands/complete-focus-session.ts:188-192`).
-- `LogRejuvenationCommand` is typed `{ type, operationId, durationSeconds }` but returns `not_implemented` (`src/simulation/engine.ts:49-50`).
+- `LogRejuvenationCommand` is typed `{ type, operationId, durationSeconds }` but returns `not_implemented` (`src/simulation/engine.ts:49-50`). **(Amendment: the live-timed model requires the command carry session timing — `startedAt`/`endedAt` from which `durationMinutes = floor((endedAt − startedAt)/60000)` is derived, or an equivalent deterministic duration input. Exact input shape is the planner's call per `04-CONTEXT.md` D-04.)
 - Invariants already guard `integration` / `moduleTokens` non-negativity and `token_regression` (monotonic Module Tokens) (`src/domain/invariants.ts:68-69,219`).
 - UI exists only for `FlowgridHome` + `CellBoard`; there is no Core panel, no rejuvenation UI, and no return-cue surface.
 
@@ -34,10 +37,15 @@ The simulation scaffolding for this phase is largely already in place from Phase
    - Target: allocation is editable from the Core panel; invalid totals are rejected and the rejection is surfaced to the user.
    - Acceptance: setting 50/50 applies; 30/70 applies; 30/50 (sum 80) is rejected with `invalid_core_allocation_total` and state is unchanged; the rejection message is shown in the UI.
 
-3. **Rejuvenation command — consume Charge into Integration (REJ-01, REJ-02, REJ-03)**: `log_rejuvenation` consumes stored Core Charge into Integration at a 2:1 ratio (2 Core Charge → 1 Integration), decrements Core Charge by the consumed (even) amount, retains any odd remainder, and applies as a no-op rest (still appends a record with zero gains) when Core Charge is zero so rest is honored without being rewarded.
+3. **Rejuvenation command — duration-gated Charge → Integration (REJ-01, REJ-02, REJ-03)** *(AMENDED 2026-06-24)*: `log_rejuvenation` is a **live timed session** (mirrors focus: start → timer → finish). At finish it processes stored Core Charge into Integration at a duration-gated rate, capped by available Core Charge. Concretely, with `REJUVENATION_CHARGE_PER_MINUTE = 10` (content constant) and `durationMinutes = floor(durationSeconds / 60)`:
+   - `chargeProcessedRaw = min(core.coreCharge, floor(durationMinutes × REJUVENATION_CHARGE_PER_MINUTE))`
+   - `integrationGained = floor(chargeProcessedRaw / 2)`  *(the 2:1 ratio is retained)*
+   - `chargeConsumed = integrationGained × 2`  *(consumption snaps to the even 2:1 grid)*
+   - `core.coreCharge -= chargeConsumed`  *(any odd Core Charge below the 2:1 step is naturally retained)*
+   - At `core.coreCharge === 0` it still applies as a **no-op rest** — appends a record with `chargeConsumed=0`, `integrationGained=0`, `tokensGranted=0` — so rest is honored without being rewarded (REJ-03 / rest-farming guard preserved: no prior activity ⇒ no meaningful reward regardless of duration).
    - Current: `log_rejuvenation` returns `not_implemented`; no Charge is ever consumed; no Integration is ever produced.
-   - Target: `log_rejuvenation` is implemented, deterministic, returns a full `SimulationResult`, decrements Core Charge by `2 × floor(C/2)`, adds `floor(C/2)` Integration, and appends a `RejuvenationRecord`. At C=0 it applies and appends a record with `chargeConsumed=0`, `integrationGained=0`, `tokensGranted=0`.
-   - Acceptance: with 100 Core Charge, one rejuvenation yields 50 Integration and leaves 0 Core Charge; with 101 Core Charge, yields 50 Integration and leaves 1 Core Charge (retained remainder); with 0 Core Charge, applies and appends a record with all-zero gains and Integration/Module Tokens unchanged.
+   - Target: `log_rejuvenation` is implemented, deterministic, returns a full `SimulationResult`, computes the four values above, decrements Core Charge by `chargeConsumed`, adds `integrationGained` Integration (then runs the R4 threshold-grant loop), and appends a `RejuvenationRecord`.
+   - Acceptance: with 100 Core Charge and ≥10 min rest → 50 Integration, 0 Core Charge remaining (full processing); with 100 Core Charge and 5 min rest → 25 Integration (50 Charge processed), 50 Core Charge remaining (partial, capped by duration); with 101 Core Charge and ≥11 min rest → 50 Integration, 1 Core Charge retained (odd remainder); with 0 Core Charge and any duration → applies and appends a record with all-zero gains, Integration/Module Tokens unchanged.
 
 4. **Integration → Module Tokens — geometric thresholds (REJ-04)**: Integration progresses toward a geometric threshold curve starting at 50 and multiplying by 1.5 each subsequent token, with each threshold `Math.floor`-ed (50, 75, 112, 168, 252 …). Each crossed threshold grants exactly one Module Token and advances the next threshold; a single rejuvenation that crosses multiple thresholds grants all crossed tokens.
    - Current: `integration` and `moduleTokens` fields exist but are never incremented; no threshold logic exists.
@@ -91,21 +99,22 @@ The simulation scaffolding for this phase is largely already in place from Phase
 
 ## Constraints
 
-- **Integer economy discipline**: all Charge consumption, Integration, Module Token, Energy, and cost math uses integer multiply-then-floor; no floating-point durable values (PROJECT.md economy safety). The 2:1 ratio consumes `2 × floor(C/2)` and retains the odd remainder; thresholds are `Math.floor`-ed.
+- **Integer economy discipline**: all Charge consumption, Integration, Module Token, Energy, and cost math uses integer multiply-then-floor; no floating-point durable values (PROJECT.md economy safety). Rejuvenation processes Charge at a duration-gated rate (`chargeProcessedRaw = min(coreCharge, floor(durationMinutes × REJUVENATION_CHARGE_PER_MINUTE))`), converts at 2:1 (`integrationGained = floor(chargeProcessedRaw / 2)`, `chargeConsumed = integrationGained × 2`, odd remainder retained); thresholds are `Math.floor`-ed. *(AMENDED 2026-06-24 — was `consume 2 × floor(C/2)`; now duration-gated, see R3.)*
 - **Deterministic & replayable**: `log_rejuvenation` and the upgrade command must be exactly replayable (same inputs → same `SimulationResult`), matching the Phase 1 replay contract. Rejuvenation record ids are 1:1 with `operationId`.
 - **Economy safety (PROJECT.md)**: no negative resources (guarded by existing `invariants.ts` + Zod nonnegative schemas); no token duplication; Module Tokens and Integration are monotonic (never decrease); the threshold sequence only advances; no free upgrade levels.
 - **History is sacred**: `RejuvenationRecord` rows are append-only; never mutated or deleted after creation (parallels `SessionRecord`).
 - **Boundary rules**: domain/simulation must not import DOM/React/Pixi/Dexie (enforced by the existing boundary scanner test); UI dispatches commands and reads selectors, never computes economy rules; Pixi is not imported from UI panels.
 - **Protected core interaction**: `open app → tap Cell → start session` must stay easy; the new Core panel and return cues must not obstruct the Generator flow on FlowgridHome.
-- **Tunability**: the 2:1 ratio, threshold base (50) and ratio (1.5), upgrade costs (50/100/200), per-level bonus (+5), and cap (3) are content constants (in `src/content`), not hardcoded in command handlers.
+- **Tunability**: the rejuvenation processing rate (`REJUVENATION_CHARGE_PER_MINUTE = 10`), 2:1 ratio, threshold base (50) and ratio (1.5), upgrade costs (50/100/200), per-level bonus (+5), and cap (3) are content constants (in `src/content`), not hardcoded in command handlers. *(AMENDED 2026-06-24 — added `REJUVENATION_CHARGE_PER_MINUTE`.)*
 
 ## Acceptance Criteria
 
 - [ ] Completing a focus session increments `core.energy` and/or `core.coreCharge` per the floored allocation split, visible in the Core panel.
 - [ ] Core panel allocation control applies valid splits (e.g. 50/50, 30/70) and rejects invalid totals (e.g. 30/50) with a surfaced message and unchanged state.
-- [ ] `log_rejuvenation` with 100 Core Charge yields 50 Integration, 0 remaining Core Charge.
-- [ ] `log_rejuvenation` with 101 Core Charge yields 50 Integration, 1 retained Core Charge (odd remainder not lost).
-- [ ] `log_rejuvenation` with 0 Core Charge applies and appends a `RejuvenationRecord` with `chargeConsumed=0`, `integrationGained=0`, `tokensGranted=0` (rest honored, not rewarded).
+- [ ] `log_rejuvenation` with 100 Core Charge and ≥10 min rest yields 50 Integration and 0 remaining Core Charge (full processing). *(AMENDED — duration-gated.)*
+- [ ] `log_rejuvenation` with 100 Core Charge and 5 min rest yields 25 Integration (50 Charge processed) and leaves 50 Core Charge (partial, capped by duration).
+- [ ] `log_rejuvenation` with 101 Core Charge and ≥11 min rest yields 50 Integration and retains 1 Core Charge (odd remainder not lost).
+- [ ] `log_rejuvenation` with 0 Core Charge and any duration applies and appends a `RejuvenationRecord` with `chargeConsumed=0`, `integrationGained=0`, `tokensGranted=0` (rest honored, not rewarded — REJ-03).
 - [ ] Integration crossing the first threshold (≥50) grants exactly 1 Module Token; crossing from 0 to ≥125 grants exactly 2 tokens (multi-threshold grant).
 - [ ] Integration and Module Tokens never decrease across any sequence of commands; the threshold sequence is `50, 75, 112, 168, 252`.
 - [ ] Energy upgrade: at level 0 with ≥50 Energy, purchase succeeds (Energy −50, level 1); the next activated focus session earns `+15%` Current.
@@ -123,8 +132,8 @@ The simulation scaffolding for this phase is largely already in place from Phase
 
 | Category | Requirement | Status | Resolution / Reason |
 |----------|-------------|--------|---------------------|
-| boundary | R1 | ✅ covered | 0 Charge → no-op rest (zero-gain record); one step either side of a threshold handled by the grant loop |
-| precision | R1 | ✅ covered | Integration = `floor(C/2)`; consume `2×floor(C/2)`; odd remainder retained |
+| boundary | R1 | ✅ covered | 0 Charge → no-op rest (zero-gain record); duration cap → processes at most `floor(durationMinutes × 10)` Charge; one step either side of a threshold handled by the grant loop *(AMENDED 2026-06-24)* |
+| precision | R1 | ✅ covered | `chargeProcessedRaw = min(coreCharge, floor(minutes × 10))`; `integrationGained = floor(raw / 2)`; `chargeConsumed = integrationGained × 2`; odd remainder retained *(AMENDED 2026-06-24 — was `consume 2×floor(C/2)`)* |
 | boundary | R2 | ✅ covered | Single rejuvenation crossing N thresholds grants N tokens (loop while integration ≥ nextThreshold) |
 | adjacency | R2 | ✅ covered | `integration === nextThreshold` grants the token (≥ comparison) |
 | empty | R2 | ✅ covered | 0 Integration → 0 tokens granted |
@@ -175,24 +184,29 @@ Status: ✓ = met minimum, ⚠ = below minimum (planner treats as assumption)
 
 ## Interview Log
 
+> ℹ Rows below record the original `/gsd-spec-phase` decisions. Two are now **superseded** by the discuss-phase amendment (see the "Disc" rows at the bottom and the ⚠ banner at the top of this file). The Requirements, Acceptance Criteria, and Constraints sections are the source of truth where they disagree with this historical log.
+
 | Round | Perspective      | Question summary                                                        | Decision locked                                                                                  |
 |-------|------------------|-------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| 1     | Researcher       | What does rejuvenation consume/transform?                               | Consumes stored Core Charge → Integration (Charge-based rate; duration logged for history only)  |
+| 1     | Researcher       | What does rejuvenation consume/transform?                               | ~~Consumes stored Core Charge → Integration (Charge-based rate; duration logged for history only)~~ ⚠ SUPERSEDED — see Disc row |
 | 1     | Researcher       | What does Energy buy in Phase 4 (Forge is Phase 5)?                     | A single early upgrade (later specified as Activation bonus boost)                               |
 | 1     | Researcher       | Integration threshold curve shape?                                      | Geometric (increasing): each token costs more than the last                                      |
 | 2     | Simplifier       | Concretely, what is the upgrade (cost/effect/repeat)?                   | Activation bonus boost, multi-level cap 3, scaling cost, stacks on base constant                 |
 | 2     | Researcher       | Does rejuvenation create a history record or just mutate Core?          | Append-only `RejuvenationRecord` (history is sacred, parallels sessions)                         |
 | 2     | Boundary Keeper  | Where do UI-07 return cues live?                                        | Extend FlowgridHome inline (no new route)                                                        |
-| 3     | Boundary Keeper  | Concrete rejuvenation numbers (rate + threshold)?                       | 2 Core Charge → 1 Integration; first token at 50, ×1.5 each                                      |
+| 3     | Boundary Keeper  | Concrete rejuvenation numbers (rate + threshold)?                       | ~~2 Core Charge → 1 Integration; first token at 50, ×1.5 each~~ ⚠ SUPERSEDED — see Disc row (2:1 retained; rate now duration-gated) |
 | 3     | Boundary Keeper  | Upgrade: one-time or multi-level; stack or replace?                     | 3 levels, scaling Energy cost (50/100/200), each +5, derived bonus = base + level×5              |
 | 3     | Boundary Keeper  | Rejuvenation with 0 Core Charge?                                        | Applies as no-op rest (appends zero-gain record); rest honored, not rewarded                     |
 | Edge  | Failure Analyst  | Leftover odd Charge + threshold rounding?                               | Retain odd remainder; `Math.floor` each threshold (50, 75, 112, 168, 252)                        |
 | Edge  | Failure Analyst  | Multi-threshold crossing in one rest?                                   | Grant ALL crossed tokens (loop while integration ≥ nextThreshold)                                |
 | Edge  | Failure Analyst  | What triggers UI-07 return cues ("a gap")?                              | Contextual — appear whenever actionable economy state exists (not time-gated)                    |
 | Proh  | Failure Analyst  | Six must-NOT candidates (rest-farming, dup tokens, reset, free levels, append-only, shame language)? | All six minted as negative acceptance criteria (5 test-tier, 1 judgment-tier)                  |
+| Disc  | Visionary (discuss-phase 2026-06-24) | Rejuvenation interaction model?                              | **Live timed session** (mirrors focus: start → timer → finish); one active session app-wide (rest XOR focus) |
+| Disc  | Visionary (discuss-phase 2026-06-24) | Re-open R3: should payout be f(Charge) or f(duration)?       | **Duration-gated** — `chargeProcessedRaw = min(coreCharge, floor(durationMinutes × 10))`; `integrationGained = floor(raw/2)`; `chargeConsumed = integrationGained × 2`; 2:1 ratio, threshold curve, 0-Charge no-op rest all RETAINED. Supersedes Round 1 & Round 3 rate decisions. (See `04-CONTEXT.md` D-01..D-04.) |
 
 ---
 
 *Phase: 04-core-alternation-and-rejuvenation-economy*
 *Spec created: 2026-06-24*
-*Next step: /gsd-discuss-phase 4 — implementation decisions (Dexie migration shape, command/result extensions, Core panel route vs. section, upgrade command naming, etc.)*
+*Amended: 2026-06-24 (during `/gsd-discuss-phase 4` — R3 rejuvenation mechanics re-opened to duration-gated payout; see `04-CONTEXT.md`)*
+*Next step: `/gsd-plan-phase 4`*
