@@ -178,6 +178,9 @@ export function completeFocusSession(
     // Current is added then immediately routed to the Core below; net change is 0
     // for Phase 1 starter (no Cell-side Charge storage in the foundation loop).
     current: previousCell.current,
+    // The session is over: clear the active marker so deriveActiveSession() stops
+    // projecting it and the GeneratorTile returns to the idle Start state.
+    activeSessionStartedAt: null,
     updatedAt: env.now,
   };
 

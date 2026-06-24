@@ -15,6 +15,7 @@ import { test, expect } from 'vitest';
 import type {
   CancelFocusSessionCommand,
   CellRecord,
+  CompleteFocusSessionCommand,
   FlowgridSnapshot,
   StartFocusSessionCommand,
 } from '../../src/domain/index.js';
@@ -208,4 +209,41 @@ test('cancel_focus_session: is exactly replayable', () => {
   const a = runSimulationCommand(active, command, envA);
   const b = runSimulationCommand(active, command, envB);
   expectReplayEqual(a, b);
+});
+
+test('complete_focus_session: clears activeSessionStartedAt so the session visually ends', () => {
+  // Regression for UAT test 15 root cause 3a (Gap A): complete_focus_session appended
+  // the SessionRecord but never cleared cell.activeSessionStartedAt, so
+  // deriveActiveSession() kept projecting the session as active after Finish and
+  // the GeneratorTile stayed stuck in the in-progress state.
+  const { ids, state } = buildStarterSnapshot('complete-session-clears-marker');
+  const active = snapshotWithCell(state, { activeSessionStartedAt: '2026-01-04T13:00:00.000Z' });
+  const env = createTestSimulationEnv({ now: NOW, localDate: LOCAL_DATE, seed: 'complete-session' });
+
+  const command: CompleteFocusSessionCommand = {
+    type: 'complete_focus_session',
+    operationId: `${ids.clientId}:op:complete-1`,
+    cellId: ids.cellId,
+    startedAt: '2026-01-04T13:00:00.000Z',
+    endedAt: NOW,
+    durationSeconds: 3600,
+  };
+
+  const result = runSimulationCommand(active, command, env);
+
+  expect(result.status, 'complete with a positive integer duration is applied').toBe('applied');
+
+  // THIS IS THE REGRESSION — the marker must clear so the session visually ends.
+  // Pre-fix this assertion failed (the marker stayed at the startedAt timestamp).
+  const cell = result.nextState.cells.get(ids.cellId) as CellRecord;
+  expect(cell.activeSessionStartedAt).toBeNull();
+
+  // The session was appended — exactly one new SessionRecord.
+  expect(result.nextState.sessions).toHaveLength(active.sessions.length + 1);
+
+  // One SyncOperation recorded (complete_focus_session writes exactly one).
+  expect(result.operations).toHaveLength(1);
+  expect(result.operations[0]?.commandType).toBe('complete_focus_session');
+
+  expectValidState(result.nextState);
 });
