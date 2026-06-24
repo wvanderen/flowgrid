@@ -47,14 +47,14 @@
 - [ ] **CORE-03**: The Core can convert incoming Current into spendable Energy.
 - [ ] **CORE-04**: The Core can store incoming Current as Core Charge.
 - [ ] **CORE-05**: User can see Energy, Core Charge, allocation settings, Integration progress, Module Tokens, and useful next actions in Core-oriented UI.
-- [ ] **CORE-06**: User can spend Energy on a small set of early upgrades or forge-related actions.
+- [x] **CORE-06**: User can spend Energy on a small set of early upgrades or forge-related actions.
 
 ### Rejuvenation
 
-- [ ] **REJ-01**: User can log or complete a rejuvenation session.
-- [ ] **REJ-02**: Rejuvenation processes existing Core Charge into Integration progress.
-- [ ] **REJ-03**: Rejuvenation cannot create meaningful Module Token progress without prior Core Charge from activity.
-- [ ] **REJ-04**: Integration thresholds grant Module Tokens and advance the next threshold.
+- [x] **REJ-01**: User can log or complete a rejuvenation session.
+- [x] **REJ-02**: Rejuvenation processes existing Core Charge into Integration progress.
+- [x] **REJ-03**: Rejuvenation cannot create meaningful Module Token progress without prior Core Charge from activity.
+- [x] **REJ-04**: Integration thresholds grant Module Tokens and advance the next threshold.
 - [ ] **REJ-05**: User can see how much Core Charge was processed and how close Integration is to the next Module Token.
 
 ### Modules and Forge
@@ -170,11 +170,11 @@
 | CORE-03 | Phase 4 | Pending |
 | CORE-04 | Phase 4 | Pending |
 | CORE-05 | Phase 4 | Pending |
-| CORE-06 | Phase 4 | Pending |
-| REJ-01 | Phase 4 | Pending |
-| REJ-02 | Phase 4 | Pending |
-| REJ-03 | Phase 4 | Pending |
-| REJ-04 | Phase 4 | Pending |
+| CORE-06 | Phase 4 | Complete |
+| REJ-01 | Phase 4 | Complete |
+| REJ-02 | Phase 4 | Complete |
+| REJ-03 | Phase 4 | Complete |
+| REJ-04 | Phase 4 | Complete |
 | REJ-05 | Phase 4 | Pending |
 | MOD-01 | Phase 1 | Pending |
 | MOD-02 | Phase 5 | Pending |

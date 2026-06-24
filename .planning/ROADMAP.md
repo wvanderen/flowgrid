@@ -112,11 +112,11 @@ Plans:
   4. User can log rejuvenation that processes existing Core Charge into Integration progress and cannot meaningfully progress without prior activity.
   5. Opening Flowgrid after a gap surfaces useful return cues such as stored Core Charge, available Energy, token progress, Cells near Bloom, and recent history without shame language.
 
-**Plans**: 3 plans
+**Plans**: 1/3 plans executed
 
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — Simulation truth: RejuvenationRecord + CoreRecord fields, rejuvenation command trio, Activation-boost upgrade, derived threshold system, invariants, simulation + property tests
+- [x] 04-01-PLAN.md — Simulation truth: RejuvenationRecord + CoreRecord fields, rejuvenation command trio, Activation-boost upgrade, derived threshold system, invariants, simulation + property tests
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -176,6 +176,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Deterministic Foundation Slice | 3/3 | Complete | 2026-06-23 |
 | 2. Durable Local-First Spine | 3/3 | Complete   | 2026-06-23 |
 | 3. Playable Generator Flowgrid | 5/5 | Complete   | 2026-06-24 |
-| 4. Core Alternation and Rejuvenation Economy | 0/TBD | Not started | - |
+| 4. Core Alternation and Rejuvenation Economy | 1/3 | In Progress|  |
 | 5. Module Forge and Starter Customization | 0/TBD | Not started | - |
 | 6. Hardening, Accessibility, and Trust | 0/TBD | Not started | - |

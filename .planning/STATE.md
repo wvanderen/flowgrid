@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 04
 current_phase_name: core-alternation-and-rejuvenation-economy
-status: planned
-stopped_at: Phase 4 planned (3 plans, 3 waves, plan-checker APPROVED)
-last_updated: "2026-06-24T16:05:00.000Z"
+status: executing
+stopped_at: Completed 04-01-PLAN.md (simulation truth slice)
+last_updated: "2026-06-24T17:00:45.001Z"
 last_activity: 2026-06-24
-last_activity_desc: Phase 04 planned — 3 vertical-slice plans, plan-checker approved after 1 revision (D-02 resume prompt)
+last_activity_desc: Phase 04 execution started
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 14
-  completed_plans: 11
+  completed_plans: 12
   percent: 50
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-23)
 
 **Core value:** Tap a Cell, do a real thing, and feel that effort become visible, useful signal in a modular system that makes returning feel powerful and forgiving.
-**Current focus:** Phase 04 — core-alternation-and-rejuvenation-economy (planned; ready for execution)
+**Current focus:** Phase 04 — core-alternation-and-rejuvenation-economy
 
 ## Current Position
 
-Phase: 04 (core-alternation-and-rejuvenation-economy) — PLANNED
-Plan: 3 plans across 3 waves (04-01 simulation truth, 04-02 durable spine, 04-03 browser-playable UI + return cues)
-Status: Ready for execution
-Last activity: 2026-06-24 — Phase 04 planned (3 vertical-slice plans, plan-checker APPROVED after 1 revision closing D-02 resume-prompt gap)
+Phase: 04 (core-alternation-and-rejuvenation-economy) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-06-24 — Phase 04 execution started
 
 Progress: [██████░░░░] 50%
 
@@ -64,6 +64,7 @@ Progress: [██████░░░░] 50%
 | Phase 02 P02 | 6min | 3 tasks | 5 files |
 | Phase 02 P03 | 19min | 5 tasks | 9 files |
 | Phase 03 P04 | 12min | 3 tasks | 15 files |
+| Phase 04 P01 | 16min | 3 tasks | 19 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,9 @@ Recent decisions affecting current work:
 - [Phase ?]: Plan 03-04: Single dark-theme body layer in @layer base (not per-route bg-flowgrid-bg) so every route section inherits the dark background; #root gets min-height: 100vh.
 - [Phase ?]: Plan 03-04: Did NOT flip 03-UAT.md test 2 from issue to pass — the plan defers that flip until the human visual smoke (npm run dev) confirms the styling renders; the autonomous agent verifies build green + root-cause closure (CSS bundle grows to 19.04kB).
 - [Phase 03]: Plan 03-05 (gap-closure): complete_focus_session never cleared activeSessionStartedAt — the original session-lifecycle suite covered start/cancel but not complete, so the "session continues after Finish" bug slipped through. One-line simulation fix + regression test (test #10 in session-lifecycle.test.ts). Also: rejected start_focus_session is now surfaced via lastRejection store field + disabled Start button with "Another focus session is active"; Cell Board happy path got a Home Link; Flowgrid scene container centered via container.x/y = app.screen.{width,height}/2. UAT tests 2/5/15 closure-ready pending human re-smoke.
+- [Phase ?]: Plan 04-01: iterative-floor threshold formula (50,75,112,168,252) over closed-form floor(50*1.5^n) which gave 253 at the 5th threshold, contradicting the SPEC
+- [Phase ?]: Plan 04-01: folded rejuvenation payout derivation inline into log-rejuvenation.ts (per plan Design note) rather than a separate src/simulation/systems/rejuvenation.ts module
+- [Phase ?]: Plan 04-01: SPEC R4 '>=125 grants 2 tokens' is mathematically inconsistent with its documented threshold sequence (112 < 125 -> 125 crosses 3 thresholds). Honored the threshold-sequence contract (stated 3x) and tested multi-threshold grant at Integration 75 (the actual 2nd threshold)
 
 ### Pending Todos
 
@@ -106,6 +110,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-24T16:05:00.000Z
-Stopped at: Phase 4 planned (3 plans, 3 waves, plan-checker APPROVED)
-Resume file: .planning/phases/04-core-alternation-and-rejuvenation-economy/04-01-PLAN.md
+Last session: 2026-06-24T16:59:48.977Z
+Stopped at: Completed 04-01-PLAN.md (simulation truth slice)
+Resume file: None
