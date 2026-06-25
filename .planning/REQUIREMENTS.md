@@ -61,11 +61,11 @@
 
 - [ ] **MOD-01**: Static ModuleDefinitions are versioned content separate from user-owned ModuleInstances.
 - [ ] **MOD-02**: User can inspect starter modules and understand their current behavior through normal UI controls.
-- [ ] **MOD-03**: User can spend a Module Token on a simple Module Forge roll that reveals three curated choices.
-- [ ] **MOD-04**: User can choose one Forge reward and persist it as an owned ModuleInstance, upgrade, or starter-slot enhancement.
-- [ ] **MOD-05**: Forge history records payment, offered choices, chosen reward, timestamp, and monotonic forge count.
+- [x] **MOD-03**: User can spend a Module Token on a simple Module Forge roll that reveals three curated choices.
+- [x] **MOD-04**: User can choose one Forge reward and persist it as an owned ModuleInstance, upgrade, or starter-slot enhancement.
+- [x] **MOD-05**: Forge history records payment, offered choices, chosen reward, timestamp, and monotonic forge count.
 - [ ] **MOD-06**: User can install or apply a v1 Forge reward into a curated starter slot without using a full patch editor.
-- [ ] **MOD-07**: Duplicate module install, invalid owner Cell, and invalid slot states are rejected by validation.
+- [x] **MOD-07**: Duplicate module install, invalid owner Cell, and invalid slot states are rejected by validation.
 
 ### Rendering and UI
 
@@ -89,8 +89,8 @@
 
 ### Verification
 
-- [ ] **VER-01**: Unit tests cover pure simulation commands for focus completion, Bloom, Activation, Core allocation, rejuvenation, Integration, Module Token grants, Forge, and validation failures.
-- [ ] **VER-02**: Property-based tests cover resource non-negativity, allocation normalization, idempotent operation IDs, duplicate prevention, monotonic forge count, and token non-duplication.
+- [x] **VER-01**: Unit tests cover pure simulation commands for focus completion, Bloom, Activation, Core allocation, rejuvenation, Integration, Module Token grants, Forge, and validation failures.
+- [x] **VER-02**: Property-based tests cover resource non-negativity, allocation normalization, idempotent operation IDs, duplicate prevention, monotonic forge count, and token non-duplication.
 - [x] **VER-03**: Persistence tests cover Dexie schema creation, migration fixtures, repository writes, append-only sessions, export, and restore validation.
 - [ ] **VER-04**: Browser tests cover the core user flow: create Cell, start/finish focus session, see Current/Bloom/Core effects, log rejuvenation, gain Module Token, run Forge, and reload with state preserved.
 - [ ] **VER-05**: Accessibility checks verify keyboard and semantic UI paths for all critical canvas-backed actions.
@@ -178,11 +178,11 @@
 | REJ-05 | Phase 4 | Complete |
 | MOD-01 | Phase 1 | Pending |
 | MOD-02 | Phase 5 | Pending |
-| MOD-03 | Phase 5 | Pending |
-| MOD-04 | Phase 5 | Pending |
-| MOD-05 | Phase 5 | Pending |
+| MOD-03 | Phase 5 | Complete |
+| MOD-04 | Phase 5 | Complete |
+| MOD-05 | Phase 5 | Complete |
 | MOD-06 | Phase 5 | Pending |
-| MOD-07 | Phase 5 | Pending |
+| MOD-07 | Phase 5 | Complete |
 | UI-01 | Phase 3 | Complete |
 | UI-02 | Phase 6 | Pending |
 | UI-03 | Phase 6 | Pending |
@@ -197,8 +197,8 @@
 | DATA-05 | Phase 2 | Complete |
 | DATA-06 | Phase 2 | Complete |
 | DATA-07 | Phase 2 | Complete |
-| VER-01 | Phase 1 | Pending |
-| VER-02 | Phase 1 | Pending |
+| VER-01 | Phase 1 | Complete |
+| VER-02 | Phase 1 | Complete |
 | VER-03 | Phase 2 | Complete |
 | VER-04 | Phase 6 | Pending |
 | VER-05 | Phase 6 | Pending |

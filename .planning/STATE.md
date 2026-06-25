@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 5
-current_phase_name: Module Forge and Starter Customization
+current_phase: 05
+current_phase_name: module-forge-and-starter-customization
 status: executing
 stopped_at: Phase 5 context gathered
-last_updated: "2026-06-25T15:41:18.184Z"
+last_updated: "2026-06-25T23:13:28.379Z"
 last_activity: 2026-06-25
-last_activity_desc: Phase 04 complete, transitioned to Phase 5
+last_activity_desc: Phase 05 execution started
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 17
+  completed_plans: 15
   percent: 67
 ---
 
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 ## Current Position
 
-Phase: 5 (Module Forge and Starter Customization) — READY TO PLAN
-Plan: Not started
+Phase: 05 (module-forge-and-starter-customization) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-06-25 — Phase 04 complete, transitioned to Phase 5
+Last activity: 2026-06-25 — Phase 05 execution started
 
 Progress: [████████████████████] 14/14 known plans (100%), 4/6 phases
 
@@ -68,6 +68,7 @@ Progress: [████████████████████] 14/14 k
 | Phase 04 P01 | 16min | 3 tasks | 19 files |
 | Phase 04 P02 | 10min | 2 tasks | 14 files |
 | Phase 04 P03 | 254min | 4 tasks | 10 files |
+| Phase 05 P01 | 71min | 3 tasks | 19 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,9 @@ Recent decisions affecting current work:
 - [Phase 04-03]: Apply Allocation kept always enabled (not disabled on sum!=100) so the SPEC smoke 'try 30/50 sum 80 and confirm rejection' is demonstrable in the browser - client inline sum hint AND dispatch surfaces invalid_core_allocation_total via lastRejection
 - [Phase 04-03]: RejuvenationResumePrompt is Core-scoped (no cellId), mirrors ResumeSessionPrompt (Resume -> navigate('/core'), Discard -> cancel_rejuvenation which writes nothing durable); D-02 mutual exclusion means the focus and rejuvenation resume prompts never mount simultaneously
 - [Phase 04-03]: Near-Bloom threshold = DEFAULT_SESSION_LENGTH_SECONDS (1500s = DEFAULT_DAILY_MILESTONE_TARGET_SECONDS) so '1 session from Bloom' reads accurately; RejuvenationTimer reuses SessionTimer's formatElapsed (import) to keep the cosmetic clock DRY and decoupled from durable truth (D-04)
+- [Phase 05-01]: D-04 A1/A2/A3 resolved as least-invasive — Charge Core boosts store-side rate, Output boosts routed amount, Bloom grants +1+level activation/momentum. None add new model fields or break the 100-sum allocation cap. All documented in code comments at application sites warning against the conflation/overflow anti-patterns.
+- [Phase 05-01]: createRng moved from src/app/rng.ts to src/simulation/rng.ts (canonical home) with app/rng.ts re-exporting — the prior simulation→app import violated the one-way architecture boundary enforced by tests/simulation/boundaries.test.ts.
+- [Phase 05-01]: slot_at_capacity handler check is defense-in-depth (the reveal filter makes it unreachable via normal dispatch); validateModuleLevelCap invariant backstop is the independent guard. Insufficient-payment reuses negative_resource; chosen-not-in-revealed reuses invalid_reference (RESEARCH A6 — minimum new ValidationIssueCode surface).
 
 ### Pending Todos
 
@@ -118,6 +122,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-25T14:48:30.082Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-module-forge-and-starter-customization/05-CONTEXT.md
+Last session: 2026-06-25T23:13:13.868Z
+Stopped at: Completed 05-01-PLAN.md (Module Forge simulation truth)
+Resume file: None
