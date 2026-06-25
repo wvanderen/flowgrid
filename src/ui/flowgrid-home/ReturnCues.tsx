@@ -13,7 +13,7 @@
 
 import { useNavigate } from 'react-router';
 
-import { DEFAULT_SESSION_LENGTH_SECONDS } from '../../content/index.js';
+import { DEFAULT_SESSION_LENGTH_SECONDS, forgeEnergyCost } from '../../content/index.js';
 import { useFlowgridStore } from '../../app/store/dispatch.js';
 
 // A Cell is "near Bloom" when its remaining daily-milestone seconds fit within one
@@ -35,6 +35,15 @@ export function ReturnCues() {
   const hasTokens = core.moduleTokens > 0;
   const hasRecentHistory = snapshot.sessions.length > 0;
 
+  // Phase 5 / D-12: Forge readiness. The chip surfaces when the user can afford at
+  // least one roll — either a Module Token OR enough Energy for the next cost
+  // (forgeEnergyCost(core.forgeCount), pure content derivation D-02). Pitfall 7:
+  // this chip lives in the ReturnCues rail ABOVE the canvas and navigates to
+  // /forge — it never intercepts the protected open app → tap Cell → start session
+  // flow on the FlowgridHome canvas below.
+  const nextForgeEnergyCost = forgeEnergyCost(core.forgeCount);
+  const canForge = hasTokens || core.energy >= nextForgeEnergyCost;
+
   // D-06: the closest-to-Bloom active Cell within one session of its milestone.
   const activeCells = [...snapshot.cells.values()].filter((c) => c.archivedAt === null);
   let nearBloomCell: { id: string; name: string } | null = null;
@@ -48,7 +57,7 @@ export function ReturnCues() {
   }
 
   // D-05: render nothing when there is no actionable state.
-  if (!hasCharge && !hasEnergy && !hasTokens && nearBloomCell === null && !hasRecentHistory) {
+  if (!hasCharge && !hasEnergy && !hasTokens && nearBloomCell === null && !hasRecentHistory && !canForge) {
     return null;
   }
 
@@ -70,6 +79,15 @@ export function ReturnCues() {
           className="text-sm text-core underline"
         >
           {nearBloomCell.name}: 1 session from Bloom
+        </button>
+      ) : null}
+      {canForge ? (
+        <button
+          type="button"
+          onClick={() => navigate('/forge')}
+          className="text-sm text-core underline"
+        >
+          Forge ready
         </button>
       ) : null}
       {hasRecentHistory ? (

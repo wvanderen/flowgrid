@@ -12,6 +12,8 @@ import { Link, useParams } from 'react-router';
 import type { ModuleDefinitionKind } from '../../domain/index.js';
 import { getCellById } from '../../simulation/selectors.js';
 import { deriveLocalDate } from '../../simulation/systems/day-rollover.js';
+import { findModuleInstanceForCell } from '../../simulation/systems/modules.js';
+import { moduleLevelBonus } from '../../content/index.js';
 import { useFlowgridStore } from '../../app/store/dispatch.js';
 import { SessionSummary } from '../session-summary/SessionSummary.js';
 
@@ -101,14 +103,25 @@ export function CellBoard() {
       ) : null}
 
       <section aria-label="Modules" className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {STARTER_TILES.map((tile) => (
-          <ModuleTile
-            key={tile.kind}
-            kind={tile.kind}
-            label={tile.label}
-            description={tile.description}
-          />
-        ))}
+        {STARTER_TILES.map((tile) => {
+          // D-13 / MOD-02: resolve each starter module's current level + the active
+          // per-level effect magnitude derived from MODULE_LEVEL_BONUS (the same
+          // content table the simulation reads — UI ↔ sim agreement). Level 0 when
+          // the instance is absent (shouldn't happen for starter slots but is safe).
+          const instance = findModuleInstanceForCell(snapshot, cell.id, tile.kind);
+          const level = instance?.level ?? 0;
+          const levelEffect = moduleLevelBonus(tile.kind, level);
+          return (
+            <ModuleTile
+              key={tile.kind}
+              kind={tile.kind}
+              label={tile.label}
+              description={tile.description}
+              level={level}
+              levelEffect={levelEffect}
+            />
+          );
+        })}
       </section>
 
       <GeneratorTile cell={cell} />
