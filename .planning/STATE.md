@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 05
 current_phase_name: module-forge-and-starter-customization
 status: executing
-stopped_at: Phase 5 context gathered
-last_updated: "2026-06-25T23:13:28.379Z"
+stopped_at: Completed 05-02-PLAN.md (Forge history persistence migration)
+last_updated: "2026-06-25T23:21:03Z"
 last_activity: 2026-06-25
-last_activity_desc: Phase 05 execution started
+last_activity_desc: Phase 05 plan 02 complete
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 17
-  completed_plans: 15
-  percent: 67
+  completed_plans: 16
+  percent: 72
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 05 (module-forge-and-starter-customization) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
-Last activity: 2026-06-25 — Phase 05 execution started
+Last activity: 2026-06-25 — Phase 05 plan 02 complete
 
 Progress: [████████████████████] 14/14 known plans (100%), 4/6 phases
 
@@ -69,6 +69,7 @@ Progress: [████████████████████] 14/14 k
 | Phase 04 P02 | 10min | 2 tasks | 14 files |
 | Phase 04 P03 | 254min | 4 tasks | 10 files |
 | Phase 05 P01 | 71min | 3 tasks | 19 files |
+| Phase 05 P02 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,8 @@ Recent decisions affecting current work:
 - [Phase 05-01]: D-04 A1/A2/A3 resolved as least-invasive — Charge Core boosts store-side rate, Output boosts routed amount, Bloom grants +1+level activation/momentum. None add new model fields or break the 100-sum allocation cap. All documented in code comments at application sites warning against the conflation/overflow anti-patterns.
 - [Phase 05-01]: createRng moved from src/app/rng.ts to src/simulation/rng.ts (canonical home) with app/rng.ts re-exporting — the prior simulation→app import violated the one-way architecture boundary enforced by tests/simulation/boundaries.test.ts.
 - [Phase 05-01]: slot_at_capacity handler check is defense-in-depth (the reveal filter makes it unreachable via normal dispatch); validateModuleLevelCap invariant backstop is the independent guard. Insufficient-payment reuses negative_resource; chosen-not-in-revealed reuses invalid_reference (RESEARCH A6 — minimum new ValidationIssueCode surface).
+- [Phase 05-02]: Task 2 (Zod widening + drift guard + export/import) was fully pre-staged by Plan 05-01 Deviation #1 (commit 98fc4d2); all 6 acceptance criteria verified green, no empty commit made. moduleKind uses z.enum (stricter than plan's z.string) to mirror ModuleDefinitionKind and close T-05-07 at the enum boundary.
+- [Phase 05-02]: Dexie v3→v4 bump ships full 10-store-set repetition + .upgrade() on the empty pre-Phase-5 forgeHistory store (RESEARCH Pitfall 5). upgradeForgeHistoryV3ToV4 + FORGE_HISTORY_V4_DEFAULTS are exported pure transforms exercised by the migration harness. D-09 fully shipped across 05-01 + 05-02.
 
 ### Pending Todos
 
@@ -122,6 +125,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-25T23:13:13.868Z
-Stopped at: Completed 05-01-PLAN.md (Module Forge simulation truth)
+Last session: 2026-06-25T23:21:03Z
+Stopped at: Completed 05-02-PLAN.md (Forge history persistence migration)
 Resume file: None

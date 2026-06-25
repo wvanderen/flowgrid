@@ -142,7 +142,7 @@ Plans:
   4. Forge history records payment, offered choices, chosen reward, timestamp, and monotonic forge count.
   5. Installing or applying a reward rejects duplicate installs, invalid owner Cells, and invalid slot states.
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 **Wave 1**
 
@@ -150,7 +150,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 05-02-PLAN.md — Persistence durable spine: Dexie v3→v4 migration (extracted upgradeForgeHistoryV3ToV4 + full-store-set + .upgrade on empty store) + widened Zod forgeHistorySchema + satisfies drift guard
+- [x] 05-02-PLAN.md — Persistence durable spine: Dexie v3→v4 migration (extracted upgradeForgeHistoryV3ToV4 + full-store-set + .upgrade on empty store) + widened Zod forgeHistorySchema + satisfies drift guard
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -190,5 +190,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Durable Local-First Spine | 3/3 | Complete   | 2026-06-23 |
 | 3. Playable Generator Flowgrid | 5/5 | Complete   | 2026-06-24 |
 | 4. Core Alternation and Rejuvenation Economy | 3/3 | Complete    | 2026-06-24 |
-| 5. Module Forge and Starter Customization | 1/3 | In Progress|  |
+| 5. Module Forge and Starter Customization | 2/3 | In Progress|  |
 | 6. Hardening, Accessibility, and Trust | 0/TBD | Not started | - |
