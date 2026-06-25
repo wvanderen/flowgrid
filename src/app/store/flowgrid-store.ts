@@ -12,6 +12,7 @@ import { createStore } from 'zustand/vanilla';
 
 import type {
   FlowgridSnapshot,
+  ForgeHistoryRecord,
   IsoDateTimeString,
   RejuvenationRecord,
   SessionRecord,
@@ -52,6 +53,11 @@ export interface FlowgridState {
   // log_rejuvenation so CorePanel can render RejuvenationSummary (REJ-05). Persists
   // until the next dispatch clears it (no auto-dismiss — D-10). Null initially.
   readonly lastCompletedRejuvenation: RejuvenationRecord | null;
+  // Phase 5 / D-11: the most recently completed forge. Set by dispatch after a
+  // successful run_forge so ForgePanel can render ForgeSummary (MOD-03, D-10).
+  // The lastCompletedForge field persists until the next dispatch clears it (no
+  // auto-dismiss — mirrors lastCompletedRejuvenation exactly). Null initially.
+  readonly lastCompletedForge: ForgeHistoryRecord | null;
   // D-01/D-02: derived from the Core's active-rejuvenation marker
   // (core.activeRejuvenationStartedAt !== null). Mirrored at the store level so the
   // CorePanel / RejuvenationResumePrompt can read it without touching the snapshot.
@@ -73,6 +79,7 @@ export const flowgridStore = createStore<FlowgridState>(() => ({
   pendingVisualEvents: [],
   lastCompletedSession: null,
   lastCompletedRejuvenation: null,
+  lastCompletedForge: null,
   activeRejuvenation: null,
   status: 'loading',
   lastError: null,

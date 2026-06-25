@@ -16,6 +16,7 @@ import { useStore } from 'zustand';
 import type {
   CellRecord,
   FlowgridSnapshot,
+  ForgeHistoryRecord,
   RejuvenationRecord,
   SessionRecord,
   SimulationCommand,
@@ -100,11 +101,13 @@ export async function dispatch(
 
   // Successful write: emit the new snapshot, append visual events, sync the active-
   // session + active-rejuvenation markers, and clear any prior error/rejection (the
-  // new dispatch supersedes it). lastCompletedSession / lastCompletedRejuvenation are
-  // set when this dispatch completed a session/rejuvenation; they persist (no
-  // auto-dismiss — D-10) until the next dispatch supersedes them.
+  // new dispatch supersedes it). lastCompletedSession / lastCompletedRejuvenation /
+  // lastCompletedForge are set when this dispatch completed a session/rejuvenation/
+  // forge; they persist (no auto-dismiss — D-10) until the next dispatch supersedes
+  // them.
   const lastCompletedSession = captureCompletedSession(command, result);
   const lastCompletedRejuvenation = captureCompletedRejuvenation(command, result);
+  const lastCompletedForge = captureCompletedForge(command, result);
   flowgridStore.setState((s) => ({
     snapshot: result.nextState,
     pendingVisualEvents: [...s.pendingVisualEvents, ...result.visualEvents],
@@ -114,6 +117,7 @@ export async function dispatch(
     lastRejection: null,
     ...(lastCompletedSession !== undefined ? { lastCompletedSession } : {}),
     ...(lastCompletedRejuvenation !== undefined ? { lastCompletedRejuvenation } : {}),
+    ...(lastCompletedForge !== undefined ? { lastCompletedForge } : {}),
   }));
 
   return result;
@@ -147,6 +151,21 @@ function captureCompletedRejuvenation(
   return rejuvs[rejuvs.length - 1];
 }
 
+// Phase 5 / D-11: after a successful run_forge, surface the newly-appended
+// ForgeHistoryRecord so ForgePanel can render ForgeSummary (MOD-03, D-10). The record
+// id is 1:1 with the command operationId (idempotent — Phase 2 D-04), so we match by
+// id and fall back to the last entry. Mirrors captureCompletedRejuvenation exactly.
+function captureCompletedForge(
+  command: SimulationCommand,
+  result: SimulationResult,
+): ForgeHistoryRecord | undefined {
+  if (command.type !== 'run_forge') return undefined;
+  const rows = result.nextState.forgeHistory;
+  const matched = rows.find((r) => r.id === command.operationId);
+  if (matched !== undefined) return matched;
+  return rows[rows.length - 1];
+}
+
 // Exposed so tests can reset to a known state without going through dispatch.
 export function hydrateStoreForTests(snapshot: FlowgridSnapshot, cells: Iterable<CellRecord>): void {
   flowgridStore.setState({
@@ -156,6 +175,7 @@ export function hydrateStoreForTests(snapshot: FlowgridSnapshot, cells: Iterable
     activeRejuvenation: deriveActiveRejuvenation(snapshot),
     lastCompletedSession: null,
     lastCompletedRejuvenation: null,
+    lastCompletedForge: null,
     status: 'ready',
     lastError: null,
     lastRejection: null,
@@ -185,6 +205,7 @@ export async function initApp(repository: FlowgridRepository): Promise<void> {
       activeRejuvenation: deriveActiveRejuvenation(reconciled),
       lastCompletedSession: null,
       lastCompletedRejuvenation: null,
+      lastCompletedForge: null,
       status: 'ready',
       lastError: null,
       lastRejection: null,
