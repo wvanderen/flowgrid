@@ -6,7 +6,6 @@
 
 import type {
   FlowgridSnapshot,
-  RunForgeCommand,
   InstallModuleCommand,
   SimulationCommand,
   SimulationEnv,
@@ -26,6 +25,7 @@ import { logRejuvenation } from './commands/log-rejuvenation.js';
 import { startRejuvenation } from './commands/start-rejuvenation.js';
 import { cancelRejuvenation } from './commands/cancel-rejuvenation.js';
 import { purchaseActivationBoost } from './commands/purchase-activation-boost.js';
+import { runForge } from './commands/run-forge.js';
 
 export function runSimulationCommand(
   previousState: FlowgridSnapshot,
@@ -58,22 +58,10 @@ export function runSimulationCommand(
     case 'purchase_activation_boost':
       return purchaseActivationBoost(previousState, command, env);
     case 'run_forge':
-      return runForgeNotImplemented(previousState, command);
+      return runForge(previousState, command, env);
     case 'install_module':
       return installModuleNotImplemented(previousState, command);
   }
-}
-
-function runForgeNotImplemented(
-  state: FlowgridSnapshot,
-  command: RunForgeCommand,
-): SimulationResult {
-  return notImplementedResult(
-    state,
-    command.operationId,
-    command.type,
-    'run_forge is not implemented until Phase 5 (Module Forge and Starter Customization).',
-  );
 }
 
 function installModuleNotImplemented(

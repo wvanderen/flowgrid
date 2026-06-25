@@ -168,3 +168,49 @@ export function activationBoostPurchasedEvent(
     ECONOMY_EVENT_NAMES.activationBoostPurchased,
   );
 }
+
+// --- Phase 5 economy event constructors (forge completion + module upgrade) ---
+
+// D-09: emitted once per successful run_forge. Carries the payment + the new
+// lifetime forgeCount so the ForgeSummary and history views can render without
+// re-deriving economy truth.
+export function forgeCompletedEvent(
+  at: IsoDateTimeString,
+  coreId: string,
+  forgeId: string,
+  paymentType: 'token' | 'energy',
+  paymentAmount: number,
+  forgeCountAfter: number,
+): EconomyEvent {
+  return make(
+    {
+      at,
+      entityType: 'core',
+      entityId: coreId,
+      payload: { forgeId, paymentType, paymentAmount, forgeCountAfter },
+    },
+    ECONOMY_EVENT_NAMES.forgeCompleted,
+  );
+}
+
+// D-03/D-04: emitted once per successful run_forge alongside forgeCompletedEvent.
+// Carries the chosen module's level transition so a future history view can show
+// "what could have been" alongside what was picked.
+export function moduleUpgradedEvent(
+  at: IsoDateTimeString,
+  moduleInstanceId: string,
+  cellId: string,
+  moduleKind: string,
+  fromLevel: number,
+  toLevel: number,
+): EconomyEvent {
+  return make(
+    {
+      at,
+      entityType: 'module_instance',
+      entityId: moduleInstanceId,
+      payload: { cellId, moduleKind, fromLevel, toLevel },
+    },
+    ECONOMY_EVENT_NAMES.moduleUpgraded,
+  );
+}
