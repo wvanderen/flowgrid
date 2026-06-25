@@ -8,7 +8,7 @@
 // Phase 3 UI subscribes and renders it.
 //
 // Four independent version axes (D-08) — each bumps for a different reason:
-//   1. Dexie schema version (below): store-shape changes only. Currently v3.
+//   1. Dexie schema version (below): store-shape changes only. Currently v4.
 //   2. ContentVersion (ClientRecord.contentVersion): starter content shape.
 //   3. SyncOperation.payloadVersion: operation payload shape (future sync transform).
 //   4. archiveVersion (JsonArchive, Phase 2 plan 02-02): archive envelope shape.
@@ -93,6 +93,47 @@ export function upgradeCoresV2ToV3(
   return core;
 }
 
+// Phase 5 / D-09: defaults the v3→v4 migration writes for existing
+// ForgeHistoryRecords that predate the widened D-09 fields (paymentType,
+// paymentAmount, offeredChoices, chosenReward). Exported for the migration test
+// harness so the upgrade transform (upgradeForgeHistoryV3ToV4) can be exercised
+// in isolation (PATTERNS C8). The store is EMPTY pre-Phase-5 (the Phase 1
+// run_forge stub never wrote rows), so the blast radius of these defaults is
+// zero — but the version MUST still bump and the full store set MUST repeat
+// (RESEARCH Pitfall 5), and the transform must exist so the harness can prove
+// the sentinel-default behavior.
+export const FORGE_HISTORY_V4_DEFAULTS = {
+  paymentType: 'token',
+  paymentAmount: 0,
+  offeredChoices: [] as readonly never[],
+  chosenReward: null,
+} as const;
+
+// Phase 5 / D-09: the extracted v3→v4 forgeHistory upgrade transform. Pure:
+// mutates the record in place (Dexie's `collection.modify` contract) and returns
+// it. Exported so the migration-harness can run it against a fixture without a
+// live IndexedDB. Only fills fields that are absent — a record that already
+// carries the fields is left untouched. Field-additive on absent fields; the
+// forgeHistory index spec ('id, createdAt') is unchanged (D-09 adds fields, not
+// indexes — RESEARCH A7).
+export function upgradeForgeHistoryV3ToV4(
+  row: Record<string, unknown>,
+): Record<string, unknown> {
+  if (row.paymentType === undefined) {
+    row.paymentType = FORGE_HISTORY_V4_DEFAULTS.paymentType;
+  }
+  if (row.paymentAmount === undefined) {
+    row.paymentAmount = FORGE_HISTORY_V4_DEFAULTS.paymentAmount;
+  }
+  if (row.offeredChoices === undefined) {
+    row.offeredChoices = FORGE_HISTORY_V4_DEFAULTS.offeredChoices;
+  }
+  if (row.chosenReward === undefined) {
+    row.chosenReward = FORGE_HISTORY_V4_DEFAULTS.chosenReward;
+  }
+  return row;
+}
+
 export class FlowgridDatabase extends Dexie {
   client!: Table<ClientRecord, ClientId>;
   cells!: Table<CellRecord, CellId>;
@@ -165,6 +206,32 @@ export class FlowgridDatabase extends Dexie {
       rejuvenations: 'id, createdAt',
     }).upgrade(async (tx) => {
       await tx.table('core').toCollection().modify(upgradeCoresV2ToV3);
+    });
+
+    // Phase 5 / D-09: v4 widens the stored ForgeHistoryRecord shape with four new
+    // non-indexed fields (paymentType, paymentAmount, offeredChoices, chosenReward).
+    // Indexes are unchanged — only the stored forgeHistory shape changes (D-09 adds
+    // fields, not indexes — RESEARCH A7). The forgeHistory store is EMPTY
+    // pre-Phase-5 (the Phase 1 run_forge stub never wrote rows), so the upgrade is
+    // field-additive on absent fields and the blast radius is zero — but the version
+    // MUST still bump and the full store set MUST repeat verbatim (Dexie requires
+    // the full store set when version(N).stores() replaces the prior declaration
+    // context — RESEARCH Pitfall 5). The .upgrade() callback MUST exist even on the
+    // empty store (mirrors v2/v3 always including .upgrade; lets the harness
+    // exercise the extracted transform without a live IndexedDB connection).
+    this.version(4).stores({
+      client: 'id',
+      cells: 'id',
+      core: 'id',
+      moduleInstances: 'id, ownerCellId',
+      routes: 'id, sourceCellId',
+      sessions: 'id, cellId, startedAt',
+      operations: 'id, status, createdAt',
+      settings: 'id',
+      forgeHistory: 'id, createdAt',
+      rejuvenations: 'id, createdAt',
+    }).upgrade(async (tx) => {
+      await tx.table('forgeHistory').toCollection().modify(upgradeForgeHistoryV3ToV4);
     });
 
     // First-run seed: writes the three singletons inside the populate transaction.

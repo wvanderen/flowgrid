@@ -7,7 +7,11 @@
 import { describe } from 'vitest';
 
 import { runMigrationFixture } from './migration-harness.js';
-import { upgradeCellsV1ToV2, upgradeCoresV2ToV3 } from '../../src/persistence/database.js';
+import {
+  upgradeCellsV1ToV2,
+  upgradeCoresV2ToV3,
+  upgradeForgeHistoryV3ToV4,
+} from '../../src/persistence/database.js';
 
 describe('migration-fixture harness', () => {
   // Fixture 1: field rename. Synthetic "v0" CellRecord used `milestoneProgress`
@@ -190,6 +194,36 @@ describe('v2 -> v3 core migration (upgradeCoresV2ToV3)', () => {
       updatedAt: '2026-01-01T10:00:00.000Z',
       activationBoostLevel: 0,
       activeRejuvenationStartedAt: null,
+    },
+  });
+});
+
+// --- Real Phase 5 v3 -> v4 forgeHistory fixtures (upgradeForgeHistoryV3ToV4) ---
+// The real upgrade transform (upgradeForgeHistoryV3ToV4) is extracted from
+// database.ts so the harness can exercise it without a live IndexedDB connection.
+// The forgeHistory store is EMPTY pre-Phase-5 (the Phase 1 run_forge stub never
+// wrote rows), but the schema version still bumps and the transform must still
+// exist — the harness proves the sentinel-default behavior on a synthetic v3 row
+// (D-09, RESEARCH Pitfall 5).
+describe('v3 -> v4 forgeHistory migration (upgradeForgeHistoryV3ToV4)', () => {
+  interface V3ForgeHistory {
+    readonly id: string;
+    readonly forgeCount: number;
+    readonly createdAt: string;
+  }
+
+  runMigrationFixture<V3ForgeHistory, Record<string, unknown>>({
+    description: 'v3 → v4 forgeHistory: fills absent Phase 5 fields with sentinel defaults',
+    input: { id: 'test:forge:1', forgeCount: 0, createdAt: '2026-01-01T00:00:00.000Z' },
+    upgrade: (old) => upgradeForgeHistoryV3ToV4({ ...old }),
+    expected: {
+      id: 'test:forge:1',
+      forgeCount: 0,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      paymentType: 'token',
+      paymentAmount: 0,
+      offeredChoices: [],
+      chosenReward: null,
     },
   });
 });
