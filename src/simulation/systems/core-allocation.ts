@@ -6,7 +6,7 @@
 // forge count here; those are owned by their respective commands.
 
 import type { CoreRecord, IntNonNegative, IntPercent } from '../../domain/index.js';
-import { splitCoreCurrent } from '../../content/index.js';
+import { MODULE_LEVEL_BONUS, splitCoreCurrent } from '../../content/index.js';
 
 export type CoreAllocationOutcome = {
   readonly newCore: CoreRecord;
@@ -15,25 +15,35 @@ export type CoreAllocationOutcome = {
   readonly leftover: IntNonNegative;
 };
 
+// Phase 5 / D-04 A1: the Charge Core module's level boosts the store-side effective
+// rate via an integer multiply-then-floor by (100 + chargeCoreLevel *
+// MODULE_LEVEL_BONUS.charge_core) / 100 applied to split.coreCharge. chargeCoreLevel=0
+// is byte-identical to Phase 1-4 behavior (Pitfall 6 backward-compat). CRITICAL: this
+// does NOT add a chargeCapacity field or hard cap — Core.coreCharge remains an
+// uncapped accumulator (RESEARCH Pitfall 1 A1). The level multiplies how much Charge
+// is STORED per unit of routed Current, not a ceiling.
 export function applyCoreAllocation(
   core: CoreRecord,
   incomingCurrent: IntNonNegative,
+  chargeCoreLevel = 0,
 ): CoreAllocationOutcome {
   const split = splitCoreCurrent(
     incomingCurrent,
     core.convertAllocationPercent,
     core.storeAllocationPercent,
   );
+  const chargeCoreBoostMultiplier = 100 + chargeCoreLevel * MODULE_LEVEL_BONUS.charge_core;
+  const boostedCharge = Math.floor((split.coreCharge * chargeCoreBoostMultiplier) / 100);
   return {
     newCore: {
       ...core,
       energy: core.energy + split.energy,
-      coreCharge: core.coreCharge + split.coreCharge,
+      coreCharge: core.coreCharge + boostedCharge,
       lifetimeEnergy: core.lifetimeEnergy + split.energy,
       updatedAt: core.updatedAt,
     },
     energyGained: split.energy,
-    coreChargeGained: split.coreCharge,
+    coreChargeGained: boostedCharge,
     leftover: split.leftover,
   };
 }

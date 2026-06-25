@@ -47,11 +47,11 @@ import {
 import { applyBloom } from '../systems/bloom.js';
 import { applyCoreAllocation } from '../systems/core-allocation.js';
 import { generateCurrent, generateXp } from '../systems/current.js';
-import { hasStarterModulesForCell } from '../systems/modules.js';
+import { findModuleInstanceForCell, hasStarterModulesForCell } from '../systems/modules.js';
 import { findRoutesFromCellToCore, routeCurrentThroughRoutes } from '../systems/routes.js';
 import { isCoreAllocationValid } from '../systems/core-allocation.js';
 import { operationFromCommand } from '../operation-events.js';
-import { activationBonusPercent } from '../../content/index.js';
+import { activationBonusPercent, moduleLevelBonus } from '../../content/index.js';
 
 function rejectWith(
   state: FlowgridSnapshot,
@@ -158,12 +158,25 @@ export function completeFocusSession(
   // CORE-06 (Phase 4): the bonus PERCENT is now derived from the persisted
   // activationBoostLevel so the purchased upgrade takes effect here. Level 0 yields
   // the Phase-3 baseline of 10% (Pitfall 6 backward-compat — existing tests stay green).
+  //
+  // Phase 5 / D-04 (Generator): the owning Generator module's level grants an
+  // ADDITIVE +% Current bonus SEPARATE from and INDEPENDENT of the Activation bonus
+  // above. generatorLevel is a DIFFERENT axis from activationBoostLevel (D-03
+  // conflation warning — RESEARCH Pitfall 1). Both bonuses apply via integer
+  // multiply-then-floor; they stack additively on top of baseCurrent. generatorLevel=0
+  // yields a 0 bonus (Pitfall 6 backward-compat — Phase 1-4 tests stay byte-identical).
+  const generatorInstance = findModuleInstanceForCell(previousState, command.cellId, 'generator');
+  const generatorLevel = generatorInstance?.level ?? 0;
+  const generatorBonusPct = moduleLevelBonus('generator', generatorLevel);
+
   const baseCurrent = generateCurrent(command.durationSeconds);
   const isActivatedToday = previousCell.lastBloomLocalDate === env.localDate;
   const activationBonusPct = activationBonusPercent(previousState.core.activationBoostLevel);
-  const currentGenerated = isActivatedToday
-    ? baseCurrent + Math.floor((baseCurrent * activationBonusPct) / 100)
-    : baseCurrent;
+  const activationBonus = isActivatedToday
+    ? Math.floor((baseCurrent * activationBonusPct) / 100)
+    : 0;
+  const generatorBonus = Math.floor((baseCurrent * generatorBonusPct) / 100);
+  const currentGenerated = baseCurrent + activationBonus + generatorBonus;
   const xpGained = generateXp(command.durationSeconds);
 
   // Advance daily milestone BEFORE bloom check so the check sees the new total.
@@ -175,7 +188,11 @@ export function completeFocusSession(
     updatedAt: env.now,
   };
 
-  const bloom = applyBloom(advancedCell, env.localDate);
+  // Phase 5 / D-04 (Bloom): resolve the owning Bloom module's level and thread it
+  // through applyBloom so each Bloom grants +1 + bloomLevel activation/momentum.
+  const bloomInstance = findModuleInstanceForCell(previousState, command.cellId, 'bloom');
+  const bloomLevel = bloomInstance?.level ?? 0;
+  const bloom = applyBloom(advancedCell, env.localDate, bloomLevel);
 
   const cellAfterFocus: CellRecord = {
     ...bloom.cell,
@@ -189,10 +206,22 @@ export function completeFocusSession(
   };
 
   // Route Current from Cell Output to the Core.
+  // Phase 5 / D-04 (Output): resolve the owning Output module's level and thread it
+  // through routeCurrentThroughRoutes so the per-route routed amount is boosted.
+  const outputInstance = findModuleInstanceForCell(previousState, command.cellId, 'output');
+  const outputLevel = outputInstance?.level ?? 0;
   const routes = findRoutesFromCellToCore(previousState, command.cellId, previousState.core.id);
-  const { routed } = routeCurrentThroughRoutes(currentGenerated, routes);
+  const { routed } = routeCurrentThroughRoutes(currentGenerated, routes, outputLevel);
 
-  const coreAllocation = applyCoreAllocation(previousState.core, routed);
+  // Phase 5 / D-04 (Charge Core): resolve the owning Charge Core module's level and
+  // thread it through applyCoreAllocation so the store-side Charge is boosted. The
+  // Charge Core lives on the Core's Cell context — for the Phase 1-4 single-Cell
+  // starter layout every Cell routes to the same Core, so we resolve the Charge Core
+  // instance on the SAME cell the focus session ran on. (A multi-Core future would
+  // need a Core->owning-Cell lookup; v1 has one Core and one starter Cell.)
+  const chargeCoreInstance = findModuleInstanceForCell(previousState, command.cellId, 'charge_core');
+  const chargeCoreLevel = chargeCoreInstance?.level ?? 0;
+  const coreAllocation = applyCoreAllocation(previousState.core, routed, chargeCoreLevel);
   const newCore: CoreRecord = { ...coreAllocation.newCore, updatedAt: env.now };
 
   // Session record. sessionId is 1:1 with operationId in Phase 1 (stable, replayable).
