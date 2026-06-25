@@ -19,7 +19,12 @@
 
 import { z } from 'zod';
 
-import type { RejuvenationRecord, SessionRecord, SyncOperation } from '../domain/index.js';
+import type {
+  ForgeHistoryRecord,
+  RejuvenationRecord,
+  SessionRecord,
+  SyncOperation,
+} from '../domain/index.js';
 
 export const clientSchema = z.object({
   id: z.string(),
@@ -109,9 +114,30 @@ export const settingsSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
+// Phase 5 / D-09: widened forge history row. Mirrors ForgeHistoryRecord
+// (src/domain/records.ts) field-for-field. moduleKind uses z.enum to mirror the
+// ModuleDefinitionKind union exactly so the drift guard below stays tight.
+// Pitfall 6: a domain record-shape change without a matching edit here fails the
+// _forgeHistorySchemaCheck drift guard at compile time.
+const forgeChoiceSchema = z.object({
+  cellId: z.string(),
+  moduleKind: z.enum(['generator', 'charge_core', 'output', 'bloom']),
+});
+
+const forgeChosenRewardSchema = z.object({
+  cellId: z.string(),
+  moduleKind: z.enum(['generator', 'charge_core', 'output', 'bloom']),
+  fromLevel: z.number().int().nonnegative(),
+  toLevel: z.number().int().nonnegative(),
+});
+
 export const forgeHistorySchema = z.object({
   id: z.string(),
   forgeCount: z.number().int().nonnegative(),
+  paymentType: z.enum(['token', 'energy']),
+  paymentAmount: z.number().int().nonnegative(),
+  offeredChoices: z.array(forgeChoiceSchema),
+  chosenReward: forgeChosenRewardSchema,
   createdAt: z.string().datetime(),
 });
 
@@ -174,6 +200,8 @@ export const archiveSchema = z.object({
 const _sessionSchemaCheck = null as unknown as z.infer<typeof sessionSchema> satisfies SessionRecord;
 const _rejuvenationSchemaCheck =
   null as unknown as z.infer<typeof rejuvenationSchema> satisfies RejuvenationRecord;
+const _forgeHistorySchemaCheck =
+  null as unknown as z.infer<typeof forgeHistorySchema> satisfies ForgeHistoryRecord;
 const _operationSchemaCheck =
   null as unknown as Omit<z.infer<typeof operationSchema>, 'entityType'> satisfies Omit<
     SyncOperation,
@@ -181,4 +209,5 @@ const _operationSchemaCheck =
   >;
 void _sessionSchemaCheck;
 void _rejuvenationSchemaCheck;
+void _forgeHistorySchemaCheck;
 void _operationSchemaCheck;

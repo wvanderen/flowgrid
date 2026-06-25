@@ -15,6 +15,7 @@ import type { FlowgridSnapshot } from './records.js';
 import type { SyncOperation } from './operation-records.js';
 import type { EntityType, ModuleInstanceId } from './ids.js';
 import type { ValidationIssue } from './validation.js';
+import { MODULE_MAX_LEVEL } from '../content/index.js';
 
 function issue(
   code: ValidationIssue['code'],
@@ -280,6 +281,32 @@ export function validateOperationShape(
   return issues;
 }
 
+// --- validateModuleLevelCap (Phase 5 D-05 / MOD-07 backstop) ---
+
+// Flags any ModuleInstance whose level exceeds MODULE_MAX_LEVEL. The run_forge
+// handler checks the cap BEFORE applying (+1 level); this validator is the
+// defense-in-depth backstop that catches overflow from bugs, replay drift, or
+// crafted imports. Wired into validateFlowgridSnapshot so every applied command
+// is checked.
+export function validateModuleLevelCap(snapshot: FlowgridSnapshot): readonly ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  for (const instance of snapshot.moduleInstances.values()) {
+    if (instance.level > MODULE_MAX_LEVEL) {
+      issues.push(
+        issue(
+          'slot_at_capacity',
+          'error',
+          'module_instance',
+          instance.id,
+          `ModuleInstance level ${instance.level} exceeds MODULE_MAX_LEVEL ${MODULE_MAX_LEVEL}.`,
+          'moduleInstance.level',
+        ),
+      );
+    }
+  }
+  return issues;
+}
+
 // --- validateFlowgridSnapshot (composition) ---
 
 export function validateFlowgridSnapshot(snapshot: FlowgridSnapshot): readonly ValidationIssue[] {
@@ -289,6 +316,7 @@ export function validateFlowgridSnapshot(snapshot: FlowgridSnapshot): readonly V
     ...validateNoDuplicateInstalls(snapshot),
     ...validateRouteAllocations(snapshot),
     ...validateCoreAllocation(snapshot),
+    ...validateModuleLevelCap(snapshot),
     ...validateOperationShape(snapshot.operations),
   ];
 }

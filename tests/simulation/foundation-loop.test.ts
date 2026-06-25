@@ -218,14 +218,10 @@ test('run_forge and install_module return not_implemented; log_rejuvenation is n
   expect(rej.nextState.rejuvenations[0]?.chargeConsumed).toBe(0);
   expect(rej.operations).toHaveLength(1);
 
-  const forge = runSimulationCommand(
-    state,
-    { type: 'run_forge', operationId: `${ids.clientId}:op:forge-1` },
-    env,
-  );
-  expect(forge.status).toBe('not_implemented');
-  expect(forge.nextState).toBe(state);
-
+  // Phase 5 (plan 05-01 Task 2) replaced the run_forge not_implemented stub with a
+  // real handler, so this test no longer asserts the run_forge stub here. The
+  // install_module stub below remains (D-08 reserves it for a future variant-swap
+  // phase) and continues to exercise the not_implemented result path.
   const install = runSimulationCommand(
     state,
     {

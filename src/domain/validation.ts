@@ -17,7 +17,11 @@ export type ValidationIssueCode =
   // Phase 4 monotonic-counter guards (parallel to token_regression / forge_count_regression).
   | 'integration_regression'
   | 'activation_boost_regression'
-  | 'invalid_operation_shape';
+  | 'invalid_operation_shape'
+  // Phase 5: target module already at MODULE_MAX_LEVEL (run_forge cap rejection).
+  // Insufficient-payment reuses 'negative_resource'; chosen-not-in-revealed reuses
+  // 'invalid_reference' (RESEARCH A6 — minimum new code).
+  | 'slot_at_capacity';
 
 export type ValidationSeverity = 'error' | 'warning';
 

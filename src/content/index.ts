@@ -38,5 +38,14 @@ export {
   nextIntegrationThreshold,
   splitCoreCurrent,
 } from './formulas.js';
+// Phase 5 Module Forge constants + pure helpers (D-02/D-04/D-05).
+export {
+  FORGE_ENERGY_BASE,
+  FORGE_ENERGY_STEP,
+  MODULE_LEVEL_BONUS,
+  MODULE_MAX_LEVEL,
+  forgeEnergyCost,
+  moduleLevelBonus,
+} from './forge.js';
 export { createStarterFlowgridState } from './starter-state.js';
 export type { CreateStarterFlowgridStateParams } from './starter-state.js';

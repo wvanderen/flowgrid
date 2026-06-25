@@ -143,13 +143,18 @@ test('applyResult on a rejected result writes nothing', async () => {
 test('applyResult on a not_implemented result writes nothing', async () => {
   const { ids, state } = buildStarterSnapshot('repo-notimpl');
   const env = createTestSimulationEnv({ now: NOW, localDate: LOCAL_DATE, seed: 'repo-notimpl' });
-  // Phase 4 (plan 04-01) replaced the log_rejuvenation not_implemented stub with a
-  // real handler, so this test now drives the not_implemented path via run_forge,
-  // which remains a Phase 5 stub. The assertion is identical: a not_implemented
-  // result writes nothing durable.
+  // install_module remains a not_implemented stub (Phase 5 D-08 reserves it for a
+  // future variant-swap phase; run_forge became real in Phase 5 Task 2). The
+  // assertion is identical: a not_implemented result writes nothing durable.
   const result = runSimulationCommand(
     state,
-    { type: 'run_forge', operationId: `${ids.clientId}:op:forge` },
+    {
+      type: 'install_module',
+      operationId: `${ids.clientId}:op:install`,
+      definitionId: 'flowgrid:module-definition:generator',
+      ownerCellId: ids.cellId,
+      installedSlotId: `${ids.cellId}:slot:generator`,
+    },
     env,
   );
   expect(result.status).toBe('not_implemented');

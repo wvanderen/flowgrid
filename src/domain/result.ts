@@ -8,7 +8,7 @@
 
 import type { ContentVersion, IntNonNegative, IntPercent, IntSeconds } from './primitives.js';
 import type { IsoDateTimeString, LocalDateString } from './time.js';
-import type { FlowgridSnapshot } from './records.js';
+import type { FlowgridSnapshot, ModuleDefinitionKind } from './records.js';
 import type { SyncOperation } from './operation-records.js';
 import type { ValidationIssue } from './validation.js';
 import type {
@@ -79,9 +79,27 @@ export interface PurchaseActivationBoostCommand {
   readonly operationId: OperationId;
 }
 
+// Phase 5 / D-06: a single curated forge reveal option. The pure forgeChoices
+// selector returns a readonly ForgeChoice[] of length min(3, poolSize); the
+// run_forge command's chosenReward references one of these by {cellId, moduleKind}.
+// Declared here alongside the command payload types so records.ts (ForgeHistoryRecord)
+// and simulation handlers share the same contract.
+export interface ForgeChoice {
+  readonly cellId: CellId;
+  readonly moduleKind: ModuleDefinitionKind;
+}
+
+// Phase 5 / D-06: run_forge carries the payment type and the chosen reward. The
+// prior shape `{ type, operationId }` was a Phase 1 placeholder that returned
+// not_implemented — no durable data depends on it (the stub wrote no rows), so the
+// in-place extension mirrors Phase 4's LogRejuvenationCommand refactor. The handler
+// RE-DERIVES forgeChoices(previousState) inside and validates chosenReward ∈ that
+// set (TOCTOU defense — Pitfall 3); chosenReward is never trusted blindly.
 export interface RunForgeCommand {
   readonly type: 'run_forge';
   readonly operationId: OperationId;
+  readonly paymentType: 'token' | 'energy';
+  readonly chosenReward: { readonly cellId: CellId; readonly moduleKind: ModuleDefinitionKind };
 }
 
 export interface InstallModuleCommand {
@@ -194,6 +212,9 @@ export const ECONOMY_EVENT_NAMES = {
   rejuvenationCompleted: 'rejuvenation_completed',
   tokenGranted: 'token_granted',
   activationBoostPurchased: 'activation_boost_purchased',
+  // Phase 5 economy events (forge completion + module upgrade).
+  forgeCompleted: 'forge_completed',
+  moduleUpgraded: 'module_upgraded',
 } as const;
 
 export type EconomyEventName = (typeof ECONOMY_EVENT_NAMES)[keyof typeof ECONOMY_EVENT_NAMES];

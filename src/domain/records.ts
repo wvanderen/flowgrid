@@ -19,6 +19,10 @@ import type {
   SessionId,
   SettingsId,
 } from './ids.js';
+// Phase 5 / D-09: ForgeHistoryRecord carries the curated reveal + chosen reward, so it
+// depends on the ForgeChoice payload type declared alongside the command in result.ts.
+// Type-only import keeps this erased at runtime (no circular value import).
+import type { ForgeChoice } from './result.js';
 
 export interface ClientRecord {
   readonly id: ClientId;
@@ -144,9 +148,24 @@ export interface SettingsRecord {
   readonly updatedAt: IsoDateTimeString;
 }
 
+// Phase 5 / D-09: widened ForgeHistoryRecord. Each successful run_forge appends ONE
+// row capturing MOD-05 literally: the payment (token or energy + amount), all offered
+// choices (the curated reveal), the chosen reward with its level change, the new
+// monotonic forgeCount, and the timestamp. `id` is 1:1 with the command operationId
+// so replays are idempotent (Phase 2 D-04; repository's idempotentAppend dedups).
+// Records are append-only (history is sacred — prohibition 5).
 export interface ForgeHistoryRecord {
   readonly id: ForgeHistoryId;
   readonly forgeCount: IntNonNegative;
+  readonly paymentType: 'token' | 'energy';
+  readonly paymentAmount: IntNonNegative;
+  readonly offeredChoices: readonly ForgeChoice[];
+  readonly chosenReward: {
+    readonly cellId: CellId;
+    readonly moduleKind: ModuleDefinitionKind;
+    readonly fromLevel: IntNonNegative;
+    readonly toLevel: IntNonNegative;
+  };
   readonly createdAt: IsoDateTimeString;
 }
 
