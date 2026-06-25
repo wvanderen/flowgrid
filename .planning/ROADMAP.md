@@ -142,7 +142,20 @@ Plans:
   4. Forge history records payment, offered choices, chosen reward, timestamp, and monotonic forge count.
   5. Installing or applying a reward rejects duplicate installs, invalid owner Cells, and invalid slot states.
 
-**Plans**: TBD
+**Plans:** 3 plans
+
+**Wave 1**
+
+- [ ] 05-01-PLAN.md — Simulation truth: forgeChoices selector + atomic run_forge handler + widened ForgeHistoryRecord + MODULE_LEVEL_BONUS content + per-level system reads (D-04 A1/A2/A3 surfaced) + level-cap invariant + unit + property tests
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 05-02-PLAN.md — Persistence durable spine: Dexie v3→v4 migration (extracted upgradeForgeHistoryV3ToV4 + full-store-set + .upgrade on empty store) + widened Zod forgeHistorySchema + satisfies drift guard
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 05-03-PLAN.md — App store + UI: lastCompletedForge + captureCompletedForge, /forge route (ForgePanel + ForgeSummary + ForgeChoiceList), ReturnCues Forge chip, CellBoard ModuleTile level-badge extension + human visual smoke
+
 **UI hint**: yes
 
 ### Phase 6: Hardening, Accessibility, and Trust
@@ -176,6 +189,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Deterministic Foundation Slice | 3/3 | Complete | 2026-06-23 |
 | 2. Durable Local-First Spine | 3/3 | Complete   | 2026-06-23 |
 | 3. Playable Generator Flowgrid | 5/5 | Complete   | 2026-06-24 |
-| 4. Core Alternation and Rejuvenation Economy | 3/3 | Complete   | 2026-06-24 |
-| 5. Module Forge and Starter Customization | 0/TBD | Not started | - |
+| 4. Core Alternation and Rejuvenation Economy | 3/3 | Complete    | 2026-06-24 |
+| 5. Module Forge and Starter Customization | 0/3 | Not started | - |
 | 6. Hardening, Accessibility, and Trust | 0/TBD | Not started | - |
