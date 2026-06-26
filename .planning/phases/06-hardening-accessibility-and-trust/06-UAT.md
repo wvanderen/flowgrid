@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 06-hardening-accessibility-and-trust
 source: [06-VERIFICATION.md]
 started: 2026-06-26T20:30:00Z
-updated: 2026-06-26T20:51:00Z
+updated: 2026-06-26T20:55:00Z
 ---
 
 ## Current Test
@@ -54,5 +54,16 @@ blocked: 0
   reason: "User reported: production build is necessary here? opening index.html shows a blank page. Local dev build still doesn't seem to have any movement at all"
   severity: major
   test: 1
-  artifacts: []
-  missing: []
+  root_cause: "buildParticleAnchors in src/ui/flowgrid-home/FlowgridCanvas.tsx:227-249 returns particle positions in stage/canvas coordinates (adds refs.container.x/y to each hex-local position), but the ParticleContainer (sceneRefs.particleLayer) is parented as a child of the Flowgrid scene container (src/render/flowgrid/scene.ts:243), which is itself centered at (app.screen.width/2, app.screen.height/2). Pixi applies the centering transform a SECOND time to every particle, so all particles land at approximately (2 x canvasCenterX, 2 x canvasCenterY) — off the bottom-right corner of the canvas. The emission pipeline, ticker, and per-frame motion update are all healthy; particles simply never appear in the visible canvas region. Secondary contributor: SettingsPanel.tsx:72-96 auto-persists reduceMotion=true from the OS prefers-reduced-motion preference on the first /settings visit, which can also stop the ticker for affected users."
+  artifacts:
+    - path: "src/ui/flowgrid-home/FlowgridCanvas.tsx"
+      issue: "buildParticleAnchors (lines 227-249) double-applies the scene container centering transform by adding refs.container.x/y to hex-local positions"
+    - path: "src/render/flowgrid/scene.ts"
+      issue: "particleLayer is a child of the centered scene container (line 243), so particle local coordinates must be container-local, not stage-local"
+    - path: "src/ui/settings/SettingsPanel.tsx"
+      issue: "auto-persists reduceMotion=true from OS preference (lines 72-96) — secondary, environment-conditional contributor"
+  missing:
+    - "Remove the + refs.container.x / + refs.container.y additions in buildParticleAnchors so anchors stay in container-local space (core: {0,0}; cells: {view.x, view.y}; routes: {route.fromX/fromY, route.toX/toY})"
+    - "Verify in a real browser: Bloom burst centered on Core, current-flow trail travels Cell-hex -> Core"
+    - "Revisit SettingsPanel OS-preference auto-persist: gate behind explicit user confirmation or make session-only so reduceMotion cannot be accidentally pinned true"
+  debug_session: .planning/debug/no-canvas-animation.md
