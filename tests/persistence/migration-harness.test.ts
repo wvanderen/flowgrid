@@ -11,6 +11,7 @@ import {
   upgradeCellsV1ToV2,
   upgradeCoresV2ToV3,
   upgradeForgeHistoryV3ToV4,
+  upgradeSettingsV4ToV5,
 } from '../../src/persistence/database.js';
 
 describe('migration-fixture harness', () => {
@@ -224,6 +225,54 @@ describe('v3 -> v4 forgeHistory migration (upgradeForgeHistoryV3ToV4)', () => {
       paymentAmount: 0,
       offeredChoices: [],
       chosenReward: null,
+    },
+  });
+});
+
+// --- Real Phase 6 v4 -> v5 settings fixtures (upgradeSettingsV4ToV5) ---------
+// The real upgrade transform (upgradeSettingsV4ToV5) is extracted from database.ts
+// so the harness can exercise it without a live IndexedDB. A v4 settings row
+// carries none of reduceMotion; the upgrade must default it to false (D-08
+// backward-compat — false = animation on, matching the Phase 3 stub behavior). The
+// settings store holds a singleton, so one fixture suffices.
+describe('v4 -> v5 settings migration (upgradeSettingsV4ToV5)', () => {
+  interface V4Settings {
+    readonly id: string;
+    readonly defaultSessionLengthSeconds: number;
+    readonly dailyTargetSeconds: number;
+    readonly localDayBoundary: string;
+    readonly updatedAt: string;
+  }
+
+  const v4Settings: V4Settings = {
+    id: 'real-migration:settings',
+    defaultSessionLengthSeconds: 1500,
+    dailyTargetSeconds: 1800,
+    localDayBoundary: '04:00',
+    updatedAt: '2026-01-01T10:00:00.000Z',
+  };
+
+  runMigrationFixture<V4Settings, Record<string, unknown>>({
+    description: 'v4 → v5 settings: defaults reduceMotion=false on a v4 settings row',
+    input: v4Settings,
+    upgrade: (old) => upgradeSettingsV4ToV5({ ...old }),
+    expected: {
+      ...v4Settings,
+      reduceMotion: false,
+    },
+  });
+
+  runMigrationFixture<V4Settings, Record<string, unknown>>({
+    description: 'v4 → v5 settings: preserves existing fields (defaults, boundary) unchanged',
+    input: v4Settings,
+    upgrade: (old) => upgradeSettingsV4ToV5({ ...old }),
+    expected: {
+      id: 'real-migration:settings',
+      defaultSessionLengthSeconds: 1500,
+      dailyTargetSeconds: 1800,
+      localDayBoundary: '04:00',
+      updatedAt: '2026-01-01T10:00:00.000Z',
+      reduceMotion: false,
     },
   });
 });
