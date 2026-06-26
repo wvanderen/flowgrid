@@ -136,6 +136,18 @@ export function FlowgridHome() {
             {activeCellCount} active Cell{activeCellCount === 1 ? '' : 's'}.
           </p>
           <FlowgridCanvas snapshot={snapshot} onCellTap={handleCellTap} />
+          <nav aria-label="Cells">
+            <h2 className="sr-only">Cells</h2>
+            <ul className="flex flex-col gap-1">
+              {activeCells.map((cell) => (
+                <li key={cell.id}>
+                  <Link to={`/cells/${cell.id}`} className="text-sm text-slate-300 underline transition hover:text-core focus:outline-none focus-visible:ring-2 focus-visible:ring-core">
+                    {cell.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </>
       )}
 
