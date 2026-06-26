@@ -236,6 +236,11 @@ export const VISUAL_EVENT_NAMES = {
   cellActivationVisual: 'visual:cell_activation',
   coreConvertVisual: 'visual:core_convert',
   coreChargeStoreVisual: 'visual:core_charge_store',
+  // Phase 6 / D-04: forge + module token visual events. Transient by contract
+  // (UI-04) — dropping these never changes durable economy state.
+  forgeRollVisual: 'visual:forge_roll',
+  moduleUpgradeVisual: 'visual:module_upgrade',
+  tokenGrantedVisual: 'visual:token_granted',
 } as const;
 
 export type NotImplementedReason =

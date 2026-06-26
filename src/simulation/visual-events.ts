@@ -74,3 +74,49 @@ export function coreChargeStoreVisual(at: IsoDateTimeString, coreId: string, amo
     VISUAL_EVENT_NAMES.coreChargeStoreVisual,
   );
 }
+
+// --- Phase 6 / D-04 visual event constructors (forge + module token) ---
+//
+// Transient by contract (UI-04): the renderer consumes them for animation, but
+// dropping/reducing/replaying/skipping them never changes durable economy state.
+// Mirror the economy-event peer shapes so a renderer has the same fields.
+
+// Fires once per successful run_forge alongside the forgeCompleted economy event.
+// entityType 'core' matches the economy-event peer; payload carries the new
+// lifetime forgeCount so the renderer can scale feedback to progression.
+export function forgeRollVisual(
+  at: IsoDateTimeString,
+  coreId: string,
+  payload: { forgeId: string; paymentType: 'token' | 'energy'; paymentAmount: number; forgeCountAfter: number },
+): VisualEvent {
+  return make(
+    { at, entityType: 'core', entityId: coreId, payload },
+    VISUAL_EVENT_NAMES.forgeRollVisual,
+  );
+}
+
+// Fires once per successful run_forge alongside the moduleUpgraded economy event.
+// entityType 'module_instance' matches the economy-event peer convention.
+export function moduleUpgradeVisual(
+  at: IsoDateTimeString,
+  moduleInstanceId: string,
+  payload: { cellId: string; moduleKind: string; fromLevel: number; toLevel: number },
+): VisualEvent {
+  return make(
+    { at, entityType: 'module_instance', entityId: moduleInstanceId, payload },
+    VISUAL_EVENT_NAMES.moduleUpgradeVisual,
+  );
+}
+
+// Fires inside the rejuvenation threshold-grant guard (only when tokensGranted > 0),
+// exactly when the tokenGranted economy event does.
+export function tokenGrantedVisual(
+  at: IsoDateTimeString,
+  coreId: string,
+  payload: { tokensGranted: number; moduleTokensAfter: number },
+): VisualEvent {
+  return make(
+    { at, entityType: 'core', entityId: coreId, payload },
+    VISUAL_EVENT_NAMES.tokenGrantedVisual,
+  );
+}

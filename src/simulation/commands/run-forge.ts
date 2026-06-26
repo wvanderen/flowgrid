@@ -24,10 +24,12 @@ import type {
   SimulationEnv,
   SimulationResult,
   ValidationIssue,
+  VisualEvent,
 } from '../../domain/index.js';
 
 import { operationFromCommand } from '../operation-events.js';
 import { forgeCompletedEvent, moduleUpgradedEvent } from '../economy-events.js';
+import { forgeRollVisual, moduleUpgradeVisual } from '../visual-events.js';
 import { forgeEnergyCost, MODULE_MAX_LEVEL } from '../../content/index.js';
 import { forgeChoices } from './forge-choices.js';
 import { findModuleInstanceForCell } from '../systems/modules.js';
@@ -222,12 +224,29 @@ export function runForge(
     ),
   ];
 
+  // D-04: transient visual events emitted alongside the economy events. UI-04 —
+  // dropping these never changes durable state; placement only affects animation.
+  const visualEvents: VisualEvent[] = [
+    forgeRollVisual(env.now, prevCore.id, {
+      forgeId: record.id,
+      paymentType: record.paymentType,
+      paymentAmount: record.paymentAmount,
+      forgeCountAfter: newCore.forgeCount,
+    }),
+    moduleUpgradeVisual(env.now, target.id, {
+      cellId: chosen!.cellId,
+      moduleKind: chosen!.moduleKind,
+      fromLevel: target.level,
+      toLevel: target.level + 1,
+    }),
+  ];
+
   return {
     status: 'applied',
     previousState,
     nextState,
     economyEvents,
-    visualEvents: [],
+    visualEvents,
     operations: [operation],
     validationIssues: [],
   };

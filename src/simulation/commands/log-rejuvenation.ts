@@ -29,6 +29,7 @@ import type {
   SimulationEnv,
   SimulationResult,
   ValidationIssue,
+  VisualEvent,
 } from '../../domain/index.js';
 
 import { operationFromCommand } from '../operation-events.js';
@@ -36,6 +37,7 @@ import {
   rejuvenationCompletedEvent,
   tokenGrantedEvent,
 } from '../economy-events.js';
+import { tokenGrantedVisual } from '../visual-events.js';
 import {
   REJUVENATION_CHARGE_PER_MINUTE,
   nextIntegrationThreshold,
@@ -151,8 +153,15 @@ export function logRejuvenation(
   const economyEvents: EconomyEvent[] = [
     rejuvenationCompletedEvent(env.now, prevCore.id, record.id, chargeConsumed, integrationGained),
   ];
+  const visualEvents: VisualEvent[] = [];
   if (tokensGranted > 0) {
     economyEvents.push(tokenGrantedEvent(env.now, prevCore.id, tokensGranted, moduleTokens));
+    // D-04: transient visual event emitted exactly when the tokenGranted economy
+    // event fires (RESEARCH Open Question Q4). UI-04 — dropping it changes nothing.
+    visualEvents.push(tokenGrantedVisual(env.now, prevCore.id, {
+      tokensGranted,
+      moduleTokensAfter: moduleTokens,
+    }));
   }
 
   const nextState: FlowgridSnapshot = {
@@ -168,7 +177,7 @@ export function logRejuvenation(
     previousState,
     nextState,
     economyEvents,
-    visualEvents: [],
+    visualEvents,
     operations: [operation],
     validationIssues: [],
   };
