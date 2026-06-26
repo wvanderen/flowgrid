@@ -134,6 +134,28 @@ export function upgradeForgeHistoryV3ToV4(
   return row;
 }
 
+// Phase 6 / D-08: defaults the v4→v5 migration writes for the singleton
+// SettingsRecord that predates the reduceMotion field. Exported for the migration
+// test harness so the upgrade transform can be exercised in isolation. The store
+// holds a single row so the transform runs exactly once; false = animation on,
+// matching the prior Phase 3 stub behavior (D-08 backward-compat).
+export const SETTINGS_V5_DEFAULTS = { reduceMotion: false } as const;
+
+// Phase 6 / D-08: the extracted v4→v5 settings upgrade transform. Pure: mutates the
+// record in place (Dexie's `collection.modify` contract) and returns it. Exported
+// so the migration-harness can run it against a fixture without a live IndexedDB.
+// Only fills the absent field — a SettingsRecord that already carries reduceMotion
+// (e.g. re-seeded after a partial upgrade) is left untouched. Field-additive; the
+// settings index spec ('id') is unchanged.
+export function upgradeSettingsV4ToV5(
+  row: Record<string, unknown>,
+): Record<string, unknown> {
+  if (row.reduceMotion === undefined) {
+    row.reduceMotion = SETTINGS_V5_DEFAULTS.reduceMotion;
+  }
+  return row;
+}
+
 export class FlowgridDatabase extends Dexie {
   client!: Table<ClientRecord, ClientId>;
   cells!: Table<CellRecord, CellId>;
@@ -232,6 +254,28 @@ export class FlowgridDatabase extends Dexie {
       rejuvenations: 'id, createdAt',
     }).upgrade(async (tx) => {
       await tx.table('forgeHistory').toCollection().modify(upgradeForgeHistoryV3ToV4);
+    });
+
+    // Phase 6 / D-08: v5 widens the stored SettingsRecord shape with one new
+    // non-indexed field (reduceMotion). Indexes are unchanged — only the stored
+    // settings shape changes. The settings store holds a singleton; the upgrade
+    // defaults reduceMotion to false on the existing row (matching the Phase 3 stub
+    // behavior where animation was implicitly on). Stores are repeated verbatim
+    // from v4 (Dexie requires the full store set when version(N).stores() replaces
+    // the prior declaration context — RESEARCH Pitfall 5).
+    this.version(5).stores({
+      client: 'id',
+      cells: 'id',
+      core: 'id',
+      moduleInstances: 'id, ownerCellId',
+      routes: 'id, sourceCellId',
+      sessions: 'id, cellId, startedAt',
+      operations: 'id, status, createdAt',
+      settings: 'id',
+      forgeHistory: 'id, createdAt',
+      rejuvenations: 'id, createdAt',
+    }).upgrade(async (tx) => {
+      await tx.table('settings').toCollection().modify(upgradeSettingsV4ToV5);
     });
 
     // First-run seed: writes the three singletons inside the populate transaction.

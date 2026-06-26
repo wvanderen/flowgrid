@@ -48,6 +48,15 @@ export interface SetCoreAllocationCommand {
   readonly storeAllocationPercent: IntPercent;
 }
 
+export interface UpdateSettingsCommand {
+  readonly type: 'update_settings';
+  readonly operationId: OperationId;
+  readonly defaultSessionLengthSeconds: IntSeconds;
+  readonly dailyTargetSeconds: IntSeconds;
+  readonly localDayBoundary: string;
+  readonly reduceMotion: boolean;
+}
+
 // Phase 4 rejuvenation command trio (D-01/D-02 live-timed session model) + CORE-06.
 // `log_rejuvenation` carries startedAt/endedAt; duration is DERIVED at finish time
 // inside the handler (D-04 diff-for-truth). The prior shape `{ durationSeconds }`
@@ -159,6 +168,7 @@ export interface CancelFocusSessionCommand {
 export type SimulationCommand =
   | CompleteFocusSessionCommand
   | SetCoreAllocationCommand
+  | UpdateSettingsCommand
   | LogRejuvenationCommand
   | StartRejuvenationCommand
   | CancelRejuvenationCommand

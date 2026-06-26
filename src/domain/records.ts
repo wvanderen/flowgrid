@@ -145,6 +145,7 @@ export interface SettingsRecord {
   readonly defaultSessionLengthSeconds: IntSeconds;
   readonly dailyTargetSeconds: IntSeconds;
   readonly localDayBoundary: string;
+  readonly reduceMotion: boolean;
   readonly updatedAt: IsoDateTimeString;
 }
 

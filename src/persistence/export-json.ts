@@ -39,6 +39,12 @@ import { FlowgridDatabase } from './database.js';
 // Phase 4 (REJ-01): bumped to 2 — the envelope now carries the append-only
 // rejuvenations history. A v1 archive (no rejuvenations) is still accepted on
 // import by archiveSchema's version union + optional rejuvenations field.
+//
+// Phase 6 / D-08: stays at 2 — adding reduceMotion to SettingsRecord is a
+// field-additive change; settingsSchema's `.default(false)` lets a v2 archive
+// lacking the field parse and default, so the envelope shape remains backward-
+// compatible (no bump). This follows the Phase 4 coreSchema `.default(...)`
+// precedent (RESEARCH Open Question Q2 / Pitfall 4).
 export const ARCHIVE_VERSION = 2;
 
 export interface JsonArchive {

@@ -192,6 +192,7 @@ export function createStarterFlowgridState(
       defaultSessionLengthSeconds: DEFAULT_SESSION_LENGTH_SECONDS,
       dailyTargetSeconds: DEFAULT_DAILY_TARGET_SECONDS,
       localDayBoundary: DEFAULT_LOCAL_DAY_BOUNDARY,
+      reduceMotion: false,
       updatedAt: now,
     },
     forgeHistory: [],

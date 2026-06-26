@@ -63,6 +63,10 @@ export function seedStarterState(tx: Transaction): void {
     defaultSessionLengthSeconds: DEFAULT_SESSION_LENGTH_SECONDS,
     dailyTargetSeconds: DEFAULT_DAILY_TARGET_SECONDS,
     localDayBoundary: DEFAULT_LOCAL_DAY_BOUNDARY,
+    // Phase 6 / D-08: default false (animation on). D-09 OS-preference honoring
+    // happens in the UI layer on first load via prefersReducedMotion(), not here
+    // — seeding stays DOM-free and testable.
+    reduceMotion: false,
     updatedAt: now,
   };
 

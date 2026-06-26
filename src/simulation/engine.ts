@@ -14,6 +14,7 @@ import type {
 
 import { completeFocusSession } from './commands/complete-focus-session.js';
 import { setCoreAllocation } from './commands/set-core-allocation.js';
+import { updateSettings } from './commands/update-settings.js';
 import { notImplementedResult } from './commands/not-implemented.js';
 import { createCell } from './commands/create-cell.js';
 import { editCell } from './commands/edit-cell.js';
@@ -37,6 +38,8 @@ export function runSimulationCommand(
       return completeFocusSession(previousState, command, env);
     case 'set_core_allocation':
       return setCoreAllocation(previousState, command, env);
+    case 'update_settings':
+      return updateSettings(previousState, command, env);
     case 'create_cell':
       return createCell(previousState, command, env);
     case 'edit_cell':

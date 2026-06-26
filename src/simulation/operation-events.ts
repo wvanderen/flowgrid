@@ -20,6 +20,8 @@ function entityTypeForCommand(command: SimulationCommand): EntityType {
       return 'session';
     case 'set_core_allocation':
       return 'core';
+    case 'update_settings':
+      return 'settings';
     case 'log_rejuvenation':
       return 'core';
     case 'start_rejuvenation':
@@ -52,6 +54,8 @@ function entityIdForCommand(command: SimulationCommand, fallback: string): strin
     case 'complete_focus_session':
       return command.cellId;
     case 'set_core_allocation':
+      return fallback;
+    case 'update_settings':
       return fallback;
     case 'log_rejuvenation':
       return fallback;

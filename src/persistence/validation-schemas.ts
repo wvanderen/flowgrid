@@ -23,6 +23,7 @@ import type {
   ForgeHistoryRecord,
   RejuvenationRecord,
   SessionRecord,
+  SettingsRecord,
   SyncOperation,
 } from '../domain/index.js';
 
@@ -111,6 +112,12 @@ export const settingsSchema = z.object({
   defaultSessionLengthSeconds: z.number().int().nonnegative(),
   dailyTargetSeconds: z.number().int().nonnegative(),
   localDayBoundary: z.string(),
+  // Phase 6 / D-08: reduceMotion carries the reduced-motion preference. `.default(false)`
+  // is the load-bearing backward-compat trick (RESEARCH Pitfall 4 / Open Question Q2,
+  // following the Phase 4 coreSchema `.default(...)` precedent at lines 69-70): a v2
+  // archive exported before Phase 6 lacks the field, parses, and defaults to false — so
+  // NO ARCHIVE_VERSION bump is required (the envelope shape stays backward-compatible).
+  reduceMotion: z.boolean().default(false),
   updatedAt: z.string().datetime(),
 });
 
@@ -202,6 +209,8 @@ const _rejuvenationSchemaCheck =
   null as unknown as z.infer<typeof rejuvenationSchema> satisfies RejuvenationRecord;
 const _forgeHistorySchemaCheck =
   null as unknown as z.infer<typeof forgeHistorySchema> satisfies ForgeHistoryRecord;
+const _settingsSchemaCheck =
+  null as unknown as z.infer<typeof settingsSchema> satisfies SettingsRecord;
 const _operationSchemaCheck =
   null as unknown as Omit<z.infer<typeof operationSchema>, 'entityType'> satisfies Omit<
     SyncOperation,
@@ -210,4 +219,5 @@ const _operationSchemaCheck =
 void _sessionSchemaCheck;
 void _rejuvenationSchemaCheck;
 void _forgeHistorySchemaCheck;
+void _settingsSchemaCheck;
 void _operationSchemaCheck;
