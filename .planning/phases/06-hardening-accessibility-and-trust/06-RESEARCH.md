@@ -586,25 +586,31 @@ expect(summary.core).toBe(true);
 | A5 | Pixi `Application.init({ preference: 'webgl' })` throws (rather than silently rendering nothing) on WebGL unavailable | D-07 / scene.ts | D-07's try/catch already wraps it; if it does NOT throw, the catch never fires and the fallback message won't show. Verify during Wave 2. |
 | A6 | `prefers-reduced-motion` media query is the correct platform signal | D-09 / Code Examples | Standard MDN-documented API; very low risk. |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+All four questions below are resolved by the Phase 6 plans. Each carries an inline `RESOLVED:` marker referencing the implementing plan/task.
 
 1. **Scene-graph probe gating (D-16 / Pitfall 5).** `import.meta.env.MODE === 'test'` is not dead-code-eliminated and Playwright runs the *production* build (D-17). Options: (a) expose the inspector always but return only aggregate counts (no internal Pixi refs) — safest, minimal info leak; (b) activate wiring via a `?inspect=1` query param Playwright appends; (c) a separate `VITE_E2E_PROBE` build-time flag Playwright's webServer command sets. **Recommendation:** (a) — return only `{ cells, core, routes }` counts, no scene object references. Decide in the plan.
    - What we know: structural assertion needs Pixi stage access; canvas pixels aren't DOM-inspectable.
    - What's unclear: the cleanest production-safe gating.
    - Recommendation: option (a); aggregate counts only.
+   - **RESOLVED:** option (a) — `window.__flowgridInspect` exposed UNCONDITIONALLY (not MODE-gated, since Playwright runs the production build per D-17/Pitfall 5) returning only aggregate `{ cells, core, routes }` counts. Wired in **06-02 Task 2** (FlowgridCanvas.tsx mount effect → summarizeScene); consumed by **06-04 Task 3** (page.evaluate).
 
 2. **`ARCHIVE_VERSION` bump decision (D-09 axis 4 / Pitfall 4).** Does adding `reduceMotion` to `settingsSchema` (with `.default(false)`) require bumping `ARCHIVE_VERSION` 2→3 and adding `z.literal(3)` to the `archiveVersion` union?
    - What we know: Phase 4 added core fields WITHOUT an envelope bump by using `.default(...)` (the v1→v2 archive backward-compat path, Pitfall 6 in CONTEXT).
    - What's unclear: whether the team treats "any record shape change" as an envelope bump for future-importer clarity.
    - Recommendation: follow the Phase 4 precedent — `.default(false)` + NO envelope bump — unless the planner finds a reason to signal the change. Document the decision either way.
+   - **RESOLVED:** NO `ARCHIVE_VERSION` bump (stays at 2). `settingsSchema.reduceMotion: z.boolean().default(false)` makes v2 archives parse-and-default per the Phase 4 coreSchema precedent. Implemented in **06-01 Task 1** (validation-schemas.ts + a code comment documenting the decision in export-json.ts).
 
 3. **localDayBoundary live-reload (Agent's Discretion).** Does changing it in Settings take effect immediately or require reload?
    - What we know: `FlowgridCanvas` captures it at mount; `deriveLocalDate` uses it for the Activation halo.
    - Recommendation: reload-only is simpler and matches current behavior; the daily-milestone reset already runs on app open via `reconcileDayRollover`. Defer hot-reload (already in Deferred Ideas).
+   - **RESOLVED:** reload-only — the simpler option. `FlowgridCanvas` keeps the mount-once dep array (localDayBoundary captured at mount). Implemented in **06-01 Task 2** (SettingsPanel) + **06-02 Task 2** (FlowgridCanvas.tsx preserves the capture-at-mount behavior). Hot-reload remains in Deferred Ideas.
 
 4. **Forge/token visual-event emission sites (D-04).** Exactly where do `visual:forge_roll` / `visual:module_upgrade` / `visual:token_granted` fire?
    - What we know: `run_forge.ts` is the forge handler (currently emits `forgeCompleted`/`moduleUpgraded` economy events, `visualEvents: []`); token grants happen in the rejuvenation threshold loop (`log_rejuvenation`).
    - Recommendation: emit `visual:forge_roll` + `visual:module_upgrade` in `run-forge.ts` alongside the economy events; emit `visual:token_granted` wherever `tokenGranted` economy event fires (rejuvenation threshold loop). They are transient (UI-04) so placement only affects timing.
+   - **RESOLVED:** exactly as recommended — `visual:forge_roll` + `visual:module_upgrade` emitted in `run-forge.ts` alongside the economy events; `visual:token_granted` emitted inside the `if (tokensGranted > 0)` guard in `log-rejuvenation.ts`. Implemented in **06-02 Task 1** (names + constructors + emission sites).
 
 ## Environment Availability
 
