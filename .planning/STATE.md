@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 06
 current_phase_name: hardening-accessibility-and-trust
 status: executing
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-06-26T18:34:07.350Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-06-26T18:51:16.000Z"
 last_activity: 2026-06-26
-last_activity_desc: Phase 06 execution started
+last_activity_desc: Plan 06-02 (animated renderer) complete
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 21
-  completed_plans: 18
-  percent: 83
+  completed_plans: 19
+  percent: 90
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 06 (hardening-accessibility-and-trust) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
-Last activity: 2026-06-26 — Phase 06 execution started
+Last activity: 2026-06-26 — Plan 06-02 (animated renderer) complete
 
 Progress: [██████████████████████] 17/17 known plans (100%), 5/6 phases
 
@@ -72,6 +72,7 @@ Progress: [██████████████████████] 1
 | Phase 05 P02 | 3min | 2 tasks | 2 files |
 | Phase 05 P03 | 20min | 4 tasks | 9 files |
 | Phase 06 P01 | 87min | 3 tasks | 19 files |
+| Phase 06 P02 | 13min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -110,6 +111,10 @@ Recent decisions affecting current work:
 - [Phase 05-03]: Task 4 human visual smoke is deferred — autonomous agent verified build/test/lint/tsc green + all acceptance grep counts, but cannot run a real-browser click flow. Surfaced as checkpoint:human-verify in SUMMARY; Phase 6 VER-04/05/06 will re-exercise the flow.
 - [Phase 06]: ARCHIVE_VERSION stays at 2 for reduceMotion — settingsSchema .default(false) makes the field-additive change backward-compatible (Phase 4 coreSchema precedent, Pitfall 4 / Q2); documented in export-json.ts
 - [Phase 06]: D-09 OS-preference honoring runs as a one-time ref-guarded mount effect in SettingsPanel (not persistence) so seeding stays DOM-free and testable; reduceMotion is computed in the UI/store layer and passed into the renderer (Pitfall 6)
+- [Phase 06]: D-04 visual events are transient (UI-04) — payloads mirror their economy-event peers but live in a separate visualEvents[] array, so dropping them is byte-safe. forgeRoll + moduleUpgrade emitted in run-forge.ts alongside economy events; tokenGranted inside the if (tokensGranted > 0) guard in log-rejuvenation.ts (Q4)
+- [Phase 06]: D-05 build-once lands with D-01 (RESEARCH Pitfall 3) — rebuild-on-dispatch kills particle systems. buildFlowgridScene returns SceneRefs for id-based in-place lookup; updateFlowgridScene mutates hex/halo/color in place and NEVER destroys+rebuilds
+- [Phase 06]: summarizeScene returns aggregate counts ONLY (Open Q1 option (a)) — no internal Pixi refs leak; window.__flowgridInspect exposed unconditionally (NOT MODE-gated; Playwright runs the production build per D-17 / Pitfall 5)
+- [Phase 06]: D-07 graceful WebGL-fail uses role="status" aria-live="polite" (graceful degradation), NOT role="alert" (ErrorBanner error state) — the economy stays fully usable via the Cell list + panels
 
 ### Pending Todos
 
@@ -131,6 +136,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-26T18:34:07.344Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-06-26T18:51:16.000Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None
