@@ -21,6 +21,7 @@ import fc from 'fast-check';
 import { expect, test } from 'vitest';
 
 import type {
+  CellRecord,
   CompleteFocusSessionCommand,
   FlowgridSnapshot,
   LogRejuvenationCommand,
@@ -68,8 +69,15 @@ function buildRepresentativeCommand(
   variantIndex: number,
 ): { readonly command: SimulationCommand; readonly seeded: FlowgridSnapshot } {
   const { ids, state } = buildStarterSnapshot(input.prefix);
+  // Seed an active focus session on the starter Cell when activeFocusSession is
+  // true so start_focus_session's mutual-exclusion rejection branch is exercised.
+  const baseCell = state.cells.values().next().value as CellRecord;
+  const seededCell: CellRecord = input.activeFocusSession
+    ? { ...baseCell, activeSessionStartedAt: '2026-01-04T13:00:00.000Z' }
+    : baseCell;
   const seeded: FlowgridSnapshot = {
     ...state,
+    cells: new Map([[baseCell.id, seededCell]]),
     core: {
       ...state.core,
       moduleTokens: input.moduleTokens,
@@ -78,9 +86,6 @@ function buildRepresentativeCommand(
       coreCharge: input.coreCharge,
       integration: input.integration,
       activeRejuvenationStartedAt: null,
-      // activeFocusSession drives start_focus_session mutual-exclusion rejection
-      // (so the rejected branch is also exercised).
-      activeFocusSessionCellId: input.activeFocusSession ? ids.cellId : null,
     },
   };
 
