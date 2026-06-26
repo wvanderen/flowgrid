@@ -46,7 +46,7 @@ export function ModuleTile({ kind, label, description, level, levelEffect }: Mod
       <h2 className="text-base font-semibold text-slate-100">{label} · Lv {level}</h2>
       <Icon aria-hidden="true" data-testid={`module-tile-icon-${kind}`} className="h-8 w-8 text-core" />
       <p className="text-sm text-slate-400">{description}</p>
-      <p className="text-xs text-slate-500">{effectLine}</p>
+      <p className="text-xs text-slate-400">{effectLine}</p>
     </div>
   );
 }

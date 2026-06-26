@@ -12,3 +12,8 @@ coverage/
 .sidecar-start.sh
 .sidecar-base
 .td-root
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
