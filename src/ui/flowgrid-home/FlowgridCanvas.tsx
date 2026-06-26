@@ -42,8 +42,9 @@ import {
   type FlowgridApplication,
   type SceneRefs,
 } from '../../render/flowgrid/scene.js';
-import { emitParticles, type ParticleAnchors } from '../../render/flowgrid/particles.js';
+import { emitParticles } from '../../render/flowgrid/particles.js';
 import { summarizeScene } from '../../render/flowgrid/scene-inspect.js';
+import { buildParticleAnchors } from './particle-anchors.js';
 
 interface FlowgridCanvasProps {
   readonly onCellTap: (cellId: CellId) => void;
@@ -219,31 +220,4 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
       role="img"
     />
   );
-}
-
-// Build the ParticleAnchors payload from the current SceneRefs. Called per drained
-// visual-event batch right before emitParticles. Lives here (UI layer) so the
-// render-layer particles.ts stays decoupled from scene.ts internals.
-function buildParticleAnchors(refs: SceneRefs): ParticleAnchors {
-  const cells = new Map<string, { x: number; y: number }>();
-  for (const view of refs.cells.values()) {
-    // Particle positions are in scene-container-local space (same as the hexes),
-    // so add the container offset so particles land in canvas viewport space.
-    cells.set(view.cellId, {
-      x: view.x + refs.container.x,
-      y: view.y + refs.container.y,
-    });
-  }
-  const routes = new Map<string, { from: { x: number; y: number }; to: { x: number; y: number } }>();
-  for (const route of refs.routes.values()) {
-    routes.set(route.routeId, {
-      from: { x: route.fromX + refs.container.x, y: route.fromY + refs.container.y },
-      to: { x: route.toX + refs.container.x, y: route.toY + refs.container.y },
-    });
-  }
-  return {
-    core: { x: refs.container.x, y: refs.container.y },
-    cells,
-    routes,
-  };
 }
