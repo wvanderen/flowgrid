@@ -7,6 +7,7 @@ import { FlowgridHome } from '../ui/flowgrid-home/FlowgridHome.js';
 import { CellBoard } from '../ui/cell-board/CellBoard.js';
 import { CorePanel } from '../ui/core-panel/CorePanel.js';
 import { ForgePanel } from '../ui/forge-panel/ForgePanel.js';
+import { SettingsPanel } from '../ui/settings/SettingsPanel.js';
 
 export const router = createBrowserRouter([
   {
@@ -24,5 +25,9 @@ export const router = createBrowserRouter([
   {
     path: '/forge',
     element: <ForgePanel />,
+  },
+  {
+    path: '/settings',
+    element: <SettingsPanel />,
   },
 ]);

@@ -77,8 +77,11 @@ export function FlowgridHome() {
     <section aria-label="Flowgrid home" className="mx-auto max-w-5xl px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-core">Flowgrid</h1>
-        {/* Reachable /core navigation (peer to / and /cells/:id). */}
-        <Link to="/core" className="text-sm text-slate-400 underline">Core</Link>
+        {/* Reachable /core and /settings navigation (peer to / and /cells/:id). */}
+        <div className="flex items-center gap-3">
+          <Link to="/core" className="text-sm text-slate-400 underline">Core</Link>
+          <Link to="/settings" className="text-sm text-slate-400 underline">Settings</Link>
+        </div>
       </div>
 
       {/* D-05: interrupted-session recovery banner (mounted, not just defined). */}
