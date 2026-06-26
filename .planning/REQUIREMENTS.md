@@ -70,7 +70,7 @@
 ### Rendering and UI
 
 - [x] **UI-01**: User can see a Core-centered hex Flowgrid Home with compact Cells and selection state.
-- [ ] **UI-02**: User can use semantic non-canvas controls for every critical action: create Cell, start/finish session, inspect Cell, set Core allocation, log rejuvenation, forge, install reward, view history, and export.
+- [x] **UI-02**: User can use semantic non-canvas controls for every critical action: create Cell, start/finish session, inspect Cell, set Core allocation, log rejuvenation, forge, install reward, view history, and export.
 - [ ] **UI-03**: PixiJS or Canvas/WebGL visuals render Cells, Core, routes, Current movement, Bloom bursts, and Core conversion/storage feedback from simulation-emitted visual events.
 - [ ] **UI-04**: Dropping, reducing, replaying, or skipping visual events never changes durable economy state.
 - [x] **UI-05**: User can open a Cell Board or inspector that shows starter modules, ports/slots, Cell Charge, Bloom progress, and installed rewards.
@@ -184,7 +184,7 @@
 | MOD-06 | Phase 5 | Complete |
 | MOD-07 | Phase 5 | Complete |
 | UI-01 | Phase 3 | Complete |
-| UI-02 | Phase 6 | Pending |
+| UI-02 | Phase 6 | Complete |
 | UI-03 | Phase 6 | Pending |
 | UI-04 | Phase 6 | Pending |
 | UI-05 | Phase 3 | Complete |
