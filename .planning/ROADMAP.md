@@ -17,6 +17,7 @@ Flowgrid v1 is a vertical MVP that proves the first loop before expanding into a
 - [x] **Phase 4: Core Alternation and Rejuvenation Economy** - Route effort through the Core, split Current into Energy/Core Charge, process rejuvenation, and earn Module Tokens. (completed 2026-06-24)
 - [ ] **Phase 5: Module Forge and Starter Customization** - Let users spend Module Tokens on curated Forge choices and apply rewards into starter slots.
 - [ ] **Phase 6: Hardening, Accessibility, and Trust** - Verify the full browser flow, accessible semantic controls, renderer safety, settings, recovery UX, and release-readiness checks.
+- [ ] **Phase 6.1: Canvas-Always-Visible Layout Pivot** - *(Urgent insertion)* Restructure the app shell so the Flowgrid canvas stays mounted and visible during all core signal-producing interactions; module interactions become inline-on-grid, with Settings/History/Forge as the only full-screen takeovers. Unblocks 06-05 / UI-03 / VER-06.
 
 ## Phase Details
 
@@ -193,6 +194,25 @@ Plans:
 
 **UI hint**: yes
 
+### Phase 6.1: Canvas-Always-Visible Layout Pivot
+
+**Goal**: User experiences effort as visible signal in real time because the Flowgrid canvas remains mounted and visible during all core gameplay (sessions, Core convert/store, rejuvenation), with module interactions handled inline on the grid and only Settings, History, and Forge build choices as full-screen takeovers.
+**Mode:** mvp
+**Depends on**: Phase 6 (06-05 Task 3 is blocked by this pivot and re-opens once 6.1 lands)
+**Requirements**: UI-08 (and re-closure of UI-03 / VER-06)
+**Success Criteria** (what must be TRUE):
+
+  1. The Flowgrid canvas stays mounted and visible during active sessions, session finish, Core convert/store, and rejuvenation — particles / Current / Bloom / Core ripples are perceivable during the events that emit them.
+  2. Tapping a Cell starts a session with the canvas still visible (sacred `open app -> tap Cell -> start session` preserved); the focus/session view is anchored inline rather than at a route that unmounts the canvas.
+  3. Module interactions (including Core allocation) happen inline on the grid; no panel, sheet, or overlay covers the canvas during core play.
+  4. Settings, History, and Forge build-choice flows are the only full-screen takeovers and are explicitly returnable to the grid.
+  5. The layout degrades safely when WebGL/Canvas is unavailable (D-07) and remains operable via semantic non-canvas controls (UI-02).
+  6. Re-opened 06-05 Task 3 human smoke passes: particles are visible during their emitting events.
+
+**Plans:** TBD via `/gsd-discuss-phase` -> `/gsd-plan-phase`
+
+**UI hint**: yes
+
 ## Deferred After V1
 
 Advanced module graphs, the full patch editor, prestige/Memory, complex rarity pools, cloud sync, multi-device active sessions, native notifications/widgets, AI planning, advanced analytics, and platform integrations stay deferred until v1 validates the first loop. Future spikes should start from the v1 operation log, stable IDs, append-only session history, and entity-specific conflict semantics rather than replacing the local-first foundation.
@@ -200,7 +220,7 @@ Advanced module graphs, the full patch editor, prestige/Memory, complex rarity p
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6. Phase 6.1 is an urgent insertion that unblocks 06-05 (the final plan of Phase 6); execute 6.1 before re-closing 06-05.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -210,3 +230,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 4. Core Alternation and Rejuvenation Economy | 3/3 | Complete    | 2026-06-24 |
 | 5. Module Forge and Starter Customization | 2/3 | In Progress|  |
 | 6. Hardening, Accessibility, and Trust | 4/5 (+1 partial) | In Progress (06-05 partial; layout pivot blocks UI-03/VER-06) |  |
+| 6.1. Canvas-Always-Visible Layout Pivot | 0/? | Not Started (urgent insertion; unblocks 06-05) |  |
