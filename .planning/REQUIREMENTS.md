@@ -92,9 +92,9 @@
 - [x] **VER-01**: Unit tests cover pure simulation commands for focus completion, Bloom, Activation, Core allocation, rejuvenation, Integration, Module Token grants, Forge, and validation failures.
 - [x] **VER-02**: Property-based tests cover resource non-negativity, allocation normalization, idempotent operation IDs, duplicate prevention, monotonic forge count, and token non-duplication.
 - [x] **VER-03**: Persistence tests cover Dexie schema creation, migration fixtures, repository writes, append-only sessions, export, and restore validation.
-- [ ] **VER-04**: Browser tests cover the core user flow: create Cell, start/finish focus session, see Current/Bloom/Core effects, log rejuvenation, gain Module Token, run Forge, and reload with state preserved.
-- [ ] **VER-05**: Accessibility checks verify keyboard and semantic UI paths for all critical canvas-backed actions.
-- [ ] **VER-06**: Canvas/WebGL smoke checks verify that Flowgrid visuals render nonblank Cells/Core/routes and can be reduced or disabled without breaking economy state.
+- [x] **VER-04**: Browser tests cover the core user flow: create Cell, start/finish focus session, see Current/Bloom/Core effects, log rejuvenation, gain Module Token, run Forge, and reload with state preserved.
+- [x] **VER-05**: Accessibility checks verify keyboard and semantic UI paths for all critical canvas-backed actions.
+- [x] **VER-06**: Canvas/WebGL smoke checks verify that Flowgrid visuals render nonblank Cells/Core/routes and can be reduced or disabled without breaking economy state.
 
 ## v2 Requirements
 
@@ -200,9 +200,9 @@
 | VER-01 | Phase 1 | Complete |
 | VER-02 | Phase 1 | Complete |
 | VER-03 | Phase 2 | Complete |
-| VER-04 | Phase 6 | Pending |
-| VER-05 | Phase 6 | Pending |
-| VER-06 | Phase 6 | Pending |
+| VER-04 | Phase 6 | Complete |
+| VER-05 | Phase 6 | Complete |
+| VER-06 | Phase 6 | Complete |
 
 **Coverage:**
 
