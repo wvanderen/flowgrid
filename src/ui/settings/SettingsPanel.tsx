@@ -62,36 +62,26 @@ export function SettingsPanel() {
     snapshot?.settings.reduceMotion ?? false,
   );
 
-  // D-09: first-run OS-preference honoring. On mount, if the persisted setting is
-  // false but the OS asks for reduced motion, persist reduceMotion true ONE TIME.
-  // The ref guard prevents re-firing on every render/reload cycle. No prior
-  // update_settings operation exists for reduceMotion in a fresh seed, so honoring
-  // the OS preference here is safe and does not override an explicit user choice
-  // (an explicit choice would have reduceMotion already matching the persisted
-  // value after the first save).
+  // D-09 (revised per gap-closure 06-05): the OS preference now pre-fills the
+  // checkbox as a SESSION-ONLY visual suggestion — durable reduceMotion requires
+  // an explicit Save click. The prior implementation dispatched update_settings
+  // to durably persist reduceMotion=true on the first /settings visit when the OS
+  // asked for reduced motion, which accidentally pinned reduceMotion true for any
+  // user who visited once with OS reduce-motion enabled — stopping the animation
+  // ticker and skipping particle emission indefinitely (root-cause evidence:
+  // .planning/debug/no-canvas-animation.md). The ref guard still prevents
+  // re-firing on every render/reload cycle. D-09's "manual override" is fully
+  // preserved: the user can explicitly toggle the checkbox and click Save to
+  // persist their choice either way.
   const honoredOsPreference = useRef(false);
   useEffect(() => {
     if (honoredOsPreference.current) return;
     if (snapshot === null) return;
-    if (snapshot.settings.reduceMotion) {
-      honoredOsPreference.current = true;
-      return;
-    }
-    if (prefersReducedMotion()) {
-      honoredOsPreference.current = true;
-      const env = buildSettingsEnv(snapshot.settings.localDayBoundary);
-      const command: UpdateSettingsCommand = {
-        type: 'update_settings',
-        operationId: crypto.randomUUID(),
-        defaultSessionLengthSeconds: snapshot.settings.defaultSessionLengthSeconds,
-        dailyTargetSeconds: snapshot.settings.dailyTargetSeconds,
-        localDayBoundary: snapshot.settings.localDayBoundary,
-        reduceMotion: true,
-      };
-      void dispatch(command, env, repository);
+    honoredOsPreference.current = true;
+    // Pre-fill the checkbox from the OS preference (session-only suggestion).
+    // No durable write occurs here — reduceMotion cannot be accidentally pinned.
+    if (!snapshot.settings.reduceMotion && prefersReducedMotion()) {
       setReduceMotion(true);
-    } else {
-      honoredOsPreference.current = true;
     }
   }, [snapshot]);
 
