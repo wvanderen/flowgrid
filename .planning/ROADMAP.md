@@ -142,7 +142,7 @@ Plans:
   4. Forge history records payment, offered choices, chosen reward, timestamp, and monotonic forge count.
   5. Installing or applying a reward rejects duplicate installs, invalid owner Cells, and invalid slot states.
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans executed
 
 **Wave 1**
 
@@ -154,7 +154,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 05-03-PLAN.md — App store + UI: lastCompletedForge + captureCompletedForge, /forge route (ForgePanel + ForgeSummary + ForgeChoiceList), ReturnCues Forge chip, CellBoard ModuleTile level-badge extension + human visual smoke
+- [x] 05-03-PLAN.md — App store + UI: lastCompletedForge + captureCompletedForge, /forge route (ForgePanel + ForgeSummary + ForgeChoiceList), ReturnCues Forge chip, CellBoard ModuleTile level-badge extension. Task 4 human visual smoke deferred to Phase 6 VER-04/05/06.
 
 **UI hint**: yes
 

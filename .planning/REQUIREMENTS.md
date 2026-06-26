@@ -60,11 +60,11 @@
 ### Modules and Forge
 
 - [ ] **MOD-01**: Static ModuleDefinitions are versioned content separate from user-owned ModuleInstances.
-- [ ] **MOD-02**: User can inspect starter modules and understand their current behavior through normal UI controls.
-- [x] **MOD-03**: User can spend a Module Token on a simple Module Forge roll that reveals three curated choices.
+- [x] **MOD-02**: User can inspect starter modules and understand their current behavior through normal UI controls.
+- [x] **MOD-03**: User can spend a Module Token on a simple Forge roll that reveals three curated choices.
 - [x] **MOD-04**: User can choose one Forge reward and persist it as an owned ModuleInstance, upgrade, or starter-slot enhancement.
 - [x] **MOD-05**: Forge history records payment, offered choices, chosen reward, timestamp, and monotonic forge count.
-- [ ] **MOD-06**: User can install or apply a v1 Forge reward into a curated starter slot without using a full patch editor.
+- [x] **MOD-06**: User can install or apply a v1 Forge reward into a curated starter slot without using a full patch editor.
 - [x] **MOD-07**: Duplicate module install, invalid owner Cell, and invalid slot states are rejected by validation.
 
 ### Rendering and UI
@@ -177,11 +177,11 @@
 | REJ-04 | Phase 4 | Complete |
 | REJ-05 | Phase 4 | Complete |
 | MOD-01 | Phase 1 | Pending |
-| MOD-02 | Phase 5 | Pending |
+| MOD-02 | Phase 5 | Complete |
 | MOD-03 | Phase 5 | Complete |
 | MOD-04 | Phase 5 | Complete |
 | MOD-05 | Phase 5 | Complete |
-| MOD-06 | Phase 5 | Pending |
+| MOD-06 | Phase 5 | Complete |
 | MOD-07 | Phase 5 | Complete |
 | UI-01 | Phase 3 | Complete |
 | UI-02 | Phase 6 | Pending |

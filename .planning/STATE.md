@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 05
 current_phase_name: module-forge-and-starter-customization
 status: executing
-stopped_at: Completed 05-02-PLAN.md (Forge history persistence migration)
-last_updated: "2026-06-25T23:21:03Z"
-last_activity: 2026-06-25
-last_activity_desc: Phase 05 plan 02 complete
+stopped_at: Completed 05-03-PLAN.md (Forge UI surface + module inspection) — Task 4 human visual smoke deferred
+last_updated: "2026-06-26T03:50:00Z"
+last_activity: 2026-06-26
+last_activity_desc: Phase 05 plan 03 complete (code; visual smoke pending)
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 17
-  completed_plans: 16
-  percent: 72
+  completed_plans: 17
+  percent: 76
 ---
 
 # Project State
@@ -30,10 +30,10 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 Phase: 05 (module-forge-and-starter-customization) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
-Last activity: 2026-06-25 — Phase 05 plan 02 complete
+Status: Phase 05 code-complete (Task 4 human visual smoke deferred to Phase 6 VER-04/05/06)
+Last activity: 2026-06-26 — Phase 05 plan 03 complete (code; visual smoke pending)
 
-Progress: [████████████████████] 14/14 known plans (100%), 4/6 phases
+Progress: [██████████████████████] 17/17 known plans (100%), 4/6 phases
 
 ## Performance Metrics
 
@@ -70,6 +70,7 @@ Progress: [████████████████████] 14/14 k
 | Phase 04 P03 | 254min | 4 tasks | 10 files |
 | Phase 05 P01 | 71min | 3 tasks | 19 files |
 | Phase 05 P02 | 3min | 2 tasks | 2 files |
+| Phase 05 P03 | 20min | 4 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,8 @@ Recent decisions affecting current work:
 - [Phase 05-01]: slot_at_capacity handler check is defense-in-depth (the reveal filter makes it unreachable via normal dispatch); validateModuleLevelCap invariant backstop is the independent guard. Insufficient-payment reuses negative_resource; chosen-not-in-revealed reuses invalid_reference (RESEARCH A6 — minimum new ValidationIssueCode surface).
 - [Phase 05-02]: Task 2 (Zod widening + drift guard + export/import) was fully pre-staged by Plan 05-01 Deviation #1 (commit 98fc4d2); all 6 acceptance criteria verified green, no empty commit made. moduleKind uses z.enum (stricter than plan's z.string) to mirror ModuleDefinitionKind and close T-05-07 at the enum boundary.
 - [Phase 05-02]: Dexie v3→v4 bump ships full 10-store-set repetition + .upgrade() on the empty pre-Phase-5 forgeHistory store (RESEARCH Pitfall 5). upgradeForgeHistoryV3ToV4 + FORGE_HISTORY_V4_DEFAULTS are exported pure transforms exercised by the migration harness. D-09 fully shipped across 05-01 + 05-02.
+- [Phase 05-03]: /forge route (ForgePanel + ForgeSummary + ForgeChoiceList) is a near-clone of the /core route peer pattern; ForgeSummary is an INLINE <section role=status aria-live=polite> (NOT a modal — D-11/Pitfall 7). Two-step roll UX: user picks payment via local-state pendingPaymentType then taps Pick — keeps dispatch atomic. KIND_LABELS centralized in ForgeChoiceList for DRY reuse. ReturnCues Forge chip lives in the rail above the canvas (never intercepts the Cell tap). ModuleTile reads MODULE_LEVEL_BONUS (UI ↔ sim agreement, D-13).
+- [Phase 05-03]: Task 4 human visual smoke is deferred — autonomous agent verified build/test/lint/tsc green + all acceptance grep counts, but cannot run a real-browser click flow. Surfaced as checkpoint:human-verify in SUMMARY; Phase 6 VER-04/05/06 will re-exercise the flow.
 
 ### Pending Todos
 
@@ -125,6 +128,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-25T23:21:03Z
-Stopped at: Completed 05-02-PLAN.md (Forge history persistence migration)
+Last session: 2026-06-26T03:50:00Z
+Stopped at: Completed 05-03-PLAN.md (Forge UI surface + module inspection) — Task 4 human visual smoke deferred
 Resume file: None
