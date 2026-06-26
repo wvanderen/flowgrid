@@ -166,6 +166,13 @@ None - no external service configuration required.
 - The `/settings` route + Settings link in the Home header are ready for Plan 06-03 (semantic Cell list) and Plan 06-04 (VER-04/05/06 E2E, which will exercise the full click flow including settings persistence + reload).
 - No blockers.
 
+## Self-Check: PASSED
+- All 6 created files exist on disk (update-settings.ts, SettingsPanel.tsx, reduce-motion.ts, download.ts, update-settings.test.ts, update-settings.property.test.ts)
+- All 4 commits present (6645210 feat, e327463 feat, f73f394 test, cf0d8b0 docs)
+- `npx tsc --noEmit` exits 0
+- `npx vitest run` full suite: 40 files / 235 tests pass, exit 0
+- SettingsRecord.reduceMotion placed before updatedAt; version(5) present; ARCHIVE_VERSION stays 2; v4→v5 migration describe block present
+
 ---
 *Phase: 06-hardening-accessibility-and-trust*
 *Completed: 2026-06-26*

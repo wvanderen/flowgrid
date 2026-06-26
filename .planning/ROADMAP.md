@@ -172,11 +172,11 @@ Plans:
   4. User can configure default session length, daily target defaults, local day boundary, reduced motion, and export from minimal settings.
   5. Browser, accessibility, and canvas smoke checks cover create Cell through Forge, reload with state preserved, keyboard access, semantic UI paths, and reduced/disabled motion.
 
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 **Wave 1**
 
-- [ ] 06-01-PLAN.md — Settings slice: update_settings command + SettingsRecord.reduceMotion + Dexie v4→v5 migration + /settings route + SettingsPanel (defaults, reduced-motion toggle, export JSON/CSV, import-replace) + unit/property/migration tests
+- [x] 06-01-PLAN.md — Settings slice: update_settings command + SettingsRecord.reduceMotion + Dexie v4→v5 migration + /settings route + SettingsPanel (defaults, reduced-motion toggle, export JSON/CSV, import-replace) + unit/property/migration tests
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -205,4 +205,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Playable Generator Flowgrid | 5/5 | Complete   | 2026-06-24 |
 | 4. Core Alternation and Rejuvenation Economy | 3/3 | Complete    | 2026-06-24 |
 | 5. Module Forge and Starter Customization | 2/3 | In Progress|  |
-| 6. Hardening, Accessibility, and Trust | 0/4 | Not started | - |
+| 6. Hardening, Accessibility, and Trust | 1/4 | In Progress|  |

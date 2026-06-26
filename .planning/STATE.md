@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 06
 current_phase_name: hardening-accessibility-and-trust
 status: executing
-stopped_at: Phase 06 context gathered
-last_updated: "2026-06-26T17:00:41.688Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-06-26T18:34:07.350Z"
 last_activity: 2026-06-26
 last_activity_desc: Phase 06 execution started
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 21
-  completed_plans: 17
-  percent: 81
+  completed_plans: 18
+  percent: 83
 ---
 
 # Project State
@@ -29,8 +29,8 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 06 (hardening-accessibility-and-trust) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 06
+Plan: 2 of 4
+Status: Ready to execute
 Last activity: 2026-06-26 — Phase 06 execution started
 
 Progress: [██████████████████████] 17/17 known plans (100%), 5/6 phases
@@ -71,6 +71,7 @@ Progress: [██████████████████████] 1
 | Phase 05 P01 | 71min | 3 tasks | 19 files |
 | Phase 05 P02 | 3min | 2 tasks | 2 files |
 | Phase 05 P03 | 20min | 4 tasks | 9 files |
+| Phase 06 P01 | 87min | 3 tasks | 19 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,8 @@ Recent decisions affecting current work:
 - [Phase 05-02]: Dexie v3→v4 bump ships full 10-store-set repetition + .upgrade() on the empty pre-Phase-5 forgeHistory store (RESEARCH Pitfall 5). upgradeForgeHistoryV3ToV4 + FORGE_HISTORY_V4_DEFAULTS are exported pure transforms exercised by the migration harness. D-09 fully shipped across 05-01 + 05-02.
 - [Phase 05-03]: /forge route (ForgePanel + ForgeSummary + ForgeChoiceList) is a near-clone of the /core route peer pattern; ForgeSummary is an INLINE <section role=status aria-live=polite> (NOT a modal — D-11/Pitfall 7). Two-step roll UX: user picks payment via local-state pendingPaymentType then taps Pick — keeps dispatch atomic. KIND_LABELS centralized in ForgeChoiceList for DRY reuse. ReturnCues Forge chip lives in the rail above the canvas (never intercepts the Cell tap). ModuleTile reads MODULE_LEVEL_BONUS (UI ↔ sim agreement, D-13).
 - [Phase 05-03]: Task 4 human visual smoke is deferred — autonomous agent verified build/test/lint/tsc green + all acceptance grep counts, but cannot run a real-browser click flow. Surfaced as checkpoint:human-verify in SUMMARY; Phase 6 VER-04/05/06 will re-exercise the flow.
+- [Phase 06]: ARCHIVE_VERSION stays at 2 for reduceMotion — settingsSchema .default(false) makes the field-additive change backward-compatible (Phase 4 coreSchema precedent, Pitfall 4 / Q2); documented in export-json.ts
+- [Phase 06]: D-09 OS-preference honoring runs as a one-time ref-guarded mount effect in SettingsPanel (not persistence) so seeding stays DOM-free and testable; reduceMotion is computed in the UI/store layer and passed into the renderer (Pitfall 6)
 
 ### Pending Todos
 
@@ -128,6 +131,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-26T15:01:23.515Z
-Stopped at: Phase 06 context gathered
-Resume file: .planning/phases/06-hardening-accessibility-and-trust/06-CONTEXT.md
+Last session: 2026-06-26T18:34:07.344Z
+Stopped at: Completed 06-01-PLAN.md
+Resume file: None
