@@ -1,18 +1,14 @@
 ---
-status: testing
+status: complete
 phase: 06-hardening-accessibility-and-trust
 source: [06-VERIFICATION.md]
 started: 2026-06-26T20:30:00Z
-updated: 2026-06-26T20:30:00Z
+updated: 2026-06-26T20:51:00Z
 ---
 
 ## Current Test
 
-number: 1
-name: Visual animation fidelity inspection on a real GPU (not SwiftShader headless)
-expected: |
-  Current trails, Bloom bursts, Core convert/store ripples, forge/token flashes visibly animate during their respective events; reduceMotion=true stops all animation while leaving the static scene visible; the WebGL-fail path shows the friendly inline note with a Settings link.
-awaiting: user response
+[testing complete]
 
 ## Tests
 
@@ -27,7 +23,9 @@ expected: |
     - Reduced-motion ON yields static hexes/halos with no animation (ticker fully stopped), static durable state still visible.
     - WebGL-fail path shows the friendly inline note ("Visuals unavailable — you can still do everything from the Cell list below") + a Settings link, not a blank frame.
   Why human: VER-06 pixel-variance is intentionally skipped (Pixi v8 preserveDrawingBuffer:false defeats readback). The structural probe (cells>0, core===true, routes>=0) is always-run and passes, but cannot see whether particles actually move or whether the motion reads as "Current flowing".
-result: [pending]
+result: issue
+reported: "production build is necessary here? opening index.html shows a blank page. Local dev build still doesn't seem to have any movement at all"
+severity: major
 
 ### 2. Axe + keyboard spot-check in a real browser session
 
@@ -38,15 +36,23 @@ expected: |
     - Keyboard navigation reaches every critical action via the semantic Cell list + panels.
     - Canvas animations enhance rather than obscure the experience.
   Why human: VER-05 runs axe in headless Chromium (zero violations) and is necessary, but a final human a11y/release-readiness pass on the production build is the "feels trustworthy as a daily app" bar the Phase Goal names. Headless axe is necessary but not sufficient.
-result: [pending]
+result: pass
 
 ## Summary
 
 total: 2
-passed: 0
-issues: 0
-pending: 2
+passed: 1
+issues: 1
+pending: 0
 skipped: 0
 blocked: 0
 
 ## Gaps
+
+- truth: "Particle Current trails, Bloom bursts, Core convert/store ripples, and forge/token flashes visibly animate during their respective events in the dev build served via the Vite dev server."
+  status: failed
+  reason: "User reported: production build is necessary here? opening index.html shows a blank page. Local dev build still doesn't seem to have any movement at all"
+  severity: major
+  test: 1
+  artifacts: []
+  missing: []
