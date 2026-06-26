@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 06
 current_phase_name: hardening-accessibility-and-trust
-status: verifying
-stopped_at: Completed 06-04-PLAN.md (Phase 6 complete)
-last_updated: "2026-06-26T20:23:04.261Z"
+status: blocked
+stopped_at: "06-05 partial: code fixes landed (commits 174e6eb, d59062d); UAT Test 1 visibility gap NOT closed — canvas layout pivot required (see .planning/exploration/canvas-always-visible-layout-pivot.md)"
+last_updated: "2026-06-26T22:20:00.000Z"
 last_activity: 2026-06-26
-last_activity_desc: Plan 06-04 (release-readiness E2E gate) complete — Phase 6 done
+last_activity_desc: "06-05 gap-closure partial — Tasks 1&2 landed; Task 3 checkpoint failed; canvas-vs-routes IA blocker discovered"
 progress:
   total_phases: 6
-  completed_phases: 6
-  total_plans: 21
+  completed_phases: 5
+  total_plans: 22
   completed_plans: 21
-  percent: 100
+  percent: 95
 ---
 
 # Project State
@@ -28,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 ## Current Position
 
-Phase: 06 (hardening-accessibility-and-trust) — COMPLETE
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Last activity: 2026-06-26 — Plan 06-04 (release-readiness E2E gate) complete — Phase 6 done
+Phase: 06 (hardening-accessibility-and-trust) — BLOCKED (layout pivot needed)
+Plan: 5 of 5 (PARTIAL — code fixes landed, UAT visibility gap open)
+Status: 06-05 gap-closure partial; canvas layout pivot required before UI-03/VER-06 can close
+Last activity: 2026-06-26 — 06-05 Tasks 1&2 landed; Task 3 checkpoint failed (static hexagons)
 
-Progress: [██████████████████████] 21/21 plans (100%), 6/6 phases
+Progress: [██████████████████████░] 21/22 plans (95%), 5/6 phases (Phase 6 partial)
 
 ## Performance Metrics
 
@@ -119,14 +119,15 @@ Recent decisions affecting current work:
 - [Phase 06]: D-07 graceful WebGL-fail uses role="status" aria-live="polite" (graceful degradation), NOT role="alert" (ErrorBanner error state) — the economy stays fully usable via the Cell list + panels
 - [Phase ?]: D-06 always-visible semantic Cell list (06-03) mounts <nav aria-label=Cells> alongside FlowgridCanvas, closing UI-02 — every existing Cell is now openable from Home via keyboard (Tab+Enter); doubles as the no-WebGL fallback for D-07
 - [Phase ?]: [Phase 06]: Plan 06-04 release-readiness E2E gate complete — VER-04 full flow + IndexedDB reload, VER-05 keyboard + axe WCAG scans per route (caught+fixed a ModuleTile contrast regression), VER-06 scene-graph probe + reduced-motion economy-equivalence. Production app boots empty by design; E2E creates its own Cell.
+- [Phase 06]: Plan 06-05 (gap-closure, PARTIAL): Task 1 fixed particle coordinate space (anchors are container-local — ParticleContainer is a child of the centered scene container, so adding the stage offset double-applied centering) by extracting a pure `buildParticleAnchors` module (TYPE-ONLY pixi imports). Task 2 revised D-09 to session-only OS-preference pre-fill (no durable `update_settings` on mount). Both correct, committed (174e6eb, d59062d), 246 tests green. BUT Task 3 human smoke FAILED — the real blocker is IA: canvas mounts only at `/` while every particle-emitting event runs on a different route that unmounts it. UI-03/VER-06 still open; a layout pivot is required (seed: .planning/exploration/canvas-always-visible-layout-pivot.md).
 
 ### Pending Todos
 
-None yet.
+- [ ] Run `/gsd-explore` on `.planning/exploration/canvas-always-visible-layout-pivot.md` to pick a target IA for making the canvas visible during session/Core/Forge events (blocks UI-03, VER-06, Phase 6 completion).
 
 ### Blockers/Concerns
 
-None yet.
+- **[MAJOR] Canvas is structurally orphaned from particle-emitting events.** `FlowgridCanvas` mounts only at `/` (`FlowgridHome`), but sessions run on `/cells/:cellId`, Core on `/core`, Forge on `/forge` — each route unmounts the canvas. Result: every particle type (Current trails, Bloom bursts, Core ripples, Activation pulses, forge/token flashes) fires while the canvas is off-screen. Plan 06-05's coordinate-space + reduceMotion fixes are correct and stay committed but cannot close the visibility gap. Needs an information-architecture pivot (persistent canvas / context-driven camera / canvas-as-navigation). Seed at `.planning/exploration/canvas-always-visible-layout-pivot.md`. Reduce-motion stale-pin question (pre-Task-02 durable `reduceMotion=true` in existing DBs) is moot until the canvas is visible during events.
 
 ## Deferred Items
 
@@ -140,6 +141,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-26T20:22:19.738Z
-Stopped at: Completed 06-04-PLAN.md (Phase 6 complete)
-Resume file: None
+Last session: 2026-06-26T22:20:00.000Z
+Stopped at: 06-05 partial — code fixes landed; UAT visibility gap open (canvas layout pivot required)
+Resume file: .planning/exploration/canvas-always-visible-layout-pivot.md

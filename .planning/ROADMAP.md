@@ -189,7 +189,7 @@ Plans:
 
 **Wave 4** *(gap-closure, post-UAT)*
 
-- [ ] 06-05-PLAN.md — UAT gap closure: fix buildParticleAnchors coordinate-space bug (particles emitted off-canvas) + stop SettingsPanel reduceMotion auto-persist pinning + regression tests + human visual smoke
+- [~] 06-05-PLAN.md — PARTIAL: Task 1 (container-local particle anchors) + Task 2 (session-only reduceMotion) landed and correct, but Task 3 human smoke FAILED — canvas mounts only at `/` while every particle event runs on a different route, so particles are never visible during their events. UI-03/VER-06 still open. Needs layout pivot — see `.planning/exploration/canvas-always-visible-layout-pivot.md` (`/gsd-explore`). Summary: `06-05-SUMMARY.md`.
 
 **UI hint**: yes
 
@@ -209,4 +209,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Playable Generator Flowgrid | 5/5 | Complete   | 2026-06-24 |
 | 4. Core Alternation and Rejuvenation Economy | 3/3 | Complete    | 2026-06-24 |
 | 5. Module Forge and Starter Customization | 2/3 | In Progress|  |
-| 6. Hardening, Accessibility, and Trust | 5/5 | Complete (gap-closure pending) | 2026-06-26 |
+| 6. Hardening, Accessibility, and Trust | 4/5 (+1 partial) | In Progress (06-05 partial; layout pivot blocks UI-03/VER-06) |  |
