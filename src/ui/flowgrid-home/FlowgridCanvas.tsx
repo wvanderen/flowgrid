@@ -148,7 +148,20 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
           const dt = now - lastTickTime;
           lastTickTime = now;
           const nextReduceMotion = effectiveReduceMotion(nextSnapshot.settings.reduceMotion);
-          updateFlowgridScene(app, sceneRefs, nextSnapshot, localDate, nextReduceMotion, dt);
+          // Phase 6.1 D-07 (Plan 06.1-02 Task 1): thread the URL-mirrored
+          // selectedCellId into updateFlowgridScene so the Z-Lift visual follows
+          // navigation. This is a view-state projection, NOT a dispatch — the
+          // adapter fires this callback on selectedCellId change too.
+          const nextSelectedCellId = storeView.getState().selectedCellId;
+          updateFlowgridScene(
+            app,
+            sceneRefs,
+            nextSnapshot,
+            localDate,
+            nextReduceMotion,
+            dt,
+            nextSelectedCellId,
+          );
         },
         (events) => {
           // D-01/D-04 particle emission. Gated on reduceMotion: when reduced, the

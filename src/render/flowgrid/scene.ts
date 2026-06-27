@@ -26,6 +26,7 @@ import {
 } from './particles.js';
 import { startMotion, stopMotion, startTicker, tweenScalar } from './motion.js';
 import { SCENE_TAGS } from './scene-inspect.js';
+import { computeZLiftTargets } from './z-lift-targets.js';
 
 // Re-exported so callers (UI layer) can type their Application reference without
 // importing pixi.js directly. The UI layer rule (eslint.config.js) bans pixi.js
@@ -101,8 +102,11 @@ function buildRingSlots(activeCount: number): readonly { q: number; r: number }[
 }
 
 // In-scene display-object handles for one Cell. The hex Graphics is tagged with
-// SCENE_TAGS.cell so scene-inspect can count it.
-interface CellView {
+// SCENE_TAGS.cell so scene-inspect can count it. Exported so the pure Z-Lift
+// helper (src/render/flowgrid/z-lift-targets.ts) can reference the cell shape
+// via a TYPE-ONLY import — the helper mirrors particle-anchors.ts's discipline
+// (zero runtime pixi.js dependency, loads under happy-dom).
+export interface CellView {
   readonly cellId: CellId;
   readonly hex: Graphics;
   // Cached center (in scene-container-local coords) so updateFlowgridScene can
@@ -134,6 +138,13 @@ export interface SceneRefs {
   // Ticker stop handle returned by startMotion; the caller invokes it on unmount.
   readonly stopMotionTick: () => void;
   readonly app: Application;
+  // Phase 6.1 D-07 Z-Lift (Plan 06.1-02 Task 1): lazily-created on first
+  // non-null selectedCellId, then persisted on refs and toggled .visible (never
+  // recreated — Pitfall 4 would reset the particle system). Mutable because the
+  // lazy creation happens inside updateFlowgridScene; the fields are declared on
+  // the interface so subsequent updates can reposition the same Graphics.
+  spotlight?: Graphics;
+  focusCone?: Graphics;
 }
 
 // Read the latest reduceMotion value from the scene refs' app. Kept as a helper so
@@ -264,6 +275,15 @@ export function buildFlowgridScene(
 // `dt` is milliseconds since the last update; it drives the tween lerp. Pass 0 (or
 // any small value) when running under reduceMotion — the lerp is skipped and the
 // properties snap to the new durable state.
+//
+// Phase 6.1 D-07 (Plan 06.1-02 Task 1): `selectedCellId` is the URL-mirrored view
+// state threaded from the adapter. When non-null, the Z-Lift pass lifts the
+// selected Cell hex (scale=LIFT_SCALE), dims non-selected neighbors (alpha=
+// DIM_ALPHA), blooms a translucent spotlight behind it, and draws a focus cone to
+// Core. Per D-07 fixed framing the container is NEVER moved for focus — only
+// object-scale + neighbor-dim. The Z-Lift pass mutates CellView.hex.scale/alpha
+// IN PLACE via tweenScalar and NEVER calls hex.destroy() (Pitfall 4 — rebuild
+// would reset the particle system).
 export function updateFlowgridScene(
   app: Application,
   refs: SceneRefs,
@@ -271,6 +291,7 @@ export function updateFlowgridScene(
   localDate: LocalDateString,
   reduceMotion: boolean,
   dt: number,
+  selectedCellId: CellId | null = null,
 ): void {
   // Re-center the container if the canvas was resized (Pixi auto-updates
   // app.screen; we mirror it so the cluster stays centered).
@@ -414,6 +435,81 @@ export function updateFlowgridScene(
         existing.activatedToday = activatedToday;
       }
     }
+  }
+
+  // Phase 6.1 D-07 Z-Lift pass (Plan 06.1-02 Task 1; RESEARCH Pattern 4 lines
+  // 333-374). Lift the selected Cell's hex (scale=LIFT_SCALE), dim non-selected
+  // neighbors (alpha=DIM_ALPHA), bloom a translucent spotlight behind the selected
+  // hex, and draw a focus cone from the selected cell to Core {0,0}. All reverses
+  // cleanly on deselect. Per D-07 the container is NEVER moved for focus — only
+  // object-scale + neighbor-dim. Pitfall 4: the Z-Lift pass mutates CellView.hex
+  // .scale/alpha IN PLACE via tweenScalar and NEVER calls hex.destroy() (a destroy
+  // here would reset the particle system, exactly the failure mode Pitfall 3 fixed
+  // for dispatch). The spotlight + focusCone Graphics are created ONCE (lazily on
+  // first lift) and persisted on refs, then toggled .visible — never recreated.
+  const targets = computeZLiftTargets(selectedCellId, refs.cells);
+  for (const [cellId, view] of refs.cells) {
+    const target = targets.get(cellId);
+    if (target === undefined) continue;
+    if (reduceMotion || dt <= 0) {
+      // Snap (no tween drift): set scale + alpha directly.
+      view.hex.scale.set(target.scale);
+      view.hex.alpha = target.alpha;
+    } else {
+      // Tween toward target. hex.scale is a Point — tween .x and copy to .y so the
+      // hex stays uniformly scaled. hex.alpha is a plain number on Pixi Graphics.
+      view.hex.scale.set(
+        tweenScalar(view.hex.scale.x, target.scale, dt),
+      );
+      view.hex.alpha = tweenScalar(view.hex.alpha, target.alpha, dt);
+    }
+  }
+
+  // Spotlight + focus cone. Created lazily on first non-null selection, then
+  // persisted on refs.spotlight / refs.focusCone and toggled .visible thereafter.
+  // On deselect both become invisible; the per-cell scale/alpha tween above
+  // restores the steady state.
+  const selectedView =
+    selectedCellId !== null ? refs.cells.get(selectedCellId) : undefined;
+  if (selectedView !== undefined) {
+    if (refs.spotlight === undefined) {
+      const spotlight = new Graphics();
+      spotlight.label = SCENE_TAGS.cell; // tag for scene-inspect counts
+      // Translucent bloom behind the selected hex (HEX_SIZE * 1.6 radius circle).
+      spotlight.circle(selectedView.x, selectedView.y, HEX_SIZE * 1.6);
+      spotlight.fill({ color: 0xfbbf24, alpha: 0.12 });
+      refs.container.addChildAt(spotlight, 0); // under the hexes/routes
+      refs.spotlight = spotlight;
+    } else {
+      refs.spotlight.visible = true;
+      refs.spotlight.position.set(0, 0);
+      // Redraw at the latest selected-cell position (the hex may have moved
+      // during a ring realignment). clear() + redraw is cheap on a single
+      // circle; we are NOT touching the particle layer (Pitfall 4 honored).
+      refs.spotlight.clear();
+      refs.spotlight.circle(selectedView.x, selectedView.y, HEX_SIZE * 1.6);
+      refs.spotlight.fill({ color: 0xfbbf24, alpha: 0.12 });
+    }
+    if (refs.focusCone === undefined) {
+      const focusCone = new Graphics();
+      focusCone.label = SCENE_TAGS.route; // tag for scene-inspect counts
+      focusCone.moveTo(0, 0); // Core at container-local origin
+      focusCone.lineTo(selectedView.x, selectedView.y);
+      focusCone.stroke({ width: 3, color: 0xfbbf24, alpha: 0.45 });
+      refs.container.addChildAt(focusCone, 0);
+      refs.focusCone = focusCone;
+    } else {
+      refs.focusCone.visible = true;
+      refs.focusCone.position.set(0, 0);
+      refs.focusCone.clear();
+      refs.focusCone.moveTo(0, 0);
+      refs.focusCone.lineTo(selectedView.x, selectedView.y);
+      refs.focusCone.stroke({ width: 3, color: 0xfbbf24, alpha: 0.45 });
+    }
+  } else {
+    // No selection: hide both. The Graphics stay mounted (reused on next lift).
+    if (refs.spotlight !== undefined) refs.spotlight.visible = false;
+    if (refs.focusCone !== undefined) refs.focusCone.visible = false;
   }
 
   // Apply the reduceMotion gate (D-03/D-08). When reduceMotion is true, stop the

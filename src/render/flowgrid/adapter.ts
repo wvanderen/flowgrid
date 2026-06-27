@@ -51,20 +51,37 @@ export function connectFlowgridAdapter(
   onVisualEvents: VisualEventDrainHandler,
 ): () => void {
   let lastSnapshot: FlowgridSnapshot | null = null;
+  // Phase 6.1 D-07 / Plan 06.1-02 Task 1 (RESEARCH Pattern 6 selection wiring):
+  // track the last selectedCellId we forwarded so URL-only selection changes
+  // (e.g. /cells/A → /cells/B with no dispatch) still drive the Z-Lift visual.
+  // Without this, a navigation that does not produce a fresh snapshot reference
+  // would never reach onSnapshot and the canvas would not Z-Lift.
+  let lastSelectedCellId: CellId | null = null;
   let isUpdating = false;
 
   const unsubscribe = store.subscribe(() => {
     if (isUpdating) return;
     isUpdating = true;
     try {
-      const { snapshot, pendingVisualEvents } = store.getState();
+      const { snapshot, pendingVisualEvents, selectedCellId } = store.getState();
 
       // Rebuild the scene only when the snapshot reference changes. The dispatch
       // path always produces a fresh `result.nextState`, so reference-equality is
       // the right signal (and avoids unnecessary Pixi rebuilds).
       if (snapshot !== null && snapshot !== lastSnapshot) {
         lastSnapshot = snapshot;
+        lastSelectedCellId = selectedCellId;
         onSnapshot(snapshot);
+      } else if (selectedCellId !== lastSelectedCellId) {
+        // URL-only selection change (no dispatch). Forward so the Z-Lift visual
+        // follows navigation. The snapshot reference is unchanged; we still pass
+        // it so updateFlowgridScene has the full state. The store-mirrored
+        // selectedCellId is what the caller (FlowgridCanvas) forwards into the
+        // Z-Lift pass as the trailing argument.
+        lastSelectedCellId = selectedCellId;
+        if (snapshot !== null) {
+          onSnapshot(snapshot);
+        }
       }
 
       // D-02: visual events are received but dropped (Phase 3 has no animation).

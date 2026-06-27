@@ -88,6 +88,8 @@ test('z-lift-targets: helper file uses TYPE-ONLY SceneRefs/CellView imports (no 
   for (const line of importLines) {
     expect(line.startsWith('import type')).toBe(true);
   }
-  // And the helper must not pull the pixi.js package at all.
-  expect(source.includes('pixi.js')).toBe(false);
+  // And the helper must not pull the pixi.js package at runtime: assert no
+  // import statement references `pixi.js` (comments may mention it).
+  const pixiImports = source.match(/^import[^\n]*pixi\.js[^\n]*$/gm) ?? [];
+  expect(pixiImports).toHaveLength(0);
 });
