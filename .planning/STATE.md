@@ -4,11 +4,11 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 06.1
 current_phase_name: canvas-always-visible-layout-pivot
-status: executing
-stopped_at: Completed 06.1-01-PLAN.md
-last_updated: "2026-06-27T19:29:57.083Z"
+status: awaiting-human-checkpoint
+stopped_at: "Plan 06.1-03 Task 3 awaiting human smoke (Tasks 1+2 complete + green)"
+last_updated: "2026-06-27T19:48:00.000Z"
 last_activity: 2026-06-27
-last_activity_desc: Phase 06.1 execution started
+last_activity_desc: Plan 06.1-03 automated slice complete; Task 3 human smoke pending
 progress:
   total_phases: 7
   completed_phases: 6
@@ -28,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 ## Current Position
 
-Phase: 06.1 (canvas-always-visible-layout-pivot) — EXECUTING
-Plan: 3 of 3
-Status: Ready to execute
-Last activity: 2026-06-27 — Phase 06.1 execution started
+Phase: 06.1 (canvas-always-visible-layout-pivot) — AWAITING-HUMAN-CHECKPOINT
+Plan: 3 of 3 (Tasks 1+2 complete + green; Task 3 human smoke PENDING)
+Status: Plan 06.1-03 Task 3 awaiting human visual smoke (re-opened 06-05 Task 3)
+Last activity: 2026-06-27 — Plan 06.1-03 automated slice complete; Task 3 human smoke pending
 
-Progress: [██████████████████████░] 21/22 plans (95%), 5/6 phases (Phase 6 partial)
+Progress: [███████████████████████] 22/22 plans (100% executed; Plan 06.1-03 pending human checkpoint), 5/6 phases (Phase 6 + 6.1 awaiting Task 3 approval)
 
 ## Performance Metrics
 
@@ -77,6 +77,7 @@ Progress: [██████████████████████░
 | Phase 06 P04 | 63min | 3 tasks | 9 files |
 | Phase 06.1 P01 | 12min | 3 tasks | 10 files |
 | Phase 06.1 P02 | 17min | 3 tasks | 10 files |
+| Phase 06.1 P03 | 18min | 2 of 3 tasks (Task 3 = human smoke) | 4 files |
 
 ## Accumulated Context
 
@@ -127,10 +128,11 @@ Recent decisions affecting current work:
 - [Phase ?]: Plan 06.1-02: ZLiftDock renders semantic Start/Finish/Cancel + Core allocation controls beside the canvas with two-paths-one-truth dispatch parity (EXACT command shapes GeneratorTile uses); responsive side-dock/bottom-strip per D-04; v1 heuristic side dock (RESEARCH A3).
 - [Phase ?]: Plan 06.1-02: Cell-list nav collapses into a Radix Menu Cell-switcher below md: (D-04 chrome collapse); @radix-ui/react-menu standalone primitive used via controlled open state + Menu.Anchor (no Trigger primitive; DropdownMenu not installed).
 - [Phase ?]: Plan 06.1-02: EditCellDialog extracted as a dedicated Radix Dialog for Cell edit (D-06 configuration exception); Dialog.Portal escapes layout stacking context (Pitfall 5); reuses EditCellForm (edit_cell command — Rule 3 fix on plan's update_cell typo); Task 3 is a pure refactor (characterization tests per tdd.md).
+- [Phase 06.1]: [Plan 06.1-03]: Acceptance gate — extended canvas-smoke E2E (4 new tests: persists-across-core-routes, param-change identity via SPA nav, takeover-coverage with canvas-attach wait, probe-non-zero-throughout-session-lifecycle) + UI tests (strict DOM-identity on canvas persistence, D-09 WebGL-fail continuity, D-03 chrome persistence across core routes, CellBoard alongside canvas mock with Return-to-Flowgrid identity preservation). Tasks 1+2 complete + green (build, canvas-smoke 6/1-skip, UI 61). Rule 3 fixes: CellBoard vs ZLiftDock accessible-name collisions (scope to CellBoard region + level:1); takeover test page.goto reload race (waitFor attached); RTL API mismatch (getByRole region not getByLabel). Task 3 (re-opened 06-05 Task 3 human smoke) PENDING-HUMAN-CHECKPOINT — UI-03/VER-06 deliberately NOT re-closed until human approval.
 
 ### Pending Todos
 
-- [ ] Run `/gsd-explore` on `.planning/exploration/canvas-always-visible-layout-pivot.md` to pick a target IA for making the canvas visible during session/Core/Forge events (blocks UI-03, VER-06, Phase 6 completion).
+- [ ] Run the re-opened 06-05 Task 3 human smoke (Plan 06.1-03 Task 3): `npm run build && npm run preview`, then follow the 10-step smoke (create Cell -> tap -> Start Focus Session -> observe Current-trail particles -> Finish -> observe Bloom/Core ripple -> /core convert/store -> /settings takeover round-trip). Type "approved" to re-close UI-03/VER-06 and complete Phase 6.1 + Phase 6. BLOCKS Phase 6 completion.
 
 ### Blockers/Concerns
 
@@ -148,6 +150,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-27T19:29:28.943Z
-Stopped at: Completed 06.1-01-PLAN.md
-Resume file: None
+Last session: 2026-06-27T19:48:00.000Z
+Stopped at: Plan 06.1-03 Task 3 awaiting human smoke (Tasks 1+2 complete + green)
+Resume file: None (resume by running the 10-step smoke against `npm run build && npm run preview`)

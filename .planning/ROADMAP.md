@@ -209,7 +209,7 @@ Plans:
   5. The layout degrades safely when WebGL/Canvas is unavailable (D-07) and remains operable via semantic non-canvas controls (UI-02).
   6. Re-opened 06-05 Task 3 human smoke passes: particles are visible during their emitting events.
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans executed (Plan 03 awaiting Task 3 human smoke)
 
 **Wave 1**
 
@@ -221,7 +221,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 06.1-03-PLAN.md — Acceptance gate: extended canvas-smoke E2E + UI tests + re-opened 06-05 Task 3 human smoke (UI-08, UI-03, VER-06 re-closure)
+- [~] 06.1-03-PLAN.md — PARTIAL (awaiting human checkpoint): Tasks 1+2 complete + green (extended canvas-smoke E2E + UI tests; build + 6/1-skip canvas-smoke + 61 UI tests all pass). Task 3 (re-opened 06-05 Task 3 human smoke) PENDING-HUMAN-CHECKPOINT — autonomous agent cannot perceptually confirm particles visible during events. UI-03/VER-06 re-closure deferred to human approval. Summary: `06.1-03-SUMMARY.md`.
 
 **UI hint**: yes
 
@@ -242,4 +242,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6. Phase 6.1 is an urg
 | 4. Core Alternation and Rejuvenation Economy | 3/3 | Complete    | 2026-06-24 |
 | 5. Module Forge and Starter Customization | 2/3 | In Progress|  |
 | 6. Hardening, Accessibility, and Trust | 4/5 (+1 partial) | In Progress (06-05 partial; layout pivot blocks UI-03/VER-06) |  |
-| 6.1. Canvas-Always-Visible Layout Pivot | 2/3 | In Progress|  |
+| 6.1. Canvas-Always-Visible Layout Pivot | 3/3 (Plan 03 pending human smoke) | Awaiting Task 3 human-verify checkpoint |  |
