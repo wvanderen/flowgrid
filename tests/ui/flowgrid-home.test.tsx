@@ -264,7 +264,6 @@ test('AppLayout: navigating back to / from /settings keeps the same canvas-mock 
   // navigation (AppLayout stays mounted across the child swap). This is the
   // load-bearing assertion for Pitfall 1: navigating /settings -> / must NOT
   // unmount the canvas (the layout route persists).
-  let capturedRouter: ReturnType<typeof createMemoryRouter> | null = null;
   const router = createMemoryRouter(
     [
       {
@@ -280,7 +279,6 @@ test('AppLayout: navigating back to / from /settings keeps the same canvas-mock 
     ],
     { initialEntries: ['/settings'] },
   );
-  capturedRouter = router;
   render(<RouterProvider router={router} />);
 
   // /settings: takeover overlay covers the canvas; takeoverActive=true.
@@ -293,7 +291,7 @@ test('AppLayout: navigating back to / from /settings keeps the same canvas-mock 
 
   // Navigate back to / within the same router instance. AppLayout stays
   // mounted; only the Outlet child swaps (SettingsTakeover -> HomeDock).
-  await capturedRouter.navigate('/');
+  await router.navigate('/');
   // Wait for the navigation to settle and the takeover overlay to unmount.
   await screen.findByTestId('flowgrid-canvas-mock');
 
@@ -327,7 +325,6 @@ test('AppLayout: FlowgridCanvas element identity persists across / -> /cells/:id
   const { cellId } = seedReady('build-once');
 
   // Mount the layout route at /. Capture the canvas element identity.
-  let capturedRouter: ReturnType<typeof createMemoryRouter> | null = null;
   const router = createMemoryRouter(
     [
       {
@@ -343,7 +340,6 @@ test('AppLayout: FlowgridCanvas element identity persists across / -> /cells/:id
     ],
     { initialEntries: ['/'] },
   );
-  capturedRouter = router;
   render(<RouterProvider router={router} />);
 
   const canvasAtRoot = screen.getByTestId('flowgrid-canvas-mock');
@@ -353,19 +349,19 @@ test('AppLayout: FlowgridCanvas element identity persists across / -> /cells/:id
   // mounted (pathless layout route parent of the param-changing child), so
   // the FlowgridCanvas component instance persists — the SAME DOM node must
   // still be in the document.
-  await capturedRouter.navigate(`/cells/${cellId}`);
+  await router.navigate(`/cells/${cellId}`);
   await screen.findByTestId('cell-board-stub');
   expect(canvasAtRoot).toBeInTheDocument();
   expect(flowgridStore.getState().selectedCellId).toBe(cellId);
 
   // Navigate /cells/:id -> /core. Canvas persists.
-  await capturedRouter.navigate('/core');
+  await router.navigate('/core');
   await screen.findByTestId('core-panel-stub');
   expect(canvasAtRoot).toBeInTheDocument();
   expect(flowgridStore.getState().selectedCellId).toBeNull();
 
   // Navigate /core -> /. Canvas persists (full round-trip).
-  await capturedRouter.navigate('/');
+  await router.navigate('/');
   await screen.findByTestId('flowgrid-canvas-mock');
   expect(canvasAtRoot).toBeInTheDocument();
   expect(flowgridStore.getState().selectedCellId).toBeNull();
