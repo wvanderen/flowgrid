@@ -11,6 +11,7 @@
 import { createStore } from 'zustand/vanilla';
 
 import type {
+  CellId,
   FlowgridSnapshot,
   ForgeHistoryRecord,
   IsoDateTimeString,
@@ -71,6 +72,20 @@ export interface FlowgridState {
   // simulation (e.g. starting a second focus session while one is already active).
   // Distinct from lastError (persistence failures). Cleared on the next applied dispatch.
   readonly lastRejection: string | null;
+  // D-01 view-state mirror: the currently-selected Cell, mirrored from the URL by
+  // AppLayout via useMatches. Null on / and /core; non-null when a /cells/:id route
+  // is the active child. This is the single source the canvas adapter + HTML dock
+  // both read for the Z-Lift selection. NEVER durable — not part of dispatch.ts;
+  // written via flowgridStore.setState from AppLayout's useEffect (per D-01
+  // agent's-discretion #6: selection is view-state mirrored from the URL, the URL
+  // is the single source of truth, the store is a derived mirror for non-React
+  // consumers like the render adapter).
+  readonly selectedCellId: CellId | null;
+  // D-02 view-state mirror: true when a takeover overlay (/settings or /forge) is
+  // covering the canvas. Set by AppLayout from route handle metadata via
+  // useMatches. Gates the Pixi ticker pause (stopMotion/startTicker) and the
+  // particle emit gate so no work is wasted behind a hidden overlay (T-6.1-02).
+  readonly takeoverActive: boolean;
 }
 
 export const flowgridStore = createStore<FlowgridState>(() => ({
@@ -84,6 +99,8 @@ export const flowgridStore = createStore<FlowgridState>(() => ({
   status: 'loading',
   lastError: null,
   lastRejection: null,
+  selectedCellId: null,
+  takeoverActive: false,
 }));
 
 export type { FlowgridState as FlowgridStoreState };

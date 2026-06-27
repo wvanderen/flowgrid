@@ -11,14 +11,26 @@
 // structurally satisfies this contract — Zustand's vanilla StoreApi exposes
 // `subscribe`, `getState`, and `setState`.
 
-import type { FlowgridSnapshot, VisualEvent } from '../../domain/index.js';
+import type { CellId, FlowgridSnapshot, VisualEvent } from '../../domain/index.js';
 
 export interface FlowgridStoreView {
   subscribe(listener: () => void): () => void;
   getState(): {
     readonly snapshot: FlowgridSnapshot | null;
     readonly pendingVisualEvents: readonly VisualEvent[];
+    // D-01 view-state mirror: read by the canvas for the Z-Lift selection. The
+    // state is mirrored from the URL by AppLayout via useMatches; the render
+    // layer reads it through this structural contract (no flowgridStore import).
+    readonly selectedCellId: CellId | null;
+    // D-02 view-state mirror: read by the canvas to gate particle emission +
+    // pause the ticker while a takeover overlay covers the canvas.
+    readonly takeoverActive: boolean;
   };
+  // The setState patch type stays limited to pendingVisualEvents: selection and
+  // takeover are written directly to flowgridStore by AppLayout's useEffect, NOT
+  // through this adapter (the adapter is the render→store subscriber, not the
+  // store→durable-state writer). Keeping the patch narrow preserves the
+  // render-layer boundary (no setState surface for view-state in render).
   setState(patch: { readonly pendingVisualEvents: readonly VisualEvent[] }): void;
 }
 

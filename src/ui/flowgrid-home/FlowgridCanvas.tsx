@@ -43,6 +43,7 @@ import {
   type SceneRefs,
 } from '../../render/flowgrid/scene.js';
 import { emitParticles } from '../../render/flowgrid/particles.js';
+import { startTicker, stopMotion } from '../../render/flowgrid/motion.js';
 import { summarizeScene } from '../../render/flowgrid/scene-inspect.js';
 import { buildParticleAnchors } from './particle-anchors.js';
 
@@ -68,6 +69,9 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
     let app: FlowgridApplication | null = null;
     let sceneRefs: SceneRefs | null = null;
     let unsubscribe: (() => void) | null = null;
+    // D-02: separate unsubscribe for the takeover ticker-pause listener. Lives
+    // alongside the adapter unsubscribe so the cleanup path tears both down.
+    let takeoverUnsubscribe: (() => void) | null = null;
     let lastTickTime = 0;
     let cancelled = false;
 
@@ -150,6 +154,12 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
           // D-01/D-04 particle emission. Gated on reduceMotion: when reduced, the
           // ticker is stopped and we do NOT emit (D-08: animation fully off).
           if (app === null || sceneRefs === null) return;
+          // D-02: do not emit particles into a canvas hidden behind a takeover
+          // overlay. The events are transient (UI-04) so dropping them is
+          // byte-safe; this is the explicit flag from the URL via AppLayout
+          // (visibilityState alone does not fire for in-DOM overlays — RESEARCH
+          // Pitfall 3).
+          if (storeView.getState().takeoverActive) return;
           const currentReduceMotion = effectiveReduceMotion(
             storeView.getState().snapshot?.settings.reduceMotion ?? false,
           );
@@ -158,6 +168,20 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
           emitParticles(sceneRefs.particleLayer, sceneRefs.liveParticles, events, anchors);
         },
       );
+
+      // D-02 takeover ticker-pause: subscribe to the same store so takeoverActive
+      // flips pause/resume the Pixi ticker. stopMotion/startTicker are idempotent
+      // (Pixi v8 confirmed — scene.ts:419-426 already calls them on every
+      // reduceMotion flip), so firing on every store change is safe. The scene is
+      // NEVER destroyed (D-05); only the frame loop halts behind an overlay.
+      takeoverUnsubscribe = storeView.subscribe(() => {
+        if (app === null) return;
+        if (storeView.getState().takeoverActive) {
+          stopMotion(app);
+        } else {
+          startTicker(app);
+        }
+      });
     })();
 
     return () => {
@@ -169,6 +193,10 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
       if (unsubscribe !== null) {
         unsubscribe();
         unsubscribe = null;
+      }
+      if (takeoverUnsubscribe !== null) {
+        takeoverUnsubscribe();
+        takeoverUnsubscribe = null;
       }
       if (app !== null) {
         if (sceneRefs !== null) {
