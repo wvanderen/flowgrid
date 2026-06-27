@@ -78,6 +78,7 @@ import { flowgridStore } from '../../src/app/store/flowgrid-store.js';
 import { AppLayout } from '../../src/ui/shell/AppLayout.js';
 import { FlowgridHome } from '../../src/ui/flowgrid-home/FlowgridHome.js';
 import { CellBoard } from '../../src/ui/cell-board/CellBoard.js';
+import { CellActions } from '../../src/ui/cell-board/CellActions.js';
 import { CorePanel } from '../../src/ui/core-panel/CorePanel.js';
 import { SettingsTakeover } from '../../src/ui/settings/SettingsTakeover.js';
 import { ForgeTakeover } from '../../src/ui/forge-panel/ForgeTakeover.js';
@@ -242,4 +243,91 @@ test('AppLayout: Cell-list collapses to a Radix Menu Cell-switcher (aria-haspopu
     (b) => b.getAttribute('aria-haspopup') === 'menu',
   );
   expect(switcherTriggers.length).toBeGreaterThanOrEqual(1);
+});
+
+// --- Task 3: EditCellDialog — Radix Dialog for Cell edit (D-06) ---
+//
+// The existing CellActions renders an Edit button that opens a Radix Dialog with
+// the EditCellForm pre-filled. Task 3 extracts that into a dedicated
+// EditCellDialog component (mirrors the Cell-create Dialog pattern from
+// AppLayout). These tests assert the post-refactor behavior is preserved:
+//   - Edit button opens a Radix Dialog (role="dialog") with pre-filled fields.
+//   - Submitting dispatches edit_cell with the new values.
+//   - The Dialog uses Dialog.Portal (escapes the layout stacking context).
+//   - Close/Cancel dismisses without dispatching.
+
+// Helper: render CellActions inside a minimal memory router (CellActions calls
+// useNavigate for the Archive flow). Render into a captured container so we can
+// assert Portal-escapes-local-root behaviour below.
+function renderCellActions(cellId: string): ReturnType<typeof render> {
+  const router = createMemoryRouter(
+    [{ path: '/cells/:cellId', element: <CellActions cellId={cellId} /> }],
+    { initialEntries: [`/cells/${cellId}`] },
+  );
+  return render(<RouterProvider router={router} />);
+}
+
+test('EditCellDialog: CellActions Edit button opens a Radix Dialog (role="dialog") with the Cell-edit form pre-filled (D-06)', () => {
+  const { cellId } = seedReady('edit-open');
+  renderCellActions(cellId);
+
+  const editButton = screen.getByRole('button', { name: /^edit$/i });
+  fireEvent.click(editButton);
+
+  // After click, a Radix Dialog with role="dialog" should be in the document
+  // (Radix Portal mounts at document.body).
+  const dialog = screen.getByRole('dialog');
+  expect(dialog).toBeInTheDocument();
+
+  // The Cell-edit form's Name field should be pre-filled with the existing
+  // Cell's name (the starter snapshot's cell name is non-empty).
+  const nameInput = screen.getByLabelText(/name/i) as HTMLInputElement;
+  expect(nameInput.value.length).toBeGreaterThan(0);
+});
+
+test('EditCellDialog: submitting the form dispatches edit_cell with the edited fields (CELL-03, D-11)', () => {
+  const { cellId } = seedReady('edit-submit');
+  renderCellActions(cellId);
+
+  fireEvent.click(screen.getByRole('button', { name: /^edit$/i }));
+  screen.getByRole('dialog');
+
+  const nameInput = screen.getByLabelText(/name/i);
+  fireEvent.change(nameInput, { target: { value: 'Renamed Cell' } });
+  fireEvent.click(screen.getByRole('button', { name: /save/i }));
+
+  expectSentCommand({
+    type: 'edit_cell',
+    cellId,
+    name: 'Renamed Cell',
+  });
+});
+
+test('EditCellDialog: uses Dialog.Portal (the dialog renders at document.body, escaping the layout stacking context — Pitfall 5)', () => {
+  const { cellId } = seedReady('edit-portal');
+  const { container: appRoot } = renderCellActions(cellId);
+
+  fireEvent.click(screen.getByRole('button', { name: /^edit$/i }));
+  const dialog = screen.getByRole('dialog');
+
+  // Radix Portal mounts the dialog at document.body, NOT inside the local app
+  // root the component was rendered into. This is the load-bearing assertion
+  // for Pitfall 5 (escape the canvas's stacking context).
+  expect(document.body.contains(dialog)).toBe(true);
+  expect(appRoot.contains(dialog)).toBe(false);
+});
+
+test('EditCellDialog: Cancel/Close dismisses the dialog without dispatching', () => {
+  const { cellId } = seedReady('edit-cancel');
+  renderCellActions(cellId);
+
+  fireEvent.click(screen.getByRole('button', { name: /^edit$/i }));
+  screen.getByRole('dialog');
+
+  // Radix Dialog.Close renders the "Close" button. Click it.
+  const closeButton = screen.getByRole('button', { name: /close edit dialog/i });
+  fireEvent.click(closeButton);
+
+  // No dispatch should have occurred from the close interaction.
+  expect(mockedDispatch).not.toHaveBeenCalled();
 });

@@ -1,13 +1,12 @@
 // CellActions — archive / unarchive / edit controls for a Cell (CELL-04, D-12).
 //
 // Renders the archive or unarchive button based on the Cell's current archivedAt
-// state, plus an Edit button that opens the EditCellForm inside a Radix Dialog.
-// Archiving navigates back to Flowgrid Home (`/`) since the Cell Board for an
-// archived Cell should redirect away.
+// state, plus an Edit button that opens EditCellDialog (Phase 6.1 / D-06
+// configuration exception). Archiving navigates back to Flowgrid Home (`/`) since
+// the Cell Board for an archived Cell should redirect away.
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import * as Dialog from '@radix-ui/react-dialog';
 
 import type {
   ArchiveCellCommand,
@@ -19,7 +18,7 @@ import { repository } from '../../app/repository.js';
 import { dispatch, useFlowgridStore } from '../../app/store/dispatch.js';
 import { getCellById } from '../../simulation/selectors.js';
 
-import { EditCellForm } from './EditCellForm.js';
+import { EditCellDialog } from './EditCellDialog.js';
 
 interface CellActionsProps {
   readonly cellId: CellId;
@@ -66,23 +65,24 @@ export function CellActions({ cellId }: CellActionsProps) {
 
   return (
     <section aria-label={`Actions for ${cell.name}`} className="flex flex-wrap items-center gap-2">
-      <Dialog.Root open={editOpen} onOpenChange={setEditOpen}>
-        <Dialog.Trigger asChild>
-          <button type="button" className="inline-flex items-center justify-center rounded-md border border-slate-600 px-4 py-2 text-slate-200 transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">Edit</button>
-        </Dialog.Trigger>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60" />
-          <Dialog.Content aria-label={`Edit ${cell.name}`} className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-700 bg-flowgrid-surface p-6 shadow-2xl space-y-4">
-            <Dialog.Title className="text-lg font-semibold text-slate-100">Edit {cell.name}</Dialog.Title>
-            <EditCellForm cell={cell} onDone={() => setEditOpen(false)} />
-            <Dialog.Close asChild>
-              <button type="button" aria-label="Close edit dialog" className="inline-flex items-center justify-center rounded-md border border-slate-600 px-4 py-2 text-slate-200 transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">
-                Close
-              </button>
-            </Dialog.Close>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+      {/* Phase 6.1 D-06 (Plan 06.1-02 Task 3): the Edit dialog is extracted into
+          a dedicated EditCellDialog component (reusable + independently
+          testable). Behavior is unchanged: Edit opens the dialog, Save
+          dispatches edit_cell via EditCellForm, Close dismisses. Dialog.Portal
+          escapes the layout stacking context (RESEARCH Pitfall 5). */}
+      <EditCellDialog
+        cell={cell}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        trigger={
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-md border border-slate-600 px-4 py-2 text-slate-200 transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          >
+            Edit
+          </button>
+        }
+      />
 
       {cell.archivedAt === null ? (
         <button type="button" onClick={handleArchive} className="inline-flex items-center justify-center rounded-md border border-error/60 px-4 py-2 text-error transition hover:bg-error/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-error">
