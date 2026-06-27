@@ -46,10 +46,17 @@ async function waitForScene(page: import('@playwright/test').Page): Promise<{ ce
 async function runSessionAndReadSummary(page: import('@playwright/test').Page, cellName: string): Promise<{ current: string; xp: string; duration: string }> {
   await page.goto('/');
   await page.getByRole('link', { name: cellName }).click();
-  await expect(page.getByRole('heading', { name: cellName })).toBeVisible();
-  await page.getByRole('button', { name: 'Start Focus Session' }).click();
+  // Phase 6.1 Plan 02 ZLiftDock also renders the cell name in an <h2>; scope to
+  // CellBoard's <h1> (level 1) so the locator stays unambiguous on /cells/:id.
+  await expect(page.getByRole('heading', { name: cellName, level: 1 })).toBeVisible();
+  // Phase 6.1 Plan 02 ZLiftDock ALSO renders Start/Finish/Cancel buttons with
+  // identical accessible names (two-paths-one-truth — D-08). Scope to CellBoard's
+  // section so the click is deterministic; the dock's button parity is exercised
+  // by tests/ui/z-lift-dock.test.tsx.
+  const cellBoard = page.getByLabel(`Cell Board for ${cellName}`);
+  await cellBoard.getByRole('button', { name: 'Start Focus Session' }).click();
   await page.waitForTimeout(SESSION_MS);
-  await page.getByRole('button', { name: 'Finish' }).click();
+  await cellBoard.getByRole('button', { name: 'Finish' }).click();
   const summary = page.getByRole('status', { name: 'Session summary' });
   await expect(summary).toBeVisible();
   await expect(summary.getByText('Session Complete')).toBeVisible();
@@ -106,6 +113,185 @@ test('VER-06 (pixel variance): canvas renders more than one color', async ({ pag
   // probe above remains the load-bearing assertion — skip rather than false-fail.
   test.skip(colorCount <= 1, 'WebGL readback returned uniform (preserveDrawingBuffer) — structural probe is primary');
   expect(colorCount, 'canvas pixels should not be a single uniform color').toBeGreaterThan(1);
+});
+
+// Resolve a Cell's id from the Cell-list link href after createCell has run.
+// Used by the new VER-06 / UI-08 / UI-03 tests to navigate directly to
+// /cells/:id (the route that unmounted the canvas pre-6.1).
+async function cellIdFromName(page: import('@playwright/test').Page, name: string): Promise<string> {
+  const href = await page.getByRole('link', { name }).getAttribute('href');
+  if (href === null || !href.startsWith('/cells/')) {
+    throw new Error(`cellIdFromName: link href for ${name} was ${href}`);
+  }
+  return href.replace('/cells/', '');
+}
+
+// Phase 6.1 Plan 03 Task 1 — four new VER-06 / UI-08 / UI-03 tests. The existing
+// three VER-06 tests above (scene-graph probe, pixel variance, reduced-motion
+// durability) stay unchanged; these extend the harness to structurally assert the
+// Plan-01 persistent canvas spine + the re-opened 06-05 Task 3 lifecycle.
+
+test('UI-08 (canvas persists across core routes): /, /cells/:id, /core all keep <canvas> visible AND probe non-zero (Phase 6.1 success criterion 1)', async ({ page }) => {
+  // The Plan-01 pathless layout route keeps FlowgridCanvas mounted across the
+  // three core gameplay routes. Pre-6.1 the canvas mounted ONLY at / — every
+  // particle-emitting event on /cells/:id or /core fired off-screen (the exact
+  // gap that blocked 06-05 Task 3). This test is the structural proof of the
+  // spine on each core route.
+  await createCell(page, 'Canvas Persist Cell');
+  const cellId = await cellIdFromName(page, 'Canvas Persist Cell');
+
+  // Route 1: / (already here after createCell -> "Return to Flowgrid").
+  await expect(page.locator('canvas')).toBeVisible();
+  let summary = await waitForScene(page);
+  expect(summary.cells, 'probe reports Cells on /').toBeGreaterThan(0);
+
+  // Route 2: /cells/:id — pre-6.1 this unmounted the canvas (06-05 Task 3 root cause).
+  await page.goto(`/cells/${cellId}`);
+  await expect(page.locator('canvas')).toBeVisible();
+  summary = await waitForScene(page);
+  expect(summary.cells, 'probe reports Cells on /cells/:id').toBeGreaterThan(0);
+
+  // Route 3: /core — also unmounted pre-6.1.
+  await page.goto('/core');
+  await expect(page.locator('canvas')).toBeVisible();
+  summary = await waitForScene(page);
+  expect(summary.cells, 'probe reports Cells on /core').toBeGreaterThan(0);
+
+  // Route 4: round-trip back to /.
+  await page.goto('/');
+  await expect(page.locator('canvas')).toBeVisible();
+  summary = await waitForScene(page);
+  expect(summary.cells, 'probe reports Cells after round-trip').toBeGreaterThan(0);
+});
+
+test('UI-08 (param-change identity): <canvas> DOM identity unchanged across /cells/A -> /cells/B (RESEARCH Pitfall 1 verification)', async ({ page }) => {
+  // The pathless layout route is the PARENT of the param-changing child route,
+  // so its component instance (and thus FlowgridCanvas) persists across
+  // /cells/A ↔ /cells/B param-only changes. The empty-deps mount effect runs
+  // once per app session; the SAME <canvas> DOM node must survive a param swap.
+  await createCell(page, 'Param Cell A');
+  await createCell(page, 'Param Cell B');
+
+  // SPA-navigate to /cells/A via the Cell-list link (in-app React Router
+  // navigation, NOT page.goto — a hard URL reload would always destroy the
+  // canvas regardless of the layout route; this test specifically exercises
+  // React Router's in-app navigation across a param-only child swap). The
+  // Cell-list <nav aria-label="Cells"> is persistent chrome in AppLayout,
+  // visible at desktop width (md:+).
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Param Cell A' }).click();
+  await expect(page.getByRole('heading', { name: 'Param Cell A', level: 1 })).toBeVisible();
+  await waitForScene(page);
+
+  // Tag the <canvas> element so we can re-locate the SAME DOM node after the
+  // param-only navigation. data-* survives route changes because the element
+  // itself survives (the layout route persists — Pitfall 1).
+  await page.evaluate(() => {
+    const c = document.querySelector('canvas');
+    if (c !== null) c.setAttribute('data-flowgrid-canvas-identity', 'pitfall-1-probe');
+  });
+
+  // TRUE param-only SPA navigation /cells/A -> /cells/B via the persistent
+  // Cell-list nav. AppLayout is the parent of the param-changing child, so its
+  // instance persists — the canvas DOM identity must persist too (Pitfall 1
+  // verification step from RESEARCH.md).
+  await page.getByRole('link', { name: 'Param Cell B' }).click();
+  await expect(page.getByRole('heading', { name: 'Param Cell B', level: 1 })).toBeVisible();
+  await waitForScene(page);
+  const sameCanvasConnected = await page.evaluate((): boolean => {
+    const c = document.querySelector('canvas[data-flowgrid-canvas-identity="pitfall-1-probe"]');
+    return c !== null && c.isConnected;
+  });
+  expect(sameCanvasConnected, 'canvas DOM identity must persist across /cells/A -> /cells/B (Pitfall 1)').toBe(true);
+
+  // Exactly one <canvas> remains in the document (no duplicate, no rebuild).
+  expect(await page.locator('canvas').count(), 'exactly one canvas in the document').toBe(1);
+});
+
+test('UI-08 (takeover covers canvas): /settings keeps <canvas> mounted + probe live while overlay covers it (D-02)', async ({ page }) => {
+  // Takeover overlays (settings, forge) render ABOVE the still-mounted canvas
+  // via fixed inset-0 z-50 wrappers. The canvas must stay in the DOM (mounted,
+  // hidden-not-unmounted) so returning is instant — no Pixi re-init, no scene
+  // rebuild (D-05 build-once preserved across takeovers). The ticker pauses via
+  // the explicit takeoverActive store flag (RESEARCH Pitfall 3).
+  await createCell(page, 'Takeover Cell');
+
+  await page.goto('/settings');
+  // The Settings takeover overlay is visible (escapes canvas stacking context).
+  await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
+
+  // The <canvas> is still in the DOM — covered by the overlay, NOT unmounted.
+  const canvasCount = await page.locator('canvas').count();
+  expect(canvasCount, 'canvas stays mounted behind the takeover overlay').toBeGreaterThanOrEqual(1);
+
+  // The probe still returns non-zero Cells — the Pixi Application was never
+  // destroyed; only the frame loop halted behind the overlay.
+  const summary = await waitForScene(page);
+  expect(summary.cells, 'probe stays live behind the takeover overlay').toBeGreaterThan(0);
+
+  // Navigate back to /. The overlay unmounts; the canvas (which stayed mounted
+  // throughout) is visible again. No re-init, no flicker.
+  await page.goto('/');
+  await expect(page.locator('canvas')).toBeVisible();
+  const summaryAfter = await waitForScene(page);
+  expect(summaryAfter.cells, 'canvas alive on return from takeover').toBeGreaterThan(0);
+});
+
+test('UI-03 (probe non-zero throughout session lifecycle): Start -> wait -> Finish on /cells/:id keeps probe live (Phase 6.1 success criterion 6, re-opened 06-05 Task 3 structural component)', async ({ page }) => {
+  // Structural proof that the canvas — and therefore the particle emission
+  // target — stays mounted throughout the focus-session lifecycle on the route
+  // that previously unmounted it. The HUMAN-PERCEPTUAL confirmation (particles
+  // are actually VISIBLE during their events) is the Task 3 checkpoint; this
+  // test is the structural backstop that the canvas never drops out from under
+  // the particle system.
+  await createCell(page, 'Particles Cell');
+  const cellId = await cellIdFromName(page, 'Particles Cell');
+
+  await page.goto(`/cells/${cellId}`);
+  // Phase 6.1 Plan 02 ZLiftDock also renders the cell name in an <h2>; scope
+  // to CellBoard's <h1> (level 1) so the locator stays unambiguous.
+  await expect(page.getByRole('heading', { name: 'Particles Cell', level: 1 })).toBeVisible();
+  // Scope Start/Finish to CellBoard (Plan 02 ZLiftDock renders parity buttons).
+  const cellBoard = page.getByLabel('Cell Board for Particles Cell');
+
+  // BEFORE Start: probe non-zero (canvas mounted, scene built).
+  await waitForScene(page);
+  const before = await page.evaluate((): number => {
+    const probe = (window as unknown as { __flowgridInspect?: () => { cells: number } }).__flowgridInspect;
+    return typeof probe === 'function' ? probe().cells : -1;
+  });
+  expect(before, 'probe non-zero BEFORE Start Focus Session').toBeGreaterThan(0);
+
+  // Start the focus session — Current-trail particles should be emitting into
+  // the visible canvas alongside the cell. The probe stays non-zero throughout.
+  await cellBoard.getByRole('button', { name: 'Start Focus Session' }).click();
+  await page.waitForTimeout(SESSION_MS);
+
+  // DURING session: probe still non-zero (canvas never unmounted; particles
+  // emitting live). This is the structural evidence the human smoke (Task 3)
+  // confirms PERCEPTUALLY.
+  await waitForScene(page);
+  const during = await page.evaluate((): number => {
+    const probe = (window as unknown as { __flowgridInspect?: () => { cells: number } }).__flowgridInspect;
+    return typeof probe === 'function' ? probe().cells : -1;
+  });
+  expect(during, 'probe non-zero DURING the active session').toBeGreaterThan(0);
+
+  // Finish the session — Bloom burst + Activation pulse + Core ripple particles
+  // fire at finish into the visible canvas. Probe stays non-zero.
+  await cellBoard.getByRole('button', { name: 'Finish' }).click();
+
+  // The Session summary renders (durable session record captured).
+  const sessionSummary = page.getByRole('status', { name: 'Session summary' });
+  await expect(sessionSummary).toBeVisible();
+
+  // AFTER Finish: probe STILL non-zero (canvas mounted throughout the lifecycle).
+  await waitForScene(page);
+  const after = await page.evaluate((): number => {
+    const probe = (window as unknown as { __flowgridInspect?: () => { cells: number } }).__flowgridInspect;
+    return typeof probe === 'function' ? probe().cells : -1;
+  });
+  expect(after, 'probe non-zero AFTER Finish (canvas survived the lifecycle)').toBeGreaterThan(0);
 });
 
 test('VER-06 (reduced-motion durability): motion ON vs OFF yields identical economy outcomes', async ({ page }) => {
