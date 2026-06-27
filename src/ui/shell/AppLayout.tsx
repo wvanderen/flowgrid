@@ -1,0 +1,227 @@
+// AppLayout — the pathless React Router v7 layout-route element (Phase 6.1 D-01).
+//
+// Lifts FlowgridCanvas + the persistent home chrome out of the / route swap into
+// a layout slot that survives navigation across /, /cells/:id, /core (the core
+// gameplay routes). The active child route renders via <Outlet/>. Takeover routes
+// (/settings, /forge) declare `handle: { takeover: true }`; AppLayout reads it via
+// useMatches to (a) hide the persistent chrome while a takeover covers the canvas
+// and (b) push the takeoverActive flag into the store so the canvas pauses its
+// ticker + particle emission (D-02, RESEARCH Pattern 3).
+//
+// View-state mirror (D-agent's discretion #6): selectedCellId + takeoverActive are
+// derived from useMatches and pushed into flowgridStore via a useEffect calling
+// flowgridStore.setState. Per D-01 the URL is the single source of truth; the
+// store is a derived mirror for non-React consumers (the canvas adapter). This
+// projection NEVER flows through dispatch.ts — selection is view-state, not
+// durable (RESEARCH Anti-Pattern: routing selection through dispatch).
+//
+// Build-once invariant (Phase 6 D-05 / RESEARCH Pitfall 1): the pathless layout
+// route is the PARENT of every child route; the layout instance (and thus the
+// FlowgridCanvas it mounts) persists across all child navigation including
+// /cells/A ↔ /cells/B param-only changes. The empty-deps mount effect in
+// FlowgridCanvas therefore runs once per app session.
+//
+// React dev double-mount landmine (RESEARCH Pitfall 2): main.tsx:32 stays
+// StrictMode-free so the build-once Pixi effect does not cycle setup→cleanup→
+// setup. Do NOT add <StrictMode> here or anywhere above this route — the mount
+// effect must first be made idempotent before StrictMode is safe.
+
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { Link, Outlet, useMatches, useNavigate } from 'react-router';
+import * as Dialog from '@radix-ui/react-dialog';
+
+import type { CellId } from '../../domain/index.js';
+import { flowgridStore } from '../../app/store/flowgrid-store.js';
+import { useFlowgridStore } from '../../app/store/dispatch.js';
+
+import { CreateCellForm } from '../cell-board/CreateCellForm.js';
+import { ResumeSessionPrompt } from '../cell-board/ResumeSessionPrompt.js';
+import { RejuvenationResumePrompt } from '../core-panel/RejuvenationResumePrompt.js';
+import { ErrorBanner } from '../shared/ErrorBanner.js';
+import { ArchivedCellsFilter } from '../flowgrid-home/ArchivedCellsFilter.js';
+import { FlowgridCanvas } from '../flowgrid-home/FlowgridCanvas.js';
+import { ReturnCues } from '../flowgrid-home/ReturnCues.js';
+
+interface RouteHandle {
+  readonly takeover?: boolean;
+}
+
+interface MatchWithParams {
+  readonly params: Readonly<Record<string, string | undefined>>;
+  readonly handle: unknown;
+}
+
+export function AppLayout(): ReactNode {
+  const navigate = useNavigate();
+  const status = useFlowgridStore((s) => s.status);
+  const snapshot = useFlowgridStore((s) => s.snapshot);
+  const lastError = useFlowgridStore((s) => s.lastError);
+  const activeRejuvenation = useFlowgridStore((s) => s.activeRejuvenation);
+  const [createOpen, setCreateOpen] = useState(false);
+
+  // D-02: derive takeoverActive from the match chain's route handle metadata.
+  // AppLayout uses useMatches (NOT useParams — RESEARCH Pitfall 6: the layout
+  // route has no params). The settings + forge routes declare
+  // handle: { takeover: true } in routes.tsx.
+  const matches = useMatches();
+  const takeoverActive = matches.some(
+    (m) => (m.handle as RouteHandle | null | undefined)?.takeover === true,
+  );
+  // D-01 / D-agent's-discretion #6: derive selectedCellId from the match whose
+  // params contain cellId (the /cells/:cellId child). Null on /, /core, and the
+  // takeover routes.
+  const cellMatch = matches.find((m) => {
+    const params = (m as MatchWithParams).params;
+    return params !== undefined && 'cellId' in params;
+  }) as MatchWithParams | undefined;
+  const selectedCellId: CellId | null = cellMatch?.params.cellId ?? null;
+
+  // D-01 view-state mirror: push the URL-derived fields into the store for
+  // non-React consumers (the canvas adapter reads them via FlowgridStoreView).
+  // This is a derived mirror — the URL remains the single source of truth.
+  useEffect(() => {
+    flowgridStore.setState({ selectedCellId, takeoverActive });
+  }, [selectedCellId, takeoverActive]);
+
+  // D-03: tap a Cell hex → React Router navigation to the Cell route. The
+  // callback identity changes when `navigate` changes (stable per RouterProvider
+  // mount); FlowgridCanvas captures it via ref so no scene rebuild is triggered.
+  // Identical to the FlowgridHome pattern this layout absorbed.
+  const handleCellTap = useCallback(
+    (cellId: CellId) => {
+      navigate(`/cells/${cellId}`);
+    },
+    [navigate],
+  );
+
+  // The error state takes precedence over ready/loading when a typed
+  // PersistenceError is present so the user sees why their action failed.
+  if (status === 'error' || lastError !== null) {
+    return (
+      <section aria-label="Flowgrid home" className="mx-auto max-w-5xl px-4 py-6 space-y-6">
+        <h1 className="text-3xl font-bold text-core">Flowgrid</h1>
+        <ErrorBanner error={lastError} />
+      </section>
+    );
+  }
+
+  if (status === 'loading' || snapshot === null) {
+    return (
+      <section aria-label="Flowgrid home" className="mx-auto max-w-5xl px-4 py-6 space-y-6">
+        <h1 className="text-3xl font-bold text-core">Flowgrid</h1>
+        <p role="status" className="text-sm text-slate-400">Loading Flowgrid…</p>
+      </section>
+    );
+  }
+
+  const activeCells = [...snapshot.cells.values()].filter((c) => c.archivedAt === null);
+  const activeCellCount = activeCells.length;
+
+  // D-05: scan for a Cell with an interrupted (non-null) activeSessionStartedAt so
+  // the resume-or-discard banner surfaces after a reload. The one-active-session
+  // invariant means at most one such Cell exists.
+  const interruptedCell = [...snapshot.cells.values()].find(
+    (c) => c.activeSessionStartedAt !== null,
+  );
+
+  return (
+    // D-09: the canvas zone keeps its className/size on WebGL-fail (FlowgridCanvas
+    // returns the same h-[60vh]/sm:h-[70vh] wrapper for both branches); the layout
+    // is identical whether WebGL works or not.
+    <section aria-label="Flowgrid home" className="mx-auto max-w-5xl px-4 py-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-core">Flowgrid</h1>
+        {/* Reachable /core and /settings navigation (peer to / and /cells/:id). */}
+        <div className="flex items-center gap-3">
+          <Link to="/core" className="text-sm text-slate-400 underline">Core</Link>
+          <Link to="/settings" className="text-sm text-slate-400 underline">Settings</Link>
+        </div>
+      </div>
+
+      {/* D-02: persistent canvas slot — mounts FlowgridCanvas ONCE per app session.
+          The canvas zone stays in place across all child navigation including
+          takeover overlays (which render via <Outlet/> and cover the canvas
+          without unmounting it). D-09: on WebGL-fail FlowgridCanvas returns the
+          same className + a status note; the zone stays put. */}
+      <FlowgridCanvas snapshot={snapshot} onCellTap={handleCellTap} />
+
+      {/* D-03: persistent chrome — hidden during takeovers (full-screen overlays).
+          Contains the home chrome previously owned by FlowgridHome: ReturnCues,
+          resume prompts, New Cell Dialog, Cell-list nav, ArchivedCellsFilter.
+          Visible on /, /cells/:id, /core; hidden on /settings, /forge. */}
+      {!takeoverActive && (
+        <>
+          {/* D-05: interrupted-session recovery banner. */}
+          {interruptedCell !== undefined && interruptedCell.activeSessionStartedAt !== null ? (
+            <ResumeSessionPrompt
+              cellId={interruptedCell.id}
+              cellName={interruptedCell.name}
+              startedAt={interruptedCell.activeSessionStartedAt}
+            />
+          ) : null}
+
+          {/* D-02: interrupted-rejuvenation recovery banner. D-02 mutual exclusion means at
+              most ONE of (focus resume prompt, rejuvenation resume prompt) is mounted at a
+              time — only one marker can be non-null app-wide. */}
+          {activeRejuvenation !== null ? (
+            <RejuvenationResumePrompt startedAt={activeRejuvenation.startedAt} />
+          ) : null}
+
+          {/* UI-07 return-cue rail: above the canvas, below the resume banners. Must not
+              obstruct the New Cell button or the canvas tap-Cell flow (D-08 protected
+              interaction). Renders nothing when there is no actionable state. */}
+          <ReturnCues />
+
+          {/* CELL-01 reachability: the New Cell button is always present so the user
+              can create a Cell even before any exist. CreateCellForm lives inside the
+              Radix Dialog; its own navigate handles routing after a successful create,
+              onCreated closes the dialog. */}
+          <Dialog.Root open={createOpen} onOpenChange={setCreateOpen}>
+            <Dialog.Trigger asChild>
+              <button type="button" className="inline-flex items-center justify-center rounded-md bg-core px-4 py-2 font-semibold text-flowgrid-bg transition hover:bg-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-core">New Cell</button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 z-40 bg-black/60" />
+              <Dialog.Content aria-label="Create a new Cell" className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-700 bg-flowgrid-surface p-6 shadow-2xl space-y-4">
+                <Dialog.Title className="text-lg font-semibold text-slate-100">Create a Cell</Dialog.Title>
+                <CreateCellForm onCreated={() => setCreateOpen(false)} />
+                <Dialog.Close asChild>
+                  <button type="button" aria-label="Close create dialog" className="inline-flex items-center justify-center rounded-md border border-slate-600 px-4 py-2 text-slate-200 transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">
+                    Close
+                  </button>
+                </Dialog.Close>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
+
+          {activeCellCount === 0 ? (
+            <p role="status" className="rounded-lg border border-dashed border-slate-600 bg-flowgrid-surface p-6 text-center text-slate-400">No active Cells yet. Create one to start playing.</p>
+          ) : (
+            <nav aria-label="Cells">
+              <h2 className="sr-only">Cells</h2>
+              <ul className="flex flex-col gap-1">
+                {activeCells.map((cell) => (
+                  <li key={cell.id}>
+                    <Link to={`/cells/${cell.id}`} className="text-sm text-slate-300 underline transition hover:text-core focus:outline-none focus-visible:ring-2 focus-visible:ring-core">
+                      {cell.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
+
+          {/* D-12: archived-Cells management surface (hidden from canvas, reachable here). */}
+          <ArchivedCellsFilter />
+        </>
+      )}
+
+      {/* Child route renders here: HomeDock (/) | CellBoard (/cells/:id) |
+          CorePanel (/core) | SettingsTakeover (/settings) | ForgeTakeover (/forge).
+          Takeover overlays render ABOVE the canvas via fixed positioning + z-50
+          (see SettingsTakeover/ForgeTakeover); the canvas stays mounted, hidden
+          not unmounted (D-02). */}
+      <Outlet />
+    </section>
+  );
+}

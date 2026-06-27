@@ -1,12 +1,11 @@
 // Plan 06-03 Task 2: keyboard + semantic a11y component test for the Cell list (D-06 / UI-02).
 //
-// FlowgridHome mounts an always-visible <nav aria-label="Cells"> alongside the
-// canvas so keyboard and screen-reader users can open any existing Cell without
-// touching the canvas. These tests assert the nav semantics, the per-Cell link
-// count + hrefs, Tab-focusability, and that the list renders unconditionally as
-// the accessible peer to the canvas (D-06). happy-dom has no WebGL, so
-// FlowgridCanvas is mocked to a placeholder (mirrors tests/ui/flowgrid-home.test.tsx);
-// the canvas's own render path is covered by the Phase 6 Playwright E2E.
+// Phase 6.1 D-01/D-03: the Cell-list <nav aria-label="Cells"> moved from
+// FlowgridHome into AppLayout (the pathless layout route). These tests mount the
+// layout route + children so they assert the D-06 contract against the new
+// ownership. happy-dom has no WebGL, so FlowgridCanvas is mocked to a placeholder
+// (mirrors tests/ui/flowgrid-home.test.tsx); the canvas's own render path is
+// covered by the Phase 6 Playwright E2E.
 
 import type { ReactNode } from 'react';
 import { beforeEach, expect, test, vi } from 'vitest';
@@ -15,13 +14,37 @@ import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 // Mock FlowgridCanvas — happy-dom has no WebGL. The mock keeps the prop shape so
-// FlowgridHome still receives onCellTap + snapshot.
+// AppLayout still receives onCellTap + snapshot via FlowgridCanvas.
 vi.mock('../../src/ui/flowgrid-home/FlowgridCanvas.js', () => ({
   FlowgridCanvas: (_props: { onCellTap: (cellId: string) => void; snapshot: unknown }): ReactNode => (
     <div data-testid="flowgrid-canvas-mock" />
   ),
 }));
 
+// Stub CreateCellForm / ResumeSessionPrompt / RejuvenationResumePrompt /
+// ArchivedCellsFilter so the layout chrome mounts without their internals.
+vi.mock('../../src/ui/cell-board/CreateCellForm.js', () => ({
+  CreateCellForm: (): ReactNode => (
+    <div data-testid="create-cell-form-stub">CreateCellForm</div>
+  ),
+}));
+vi.mock('../../src/ui/cell-board/ResumeSessionPrompt.js', () => ({
+  ResumeSessionPrompt: (props: { cellName: string }): ReactNode => (
+    <div data-testid="resume-session-prompt-stub" data-cell={props.cellName} />
+  ),
+}));
+vi.mock('../../src/ui/core-panel/RejuvenationResumePrompt.js', () => ({
+  RejuvenationResumePrompt: (): ReactNode => (
+    <div data-testid="rejuvenation-resume-prompt-stub" />
+  ),
+}));
+vi.mock('../../src/ui/flowgrid-home/ArchivedCellsFilter.js', () => ({
+  ArchivedCellsFilter: (): ReactNode => (
+    <div data-testid="archived-cells-filter-stub" />
+  ),
+}));
+
+import { AppLayout } from '../../src/ui/shell/AppLayout.js';
 import { FlowgridHome } from '../../src/ui/flowgrid-home/FlowgridHome.js';
 import { flowgridStore } from '../../src/app/store/flowgrid-store.js';
 import { buildStarterSnapshot } from '../helpers/fixtures.js';
@@ -52,12 +75,20 @@ function seedActiveCells(prefix: string, names: string[]): { id: string; name: s
   return seeded;
 }
 
-// Render FlowgridHome inside a memory-router-backed RouterProvider so useNavigate
-// has the context it needs (mirrors tests/ui/flowgrid-home.test.tsx).
+// Render the layout route + index child so useNavigate + useMatches have the
+// context they need (mirrors tests/ui/flowgrid-home.test.tsx). The Cell-list
+// <nav aria-label="Cells"> is now owned by AppLayout (the layout route element),
+// so the test must mount the layout to exercise D-06.
 function renderHome(): ReturnType<typeof render> {
-  const router = createMemoryRouter([{ path: '/', element: <FlowgridHome /> }], {
-    initialEntries: ['/'],
-  });
+  const router = createMemoryRouter(
+    [
+      {
+        element: <AppLayout />,
+        children: [{ index: true, element: <FlowgridHome /> }],
+      },
+    ],
+    { initialEntries: ['/'] },
+  );
   return render(<RouterProvider router={router} />);
 }
 
@@ -69,6 +100,8 @@ beforeEach(() => {
     pendingVisualEvents: [],
     status: 'loading',
     lastError: null,
+    selectedCellId: null,
+    takeoverActive: false,
   });
 });
 
