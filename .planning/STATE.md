@@ -4,11 +4,11 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 06.1
 current_phase_name: canvas-always-visible-layout-pivot
-status: awaiting-human-checkpoint
-stopped_at: "Plan 06.1-03 Task 3 awaiting human smoke (Tasks 1+2 complete + green)"
-last_updated: "2026-06-27T19:48:00.000Z"
+status: blocked
+stopped_at: "Plan 06.1-03 Task 3 human smoke FAILED — particles not visible during events; layout regressions. Gap-closure required."
+last_updated: "2026-06-27T20:05:00.000Z"
 last_activity: 2026-06-27
-last_activity_desc: Plan 06.1-03 automated slice complete; Task 3 human smoke pending
+last_activity_desc: Plan 06.1-03 Task 3 human smoke FAILED — UI-03/VER-06 NOT re-closed; spine works (canvas mounted) but particles imperceptible + 3 layout regressions
 progress:
   total_phases: 7
   completed_phases: 6
@@ -28,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 ## Current Position
 
-Phase: 06.1 (canvas-always-visible-layout-pivot) — AWAITING-HUMAN-CHECKPOINT
-Plan: 3 of 3 (Tasks 1+2 complete + green; Task 3 human smoke PENDING)
-Status: Plan 06.1-03 Task 3 awaiting human visual smoke (re-opened 06-05 Task 3)
-Last activity: 2026-06-27 — Plan 06.1-03 automated slice complete; Task 3 human smoke pending
+Phase: 06.1 (canvas-always-visible-layout-pivot) — BLOCKED (Task 3 human smoke FAILED)
+Plan: 3 of 3 (Tasks 1+2 complete + green; Task 3 human smoke FAILED — gap-closure required)
+Status: Plan 06.1-03 Task 3 human smoke FAILED. Spine works (canvas stays mounted across /, /cells/:id, /core) BUT particles are imperceptible during emitting events + 3 layout regressions. UI-03/VER-06 NOT re-closed.
+Last activity: 2026-06-27 — Human ran `npm run build && npm run preview` 10-step smoke; flagged no Bloom/Activation/Core ripple visibility (only Z-Lift shows), grainy low-res hexes, redundant resume prompt beside active session, excessive scroll to Cell cards.
 
-Progress: [███████████████████████] 22/22 plans (100% executed; Plan 06.1-03 pending human checkpoint), 5/6 phases (Phase 6 + 6.1 awaiting Task 3 approval)
+Progress: [███████████████████████░] 24/25 plans (Plan 06.1-03 Task 3 FAILED human smoke), 5/6 phases (Phase 6 + 6.1 blocked on particle visibility + layout fixes)
 
 ## Performance Metrics
 
@@ -132,11 +132,15 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- [ ] Run the re-opened 06-05 Task 3 human smoke (Plan 06.1-03 Task 3): `npm run build && npm run preview`, then follow the 10-step smoke (create Cell -> tap -> Start Focus Session -> observe Current-trail particles -> Finish -> observe Bloom/Core ripple -> /core convert/store -> /settings takeover round-trip). Type "approved" to re-close UI-03/VER-06 and complete Phase 6.1 + Phase 6. BLOCKS Phase 6 completion.
+- [ ] **Gap-closure for Plan 06.1-03 Task 3 failures** (run `/gsd-verify-work 6.1` to surface as fix plans, or `/gsd-debug` for the particle-invisibility root cause). Five concrete issues to address (see Blockers/Concerns). BLOCKS Phase 6 + 6.1 completion; UI-03/VER-06 remain open.
 
 ### Blockers/Concerns
 
-- **[MAJOR] Canvas is structurally orphaned from particle-emitting events.** `FlowgridCanvas` mounts only at `/` (`FlowgridHome`), but sessions run on `/cells/:cellId`, Core on `/core`, Forge on `/forge` — each route unmounts the canvas. Result: every particle type (Current trails, Bloom bursts, Core ripples, Activation pulses, forge/token flashes) fires while the canvas is off-screen. Plan 06-05's coordinate-space + reduceMotion fixes are correct and stay committed but cannot close the visibility gap. Needs an information-architecture pivot (persistent canvas / context-driven camera / canvas-as-navigation). Seed at `.planning/exploration/canvas-always-visible-layout-pivot.md`. Reduce-motion stale-pin question (pre-Task-02 durable `reduceMotion=true` in existing DBs) is moot until the canvas is visible during events.
+- **[BLOCKER — UI-03] Particles imperceptible during emitting events.** Human smoke confirmed only Z-Lift is visually present; Bloom burst, Activation pulse, Core ripple, and Current trails do NOT read as visible during session finish / Core convert / active sessions. The structural probe (`window.__flowgridInspect`) is non-zero throughout (Plan 06.1-03 Test D green), so the canvas is mounted and the scene is alive — but the perceptual signal is absent. The 06-05 structural blocker (canvas unmounting) IS dissolved by Plan 06.1-01; this is a DIFFERENT failure (particles firing but not visible). Candidate root causes to investigate: (a) Plan 06.1-01 emit-gate `takeoverActive` early-return firing incorrectly on non-takeover routes; (b) particle layering/alpha/z-order hidden behind the canvas zone or the Z-Lift spotlight Graphics added in 06.1-02; (c) coordinate-space regression from the layout pivot (container/scale change); (d) particle system never re-armed after the spine move (build-once path). Needs `/gsd-debug` or verify-work gap plan.
+- **[BUG] Hexagons render grainy / low-res.** Visual quality regression exposed/introduced by the layout pivot — likely a resolution/DPR or texture-sampling issue (Pixi Application `resolution`/`autoDensity` or Graphics anti-alias not carried through the AppLayout mount). Not flagged by any automated test.
+- **[REGRESSION] Redundant resume prompt beside active session.** `"You had a focus session in progress for Poop. Resume or discard?"` renders in the persistent chrome (lifted into AppLayout by Plan 06.1-01) WHILE the session is actively running on the same page (the ZLiftDock from Plan 06.1-02 shows the active Finish/Cancel controls). The resume prompt's mount condition (`activeSessionStartedAt != null` persisted across reloads) collides with the live session state now that both live in the persistent layout. Needs a gating fix (hide resume prompt when the session is currently live on-page).
+- **[REGRESSION] Excessive scroll to reach Cell cards.** The persistent canvas zone + ZLiftDock + Outlet child (CellBoard with Cell cards) now stack vertically, forcing long scroll to reach the Cell cards. Layout/dock positioning needs rebalancing (side-dock at lg: was the intent per D-04/A3, but the production layout is stacking rather than side-by-side at the user's viewport).
+- **[OK] Canvas stays mounted across /, /cells/:id, /core** — the Plan 06.1-01 spine works structurally (confirmed by both E2E and human). The original 06-05 structural blocker (canvas orphaned on particle-emitting routes) IS dissolved; the failures above are perceptual/layout, not structural remount.
 
 ## Deferred Items
 
@@ -150,6 +154,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-27T19:48:00.000Z
-Stopped at: Plan 06.1-03 Task 3 awaiting human smoke (Tasks 1+2 complete + green)
-Resume file: None (resume by running the 10-step smoke against `npm run build && npm run preview`)
+Last session: 2026-06-27T20:05:00.000Z
+Stopped at: Plan 06.1-03 Task 3 human smoke FAILED (particles imperceptible + 3 layout regressions; UI-03/VER-06 open). Gap-closure required.
+Resume file: None (run `/gsd-verify-work 6.1` to surface fix plans, or `/gsd-debug` for the particle-invisibility root cause)
