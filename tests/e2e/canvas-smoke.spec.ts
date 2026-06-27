@@ -220,6 +220,12 @@ test('UI-08 (takeover covers canvas): /settings keeps <canvas> mounted + probe l
   // The Settings takeover overlay is visible (escapes canvas stacking context).
   await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
 
+  // Wait for the canvas to (re-)mount after the route transition's full page
+  // reload — Pixi v8 Application.init is async, so an instant count() can race
+  // the mount and return 0. waitFor({ state: 'attached' }) retries until the
+  // <canvas> is in the DOM, then the count assertion is deterministic.
+  await page.locator('canvas').waitFor({ state: 'attached' });
+
   // The <canvas> is still in the DOM — covered by the overlay, NOT unmounted.
   const canvasCount = await page.locator('canvas').count();
   expect(canvasCount, 'canvas stays mounted behind the takeover overlay').toBeGreaterThanOrEqual(1);
