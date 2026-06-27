@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sketch 002 — Scene Composition & Depth</title>
+<link rel="stylesheet" href="../themes/default.css" />
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--color-bg-deep);color:var(--color-text);font-family:var(--font-sans);overflow:hidden;}
+  body{min-height:100vh;}
+
+  /* horizon / void */
+  #void{position:fixed;inset:0;z-index:0;
+    background:
+      radial-gradient(1000px 600px at 50% 42%, rgba(52,231,255,0.07), transparent 60%),
+      radial-gradient(800px 600px at 50% 92%, rgba(155,108,255,0.10), transparent 60%),
+      var(--color-bg-deep);}
+  #grid-floor{position:fixed;left:0;right:0;bottom:0;height:60%;z-index:0;opacity:0;transition:opacity .6s ease;
+    background-image:linear-gradient(rgba(120,170,255,0.10) 1px,transparent 1px),linear-gradient(90deg,rgba(120,170,255,0.10) 1px,transparent 1px);
+    background-size:48px 48px;transform-origin:bottom;transform:perspective(600px) rotateX(62deg) scale(1.6);mask-image:linear-gradient(to top,#000,transparent 85%);}
+  body.depth #grid-floor{opacity:1;}
+
+  #variant-nav{position:fixed;top:0;left:0;right:0;z-index:9998;background:rgba(8,11,22,0.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--color-border);padding:10px 16px;display:flex;gap:8px;align-items:center;font-family:var(--font-mono);font-size:var(--text-sm);}
+  .variant-tab{background:transparent;color:var(--color-text-muted);border:1px solid transparent;padding:7px 14px;border-radius:var(--radius-md);cursor:pointer;font-family:inherit;font-size:inherit;letter-spacing:.04em;transition:all .18s ease;}
+  .variant-tab:hover{color:var(--color-text);border-color:var(--color-border);}
+  .variant-tab.active{color:var(--color-primary);border-color:var(--color-border-strong);box-shadow:var(--glow-cyan);}
+  .crumb{margin-right:auto;color:var(--color-text-dim);letter-spacing:.18em;font-size:var(--text-xs);text-transform:uppercase;}
+
+  .host{position:fixed;inset:0;display:grid;place-items:center;z-index:1;padding-top:40px;}
+  .perspective{perspective:1400px;perspective-origin:50% 44%;}
+  .world{position:relative;width:760px;height:640px;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.2,.8,.2,1);}
+  .world svg.lattice{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+
+  /* variant transforms */
+  .world.flat{transform:none;}
+  .world.tilt{transform:rotateX(52deg) translateZ(-30px) scale(1.02);}
+  .world.well{transform:rotateX(34deg) scale(1.05);}
+
+  /* parallax layer planes (tilt) */
+  .plane{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none;}
+  .plane svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+
+  /* well receding rings */
+  .well-rings{position:absolute;left:50%;top:340px;transform:translate(-50%,-50%);transform-style:preserve-3d;pointer-events:none;}
+  .well-rings .wr{position:absolute;left:50%;top:50%;border-radius:50%;border:1px solid rgba(52,231,255,.25);transform:translate(-50%,-50%) translateZ(var(--z)) scale(var(--s));box-shadow:0 0 30px rgba(52,231,255,.08);}
+
+  .label3d{font-family:var(--font-mono);font-size:9px;fill:var(--color-text-muted);letter-spacing:.18em;text-transform:uppercase;}
+  .node-cell{cursor:pointer;transition:filter .2s ease;}
+  .node-cell:hover{filter:brightness(1.5) drop-shadow(0 0 8px rgba(52,231,255,.7));}
+
+  .legend{position:fixed;top:70px;left:18px;z-index:6;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-dim);letter-spacing:.12em;line-height:1.9;}
+  .legend b{color:var(--color-text-muted);}
+  .legend .h{color:var(--color-primary);text-shadow:var(--glow-cyan);}
+
+  .readout{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:6;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-dim);letter-spacing:.16em;text-transform:uppercase;}
+  .readout b{color:var(--color-primary);}
+</style>
+</head>
+<body>
+
+<div id="void"></div>
+<div id="grid-floor"></div>
+
+<div id="variant-nav">
+  <span class="crumb">Sketch 002 · Scene Composition & Depth</span>
+  <button class="variant-tab active" onclick="setScene('flat')">A: Flat Top-Down ★</button>
+  <button class="variant-tab" onclick="setScene('tilt')">B: Tilted Iso Planes</button>
+  <button class="variant-tab" onclick="setScene('well')">C: Core Well</button>
+</div>
+
+<div class="legend">
+  <b>substrate:</b> <span class="h" id="substrate">flat top-down</span><br>
+  <b>depth cue:</b> <span id="cue">none — pure 2D glow</span><br>
+  <b>build cost:</b> <span id="cost">cheapest (CSS/SVG)</span>
+</div>
+
+<div class="host">
+  <div class="perspective">
+    <div class="world flat" id="world">
+
+      <!-- parallax planes for tilt variant -->
+      <div class="plane" id="planes"></div>
+
+      <!-- well rings for well variant -->
+      <div class="well-rings" id="wellrings"></div>
+
+      <!-- main lattice -->
+      <svg class="lattice" viewBox="0 0 760 640" id="lattice">
+        <defs>
+          <radialGradient id="core2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#9b6cff" stop-opacity="0.7"/>
+            <stop offset="55%" stop-color="#9b6cff" stop-opacity="0.12"/>
+            <stop offset="100%" stop-color="#9b6cff" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="b2"><feGaussianBlur stdDeviation="1.2"/></filter>
+        </defs>
+
+        <circle cx="380" cy="340" r="170" fill="url(#core2)"/>
+
+        <!-- ring guides -->
+        <circle cx="380" cy="340" r="140" fill="none" stroke="rgba(120,170,255,0.14)" stroke-dasharray="2 8"/>
+        <circle cx="380" cy="340" r="240" fill="none" stroke="rgba(120,170,255,0.08)" stroke-dasharray="2 12"/>
+
+        <!-- ring1 cell routes -->
+        <g stroke-width="1.2" fill="none" opacity="0.4">
+          <line x1="380" y1="200" x2="380" y2="340" stroke="#34e7ff"/>
+          <line x1="501" y1="270" x2="380" y2="340" stroke="#34e7ff" opacity=".6"/>
+          <line x1="501" y1="410" x2="380" y2="340" stroke="#3dffa6" opacity=".5"/>
+          <line x1="380" y1="480" x2="380" y2="340" stroke="#ff3df0" opacity=".4"/>
+          <line x1="259" y1="410" x2="380" y2="340" stroke="#34e7ff" opacity=".35"/>
+          <line x1="259" y1="270" x2="380" y2="340" stroke="#34e7ff" opacity=".35"/>
+        </g>
+
+        <!-- core -->
+        <g transform="translate(380 340)">
+          <polygon points="0,-46 40,-23 40,23 0,46 -40,23 -40,-23" fill="rgba(20,12,40,.92)" stroke="#9b6cff" stroke-width="1.4" style="filter:drop-shadow(0 0 12px rgba(155,108,255,.6))"/>
+          <text text-anchor="middle" y="4" font-family="var(--font-mono)" font-size="20" fill="#c9a6ff" style="filter:drop-shadow(0 0 6px rgba(155,108,255,.8))">◉</text>
+          <text class="label3d" text-anchor="middle" y="64" fill="#9b6cff">CORE</text>
+        </g>
+
+        <!-- ring 1 cells -->
+        <g id="ring1"></g>
+        <!-- ring 2 (faint, future) -->
+        <g id="ring2"></g>
+      </svg>
+
+    </div>
+  </div>
+</div>
+
+<div class="readout">flowgrid · core-centered lattice · <b id="readout-v">flat</b></div>
+
+<!-- toolbar -->
+<div id="sketch-tools" style="position:fixed;bottom:12px;right:12px;z-index:9999;font-family:var(--font-mono);font-size:12px;background:rgba(0,0,0,0.72);color:#fff;padding:9px 12px;border-radius:8px;opacity:.42;transition:opacity .2s;border:1px solid var(--color-border)" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.42'">
+  <label style="display:block;margin-bottom:6px">theme
+    <select onchange="document.querySelector('link[href*=themes]').href='../themes/'+this.value+'.css'" style="background:#111;color:#fff;border:1px solid #333">
+      <option value="default">holographic-plasma</option>
+    </select>
+  </label>
+</div>
+
+<script>
+  var ring1 = [['MUSIC','#34e7ff'],['FITNESS','#3dffa6'],['WRITING','#34e7ff'],['REST','#9b6cff'],['STUDY','#ffd23d'],['SOCIAL','#ff3df0']];
+  var r1pos = [[380,200],[501,270],[501,410],[380,480],[259,410],[259,270]];
+  var r2pos = [[380,100],[588,220],[588,460],[380,580],[172,460],[172,220]];
+
+  function hexPts(r){return '0,'+(-r)+' '+(r*0.866)+','+(-r/2)+' '+(r*0.866)+','+(r/2)+' 0,'+r+' '+(-r*0.866)+','+(r/2)+' '+(-r*0.866)+','+(-r/2);}
+  var ns='http://www.w3.org/2000/svg';
+
+  // ring1
+  (function(){
+    var g=document.getElementById('ring1');
+    r1pos.forEach(function(p,i){
+      var x=p[0],y=p[1];
+      var poly=document.createElementNS(ns,'polygon');
+      poly.setAttribute('points',hexPts(40));
+      poly.setAttribute('transform','translate('+x+' '+y+')');
+      poly.setAttribute('fill','rgba(12,18,34,0.85)');
+      poly.setAttribute('stroke',ring1[i][1]);
+      poly.setAttribute('stroke-width','1.3');
+      poly.setAttribute('class','node-cell');
+      poly.style.filter='drop-shadow(0 0 6px '+ring1[i][1]+'66)';
+      g.appendChild(poly);
+      var t=document.createElementNS(ns,'text');
+      t.setAttribute('x',x);t.setAttribute('y',y+58);t.setAttribute('text-anchor','middle');
+      t.setAttribute('class','label3d');t.setAttribute('fill',ring1[i][1]);
+      t.textContent=ring1[i][0]; g.appendChild(t);
+    });
+  })();
+  // ring2 faint
+  (function(){
+    var g=document.getElementById('ring2');var names=['SPARK','ECHO','—','—','—','—'];
+    r2pos.forEach(function(p,i){
+      var poly=document.createElementNS(ns,'polygon');
+      poly.setAttribute('points',hexPts(30));poly.setAttribute('transform','translate('+p[0]+' '+p[1]+')');
+      poly.setAttribute('fill','rgba(12,18,34,0.5)');poly.setAttribute('stroke','rgba(120,170,255,0.18)');
+      poly.setAttribute('stroke-width','1');poly.setAttribute('stroke-dasharray','3 4');
+      g.appendChild(poly);
+    });
+  })();
+
+  // tilt parallax planes (copies of ring guides, lifted in z)
+  (function(){
+    var host=document.getElementById('planes');
+    for(var z=60;z<=180;z+=60){
+      var p=document.createElement('div');p.className='plane';
+      p.style.transform='translateZ('+(z)+'px) scale('+(1-z*0.0018)+')';
+      p.style.opacity=(0.12).toString();
+      var svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 760 640');
+      var c1=document.createElementNS(ns,'circle');c1.setAttribute('cx','380');c1.setAttribute('cy','340');c1.setAttribute('r','140');c1.setAttribute('fill','none');c1.setAttribute('stroke','#34e7ff');c1.setAttribute('stroke-dasharray','2 10');c1.setAttribute('opacity','0.5');
+      svg.appendChild(c1);
+      p.appendChild(svg);host.appendChild(p);
+    }
+  })();
+
+  // well rings
+  (function(){
+    var host=document.getElementById('wellrings');
+    for(var i=1;i<=6;i++){
+      var w=document.createElement('div');w.className='wr';
+      w.style.width=(i*150)+'px';w.style.height=(i*150)+'px';
+      w.style.setProperty('--z',(i*-70)+'px');w.style.setProperty('--s',(1-i*0.06));
+      w.style.opacity=(0.5-i*0.05);
+      host.appendChild(w);
+    }
+  })();
+
+  var meta={
+    flat:{cue:'none — pure 2D glow',cost:'cheapest (CSS/SVG)'},
+    tilt:{cue:'rotateX + stacked translucent planes (GitS parallax)',cost:'mid (CSS 3D)'},
+    well:{cue:'receding concentric rings → vanishing Core',cost:'higher (Pixi/custom camera)'}
+  };
+  function setScene(v){
+    document.getElementById('world').className='world '+v;
+    document.body.classList.toggle('depth', v!=='flat');
+    document.getElementById('readout-v').textContent=v;
+    document.getElementById('substrate').textContent=({flat:'flat top-down',tilt:'tilted iso planes',well:'core well (perspective)'})[v];
+    document.getElementById('cue').textContent=meta[v].cue;
+    document.getElementById('cost').textContent=meta[v].cost;
+    document.querySelectorAll('.variant-tab').forEach(function(t,i){t.classList.toggle('active',['flat','tilt','well'][i]===v);});
+  }
+</script>
+</body>
+</html>

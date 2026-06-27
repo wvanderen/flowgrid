@@ -19,6 +19,6 @@ Inline interaction is the frontier: how does using a module *on the grid itself*
 | # | Name | Design Question | Winner | Tags |
 |---|------|-----------------|--------|------|
 | 001 | inline-module-interaction | How does tapping a module hex interact inline without a panel? | B: Z-Lift Spotlight | [interaction, paradigm, inline] |
-| 002 | scene-composition-depth | What's the scene composition & depth of the lattice? | — | [layout, substrate, depth] |
+| 002 | scene-composition-depth | What's the scene composition & depth of the lattice? | A: Flat Top-Down | [layout, substrate, depth] |
 | 003 | *planned* session-view-anchored | Where does the live session view live, anchored on its Cell? | — | [session, hud] |
 | 004 | *planned* current-route-flow | How does Current/signal flow visibly between modules? | — | [signal, vj, bespoke] |
