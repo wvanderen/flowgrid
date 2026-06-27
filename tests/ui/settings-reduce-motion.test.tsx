@@ -16,7 +16,6 @@
 // This test mocks prefersReducedMotion() → true and snapshots.settings.reduceMotion
 // → false, then asserts no update_settings command is dispatched on mount.
 
-import type { ReactNode } from 'react';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
