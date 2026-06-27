@@ -229,22 +229,55 @@ test('AppLayout: navigating to /forge mirrors takeoverActive=true via route hand
   expect(flowgridStore.getState().takeoverActive).toBe(true);
 });
 
-test('AppLayout: navigating back to / from /settings clears takeoverActive (D-02 mirror round-trip)', () => {
+test('AppLayout: navigating back to / from /settings keeps the same canvas-mock identity + clears takeoverActive (D-02 round-trip, D-01 build-once)', async () => {
   seedReady('takeover-clear');
 
-  // Start at /settings.
-  renderLayoutRoute(['/settings']);
+  // Use createMemoryRouter's navigate API so we exercise REAL in-router
+  // navigation (AppLayout stays mounted across the child swap). This is the
+  // load-bearing assertion for Pitfall 1: navigating /settings -> / must NOT
+  // unmount the canvas (the layout route persists).
+  let capturedRouter: ReturnType<typeof createMemoryRouter> | null = null;
+  const router = createMemoryRouter(
+    [
+      {
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <FlowgridHome /> },
+          { path: 'cells/:cellId', element: <CellBoard /> },
+          { path: 'core', element: <CorePanel /> },
+          { path: 'settings', element: <SettingsTakeover />, handle: { takeover: true } },
+          { path: 'forge', element: <ForgeTakeover />, handle: { takeover: true } },
+        ],
+      },
+    ],
+    { initialEntries: ['/settings'] },
+  );
+  capturedRouter = router;
+  render(<RouterProvider router={router} />);
+
+  // /settings: takeover overlay covers the canvas; takeoverActive=true.
   expect(screen.getByTestId('settings-takeover-root')).toBeInTheDocument();
   expect(flowgridStore.getState().takeoverActive).toBe(true);
 
-  // Simulate the user navigating back to / — the test harness resets the store
-  // mirror via AppLayout's effect on the new mount. We assert the contract
-  // (takeoverActive default is false after a fresh layout mount on /).
-  cleanup();
-  flowgridStore.setState({ takeoverActive: false });
-  renderLayoutRoute(['/']);
-  expect(screen.getByTestId('flowgrid-canvas-mock')).toBeInTheDocument();
+  // Capture the canvas element reference BEFORE navigating back.
+  const canvasBefore = screen.getByTestId('flowgrid-canvas-mock');
+  expect(canvasBefore).toBeInTheDocument();
+
+  // Navigate back to / within the same router instance. AppLayout stays
+  // mounted; only the Outlet child swaps (SettingsTakeover -> HomeDock).
+  await capturedRouter.navigate('/');
+  // Wait for the navigation to settle and the takeover overlay to unmount.
+  await screen.findByTestId('flowgrid-canvas-mock');
+
+  // The same canvas element is STILL in the document — the layout route
+  // preserved the FlowgridCanvas component instance across the takeover
+  // round-trip (D-01 build-once, Pitfall 1 closed).
+  expect(canvasBefore).toBeInTheDocument();
+  // takeoverActive flipped back to false via AppLayout's useEffect after the
+  // route change.
   expect(flowgridStore.getState().takeoverActive).toBe(false);
+  // selectedCellId is null on / (no /cells/:id match).
+  expect(flowgridStore.getState().selectedCellId).toBeNull();
 });
 
 test('AppLayout: /cells/:id mirrors selectedCellId from useMatches into flowgridStore (D-01 view-state)', () => {
@@ -259,5 +292,54 @@ test('AppLayout: /cells/:id mirrors selectedCellId from useMatches into flowgrid
   // AppLayout's useEffect mirrored the cellId param into the store.
   expect(flowgridStore.getState().selectedCellId).toBe(cellId);
   // Not a takeover route.
+  expect(flowgridStore.getState().takeoverActive).toBe(false);
+});
+
+test('AppLayout: FlowgridCanvas element identity persists across / -> /cells/:id -> /core navigation (D-01 build-once, Pitfall 1)', async () => {
+  const { cellId } = seedReady('build-once');
+
+  // Mount the layout route at /. Capture the canvas element identity.
+  let capturedRouter: ReturnType<typeof createMemoryRouter> | null = null;
+  const router = createMemoryRouter(
+    [
+      {
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <FlowgridHome /> },
+          { path: 'cells/:cellId', element: <CellBoard /> },
+          { path: 'core', element: <CorePanel /> },
+          { path: 'settings', element: <SettingsTakeover />, handle: { takeover: true } },
+          { path: 'forge', element: <ForgeTakeover />, handle: { takeover: true } },
+        ],
+      },
+    ],
+    { initialEntries: ['/'] },
+  );
+  capturedRouter = router;
+  render(<RouterProvider router={router} />);
+
+  const canvasAtRoot = screen.getByTestId('flowgrid-canvas-mock');
+  expect(canvasAtRoot).toBeInTheDocument();
+
+  // Navigate / -> /cells/:id (param-only change from root). AppLayout stays
+  // mounted (pathless layout route parent of the param-changing child), so
+  // the FlowgridCanvas component instance persists — the SAME DOM node must
+  // still be in the document.
+  await capturedRouter.navigate(`/cells/${cellId}`);
+  await screen.findByTestId('cell-board-stub');
+  expect(canvasAtRoot).toBeInTheDocument();
+  expect(flowgridStore.getState().selectedCellId).toBe(cellId);
+
+  // Navigate /cells/:id -> /core. Canvas persists.
+  await capturedRouter.navigate('/core');
+  await screen.findByTestId('core-panel-stub');
+  expect(canvasAtRoot).toBeInTheDocument();
+  expect(flowgridStore.getState().selectedCellId).toBeNull();
+
+  // Navigate /core -> /. Canvas persists (full round-trip).
+  await capturedRouter.navigate('/');
+  await screen.findByTestId('flowgrid-canvas-mock');
+  expect(canvasAtRoot).toBeInTheDocument();
+  expect(flowgridStore.getState().selectedCellId).toBeNull();
   expect(flowgridStore.getState().takeoverActive).toBe(false);
 });
