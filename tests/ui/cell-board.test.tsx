@@ -11,7 +11,7 @@
 
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, act } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, act, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 // Stub the repository singleton so importing src/app/repository.js (transitively,
@@ -33,6 +33,23 @@ vi.mock('../../src/app/store/dispatch.js', async (importActual) => {
   return { ...actual, dispatch: vi.fn() };
 });
 
+// Phase 6.1 Plan 03 Task 2 (CellBoard renders alongside the canvas mock):
+// mock FlowgridCanvas so the layout route can mount AppLayout without WebGL
+// (happy-dom has none). The mock keeps the same data-testid the layout-route
+// canvas-persistence tests in flowgrid-home.test.tsx use. Stub ZLiftDock too —
+// it renders Start/Finish/Cancel buttons with the SAME accessible names as
+// GeneratorTile (two-paths-one-truth — D-08), so leaving it real would create
+// strict-mode ambiguity in the existing CellBoard button tests. ZLiftDock's own
+// parity is covered by tests/ui/z-lift-dock.test.tsx.
+vi.mock('../../src/ui/flowgrid-home/FlowgridCanvas.js', () => ({
+  FlowgridCanvas: (_props: { onCellTap: (cellId: string) => void; snapshot: unknown }): ReactNode => (
+    <div data-testid="flowgrid-canvas-mock" />
+  ),
+}));
+vi.mock('../../src/ui/shell/ZLiftDock.js', () => ({
+  ZLiftDock: (): ReactNode => null,
+}));
+
 import { dispatch } from '../../src/app/store/dispatch.js';
 import { flowgridStore } from '../../src/app/store/flowgrid-store.js';
 import { deriveLocalDate } from '../../src/simulation/systems/day-rollover.js';
@@ -42,6 +59,9 @@ import { buildStarterSnapshot } from '../helpers/fixtures.js';
 import { CellBoard } from '../../src/ui/cell-board/CellBoard.js';
 import { EditCellForm } from '../../src/ui/cell-board/EditCellForm.js';
 import { SessionTimer } from '../../src/ui/cell-board/SessionTimer.js';
+import { AppLayout } from '../../src/ui/shell/AppLayout.js';
+import { FlowgridHome } from '../../src/ui/flowgrid-home/FlowgridHome.js';
+import { CorePanel } from '../../src/ui/core-panel/CorePanel.js';
 import type { SessionRecord } from '../../src/domain/index.js';
 
 const PREFIX = 'cb';
@@ -67,6 +87,10 @@ function resetStore(): void {
     pendingVisualEvents: [],
     status: 'loading',
     lastError: null,
+    // Phase 6.1 Plan 01 added these view-state mirrors; reset them so tests
+    // do not leak selectedCellId/takeoverActive between cases.
+    selectedCellId: null,
+    takeoverActive: false,
   });
 }
 
@@ -358,4 +382,84 @@ test('CellBoard: does NOT render SessionSummary when lastCompletedSession belong
   renderCellBoardAt(ids.cellId);
 
   expect(screen.queryByText(/session complete/i)).toBeNull();
+});
+
+// --- Phase 6.1 Plan 03 Task 2 (Test 3): CellBoard renders alongside the canvas
+// mock via the persistent layout route; "Return to Flowgrid" keeps the canvas
+// mounted. ---
+
+// Mount CellBoard as a child of the pathless AppLayout layout route so the
+// canvas mock (rendered by AppLayout) is present alongside CellBoard. Mirrors
+// the renderLayoutRoute helper in tests/ui/flowgrid-home.test.tsx but starts
+// at /cells/:cellId. Returns the in-router navigate API so tests can exercise
+// REAL SPA navigation (the layout route persists across child swaps).
+function renderCellBoardViaLayout(cellId: string): ReturnType<typeof createMemoryRouter> {
+  const router = createMemoryRouter(
+    [
+      {
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <FlowgridHome /> },
+          { path: 'cells/:cellId', element: <CellBoard /> },
+          { path: 'core', element: <CorePanel /> },
+        ],
+      },
+    ],
+    { initialEntries: [`/cells/${cellId}`] },
+  );
+  render(<RouterProvider router={router} />);
+  return router;
+}
+
+test('CellBoard (via layout route): renders alongside the canvas mock (D-01 persistent canvas + CellBoard dock)', () => {
+  const { ids, state } = buildStarterSnapshot(PREFIX);
+  seedReady(state);
+
+  renderCellBoardViaLayout(ids.cellId);
+
+  // CellBoard content renders — the section's accessible name is
+  // "Cell Board for <name>" (CellBoard.tsx:90). RTL resolves aria-label on a
+  // <section> via the `region` role; Playwright's getByLabel has no RTL peer.
+  const cell = state.cells.get(ids.cellId)!;
+  const cellBoardSection = screen.getByRole('region', { name: `Cell Board for ${cell.name}` });
+  expect(cellBoardSection).toBeInTheDocument();
+  // The canvas mock is mounted alongside CellBoard (the layout route's
+  // persistent canvas slot — the 06-05 Task 3 root-cause fix).
+  expect(screen.getByTestId('flowgrid-canvas-mock')).toBeInTheDocument();
+  // The URL-mirrored selectedCellId was pushed into the store by AppLayout's
+  // useEffect (D-01 view-state mirror — non-React consumers read this).
+  expect(flowgridStore.getState().selectedCellId).toBe(ids.cellId);
+});
+
+test('CellBoard (via layout route): "Return to Flowgrid" navigates to / WITHOUT unmounting the canvas mock (D-01 build-once)', async () => {
+  const { ids, state } = buildStarterSnapshot(PREFIX);
+  seedReady(state);
+
+  const router = renderCellBoardViaLayout(ids.cellId);
+
+  // Capture the canvas mock element identity before navigation.
+  const canvasBefore = screen.getByTestId('flowgrid-canvas-mock');
+  expect(canvasBefore).toBeInTheDocument();
+
+  // Click "Return to Flowgrid" — CellBoard's in-component link to /. This is
+  // an in-app SPA navigation via React Router, so AppLayout stays mounted
+  // (the pathless layout route is the parent of the child swap). The canvas
+  // must NOT unmount.
+  const cell = state.cells.get(ids.cellId)!;
+  const cellBoardSection = screen.getByRole('region', { name: `Cell Board for ${cell.name}` });
+  fireEvent.click(
+    within(cellBoardSection).getByRole('link', { name: /return to flowgrid/i }),
+  );
+
+  // Wait for the index child to take over the Outlet.
+  await screen.findByTestId('flowgrid-canvas-mock');
+
+  // The same canvas DOM node is STILL attached — strict reference equality.
+  expect(canvasBefore).toBe(screen.getByTestId('flowgrid-canvas-mock'));
+  // selectedCellId mirror cleared (no /cells/:id match on /).
+  expect(flowgridStore.getState().selectedCellId).toBeNull();
+  expect(flowgridStore.getState().takeoverActive).toBe(false);
+
+  // Sanity: router landed at /.
+  expect(router.state.location.pathname).toBe('/');
 });

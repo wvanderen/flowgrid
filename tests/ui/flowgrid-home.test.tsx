@@ -21,10 +21,34 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 // Mock FlowgridCanvas — happy-dom has no WebGL. The mock keeps the onCellTap prop
 // shape and a stable data-testid so the canvas-persistence tests can assert DOM
 // identity across navigation.
+//
+// Phase 6.1 Plan 03 Task 2 (D-09 WebGL-fail continuity): the mock reads a
+// hoisted mutable flag so the WebGL-fail test can render the D-07 fallback
+// branch (role="status" + the SAME className the real FlowgridCanvas uses on
+// both success and fail — h-[60vh] w-full sm:h-[70vh]). The flag defaults to
+// false (success branch) so the existing canvas-persistence tests are
+// unaffected; only the WebGL-fail test flips it.
+const flowgridCanvasMockState = vi.hoisted(() => ({ webglFailed: false }));
 vi.mock('../../src/ui/flowgrid-home/FlowgridCanvas.js', () => ({
-  FlowgridCanvas: (_props: { onCellTap: (cellId: string) => void; snapshot: unknown }): ReactNode => (
-    <div data-testid="flowgrid-canvas-mock" />
-  ),
+  FlowgridCanvas: (_props: { onCellTap: (cellId: string) => void; snapshot: unknown }): ReactNode => {
+    if (flowgridCanvasMockState.webglFailed) {
+      // Mirrors src/ui/flowgrid-home/FlowgridCanvas.tsx lines 238-253 — the real
+      // WebGL-fail branch. Same sizing classes as the success branch (lines
+      // 256-263) so D-09 (no reflow on WebGL-fail) holds.
+      return (
+        <div
+          data-testid="flowgrid-canvas-mock"
+          role="status"
+          aria-live="polite"
+          aria-label="Flowgrid visuals unavailable"
+          className="relative flex h-[60vh] w-full flex-col items-center justify-center gap-3 rounded-lg border border-slate-700 bg-slate-900/40 px-6 text-center sm:h-[70vh]"
+        >
+          <p>Visuals unavailable — you can still do everything from the Cell list below.</p>
+        </div>
+      );
+    }
+    return <div data-testid="flowgrid-canvas-mock" />;
+  },
 }));
 
 // Stub CreateCellForm so the Dialog-open assertion is isolated from the form's own
@@ -105,6 +129,10 @@ function seedReady(prefix: string): { cellId: string } {
 
 beforeEach(() => {
   cleanup();
+  // Reset the WebGL-fail flag between tests so test order does not leak mock
+  // state (the D-09 WebGL-fail test flips it to true; everything else expects
+  // the default success branch).
+  flowgridCanvasMockState.webglFailed = false;
   flowgridStore.setState({
     snapshot: null,
     activeSession: null,
@@ -342,4 +370,45 @@ test('AppLayout: FlowgridCanvas element identity persists across / -> /cells/:id
   expect(canvasAtRoot).toBeInTheDocument();
   expect(flowgridStore.getState().selectedCellId).toBeNull();
   expect(flowgridStore.getState().takeoverActive).toBe(false);
+
+  // Phase 6.1 Plan 03 Task 2 (Test 1 extension — strict DOM identity): assert
+  // the captured canvas element reference IS the same DOM node currently
+  // resolved by the testid query. `toBe` uses Object.is reference equality, so
+  // this proves React kept the same component instance (no unmount/remount)
+  // across the full / -> /cells/:id -> /core -> / round-trip (D-01 build-once,
+  // RESEARCH Pitfall 1).
+  expect(canvasAtRoot).toBe(screen.getByTestId('flowgrid-canvas-mock'));
+});
+
+// Phase 6.1 Plan 03 Task 2 — Test 4: D-09 WebGL-fail continuity.
+// The success and fail branches of FlowgridCanvas share h-[60vh] w-full
+// sm:h-[70vh] sizing so the layout does NOT collapse or reflow when WebGL
+// fails (D-09 / RESEARCH Pitfall 7). The mock's fail branch mirrors the real
+// component (src/ui/flowgrid-home/FlowgridCanvas.tsx lines 238-253); this test
+// asserts the contract holds and the chrome stays operable alongside.
+test('AppLayout: WebGL-fail keeps canvas zone sizing (h-[60vh] sm:h-[70vh]) + role=status + chrome operable (D-09 no reflow, Pitfall 7)', () => {
+  flowgridCanvasMockState.webglFailed = true;
+  // Starter snapshot has one active Cell so the Cell-list nav renders.
+  seedReady('webgl-fail');
+
+  renderLayoutRoute(['/']);
+
+  const canvasZone = screen.getByTestId('flowgrid-canvas-mock');
+
+  // The fail branch's className preserves the SAME sizing classes the success
+  // branch uses — D-09 "layout identical whether WebGL works or not".
+  expect(canvasZone.className).toContain('h-[60vh]');
+  expect(canvasZone.className).toContain('sm:h-[70vh]');
+  expect(canvasZone.className).toContain('w-full');
+
+  // role="status" aria-live="polite" grace note (NOT role="alert" — this is
+  // graceful degradation, not an error).
+  expect(canvasZone).toHaveAttribute('role', 'status');
+  expect(canvasZone).toHaveAttribute('aria-live', 'polite');
+
+  // The chrome stays operable alongside the fail-branch canvas zone — Cell-list
+  // nav (D-06 a11y peer), New Cell button (CELL-01 reachability), canvas mock
+  // all coexist (no layout shift, no broken controls).
+  expect(screen.getByRole('navigation', { name: 'Cells' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /new cell/i })).toBeInTheDocument();
 });

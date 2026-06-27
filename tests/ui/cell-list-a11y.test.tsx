@@ -44,8 +44,21 @@ vi.mock('../../src/ui/flowgrid-home/ArchivedCellsFilter.js', () => ({
   ),
 }));
 
+// Phase 6.1 Plan 03 Task 2 (D-03 chrome persistence): stub CellBoard + CorePanel
+// so the layout route can mount /cells/:id + /core children without dragging in
+// their internals. The Cell-list nav lives in AppLayout (the layout route), so
+// the test must mount the layout to assert it persists across core views.
+vi.mock('../../src/ui/cell-board/CellBoard.js', () => ({
+  CellBoard: (): ReactNode => <div data-testid="cell-board-stub" />,
+}));
+vi.mock('../../src/ui/core-panel/CorePanel.js', () => ({
+  CorePanel: (): ReactNode => <div data-testid="core-panel-stub" />,
+}));
+
 import { AppLayout } from '../../src/ui/shell/AppLayout.js';
 import { FlowgridHome } from '../../src/ui/flowgrid-home/FlowgridHome.js';
+import { CellBoard } from '../../src/ui/cell-board/CellBoard.js';
+import { CorePanel } from '../../src/ui/core-panel/CorePanel.js';
 import { flowgridStore } from '../../src/app/store/flowgrid-store.js';
 import { buildStarterSnapshot } from '../helpers/fixtures.js';
 import type { CellRecord, FlowgridSnapshot } from '../../src/domain/index.js';
@@ -88,6 +101,28 @@ function renderHome(): ReturnType<typeof render> {
       },
     ],
     { initialEntries: ['/'] },
+  );
+  return render(<RouterProvider router={router} />);
+}
+
+// Phase 6.1 Plan 03 Task 2 (D-03 chrome persistence): render the layout route
+// with all three core children (/, /cells/:id, /core) and start at the given
+// path so the test can assert the Cell-list nav persists across views. The
+// children are stubbed (see module-level vi.mock) so the assertion is isolated
+// to the AppLayout-owned chrome.
+function renderLayoutAt(path: string, cellId: string): ReturnType<typeof render> {
+  const router = createMemoryRouter(
+    [
+      {
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <FlowgridHome /> },
+          { path: 'cells/:cellId', element: <CellBoard /> },
+          { path: 'core', element: <CorePanel /> },
+        ],
+      },
+    ],
+    { initialEntries: [path.replace(':cellId', cellId)] },
   );
   return render(<RouterProvider router={router} />);
 }
@@ -186,4 +221,36 @@ test('Cell list: gracefully omitted with the empty-state message when there are 
 
   expect(screen.getByText(/no active cells yet/i)).toBeInTheDocument();
   expect(screen.queryByRole('navigation', { name: 'Cells' })).toBeNull();
+});
+
+// Phase 6.1 Plan 03 Task 2 — Test 2: D-03 chrome persistence.
+// The Cell-list <nav aria-label="Cells"> lives in AppLayout (the persistent
+// layout chrome), so it must remain present on /, /cells/:id, AND /core — the
+// always-visible semantic peer to the canvas across all core views (D-03 + the
+// D-06 a11y contract). Pre-6.1 the nav moved with route swaps; the layout
+// pivot makes it part of the persistent chrome.
+test('Cell list: <nav aria-label="Cells"> persists across /, /cells/:id, AND /core (D-03 chrome persistence)', () => {
+  const seeded = seedActiveCells('a11y-persistent', ['Music']);
+  const cellId = seeded[0]!.id;
+
+  // / — index route.
+  renderLayoutAt('/', cellId);
+  expect(screen.getByRole('navigation', { name: 'Cells' }), 'nav present on /').toBeInTheDocument();
+  expect(screen.getByTestId('flowgrid-canvas-mock'), 'canvas mock mounted alongside on /').toBeInTheDocument();
+  cleanup();
+
+  // /cells/:id — the route that previously unmounted the canvas (06-05 root cause).
+  flowgridStore.setState({ selectedCellId: null, takeoverActive: false });
+  renderLayoutAt(`/cells/${cellId}`, cellId);
+  expect(screen.getByRole('navigation', { name: 'Cells' }), 'nav persists on /cells/:id').toBeInTheDocument();
+  expect(screen.getByTestId('cell-board-stub'), 'CellBoard child renders alongside').toBeInTheDocument();
+  expect(screen.getByTestId('flowgrid-canvas-mock'), 'canvas mock persists on /cells/:id').toBeInTheDocument();
+  cleanup();
+
+  // /core — the other core route that previously unmounted the canvas.
+  flowgridStore.setState({ selectedCellId: null, takeoverActive: false });
+  renderLayoutAt('/core', cellId);
+  expect(screen.getByRole('navigation', { name: 'Cells' }), 'nav persists on /core').toBeInTheDocument();
+  expect(screen.getByTestId('core-panel-stub'), 'CorePanel child renders alongside').toBeInTheDocument();
+  expect(screen.getByTestId('flowgrid-canvas-mock'), 'canvas mock persists on /core').toBeInTheDocument();
 });
