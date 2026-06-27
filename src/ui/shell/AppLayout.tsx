@@ -29,6 +29,8 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Link, Outlet, useMatches, useNavigate } from 'react-router';
 import * as Dialog from '@radix-ui/react-dialog';
+import * as Menu from '@radix-ui/react-menu';
+import { LayoutGrid } from 'lucide-react';
 
 import type { CellId } from '../../domain/index.js';
 import { flowgridStore } from '../../app/store/flowgrid-store.js';
@@ -41,6 +43,7 @@ import { ErrorBanner } from '../shared/ErrorBanner.js';
 import { ArchivedCellsFilter } from '../flowgrid-home/ArchivedCellsFilter.js';
 import { FlowgridCanvas } from '../flowgrid-home/FlowgridCanvas.js';
 import { ReturnCues } from '../flowgrid-home/ReturnCues.js';
+import { ZLiftDock } from './ZLiftDock.js';
 
 interface RouteHandle {
   readonly takeover?: boolean;
@@ -58,6 +61,9 @@ export function AppLayout(): ReactNode {
   const lastError = useFlowgridStore((s) => s.lastError);
   const activeRejuvenation = useFlowgridStore((s) => s.activeRejuvenation);
   const [createOpen, setCreateOpen] = useState(false);
+  // Phase 6.1 D-04 (Plan 06.1-02 Task 2): Cell-switcher open state. Radix Menu
+  // (the standalone primitive) has no Trigger; the button toggles this manually.
+  const [cellSwitcherOpen, setCellSwitcherOpen] = useState(false);
 
   // D-02: derive takeoverActive from the match chain's route handle metadata.
   // AppLayout uses useMatches (NOT useParams — RESEARCH Pitfall 6: the layout
@@ -142,8 +148,20 @@ export function AppLayout(): ReactNode {
           The canvas zone stays in place across all child navigation including
           takeover overlays (which render via <Outlet/> and cover the canvas
           without unmounting it). D-09: on WebGL-fail FlowgridCanvas returns the
-          same className + a status note; the zone stays put. */}
-      <FlowgridCanvas snapshot={snapshot} onCellTap={handleCellTap} />
+          same className + a status note; the zone stays put.
+
+          Phase 6.1 D-08 (Plan 06.1-02 Task 2): the canvas zone is a relative
+          container so ZLiftDock can position itself beside (md:+) or below
+          (<md:) the canvas. The dock reads selectedCellId from the store; no
+          props required. */}
+      <div className="relative flex flex-col gap-2 md:flex-row md:items-start">
+        <div className="min-w-0 flex-1">
+          <FlowgridCanvas snapshot={snapshot} onCellTap={handleCellTap} />
+        </div>
+        {/* D-08: hidden during takeovers alongside the rest of the chrome — the
+            dock is part of the persistent chrome surface. */}
+        {!takeoverActive ? <ZLiftDock /> : null}
+      </div>
 
       {/* D-03: persistent chrome — hidden during takeovers (full-screen overlays).
           Contains the home chrome previously owned by FlowgridHome: ReturnCues,
@@ -197,18 +215,79 @@ export function AppLayout(): ReactNode {
           {activeCellCount === 0 ? (
             <p role="status" className="rounded-lg border border-dashed border-slate-600 bg-flowgrid-surface p-6 text-center text-slate-400">No active Cells yet. Create one to start playing.</p>
           ) : (
-            <nav aria-label="Cells">
-              <h2 className="sr-only">Cells</h2>
-              <ul className="flex flex-col gap-1">
-                {activeCells.map((cell) => (
-                  <li key={cell.id}>
-                    <Link to={`/cells/${cell.id}`} className="text-sm text-slate-300 underline transition hover:text-core focus:outline-none focus-visible:ring-2 focus-visible:ring-core">
-                      {cell.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
+            <>
+              {/* Phase 6.1 D-04 (Plan 06.1-02 Task 2) chrome collapse: the
+                  Cell-list `<nav aria-label="Cells">` is the bulkiest persistent
+                  chrome. It stays always-visible at md:+ (D-06 a11y peer) but
+                  collapses into a Radix Menu Cell-switcher below md: (Mobile
+                  Strategy §1). The Radix Menu preserves the semantic nav landmark
+                  + keyboard accessibility (arrow-key navigable, focus-trapped);
+                  only the visual affordance collapses. The Cell-switcher reuses
+                  the SAME activeCells projection the always-visible list uses —
+                  no second data source. Activating an item navigates to
+                  /cells/:id via the same handleCellTap path the canvas hex tap
+                  uses (one selection path, two visual affordances — RESEARCH
+                  Pattern 6). ReturnCues / New Cell / resume prompts stay visible
+                  at all sizes per Mobile Strategy ordering. */}
+              <nav aria-label="Cells" className="hidden md:block">
+                <h2 className="sr-only">Cells</h2>
+                <ul className="flex flex-col gap-1">
+                  {activeCells.map((cell) => (
+                    <li key={cell.id}>
+                      <Link to={`/cells/${cell.id}`} className="text-sm text-slate-300 underline transition hover:text-core focus:outline-none focus-visible:ring-2 focus-visible:ring-core">
+                        {cell.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+
+              {/* Cell-switcher — Radix Menu, visible only below md:. aria-label
+                  keeps the trigger accessible even when only the icon shows.
+
+                  Note: @radix-ui/react-menu (the standalone Menu primitive) does
+                  NOT export a Trigger (it's designed for context-menu use). We
+                  control the open state manually and use Menu.Anchor for popper
+                  positioning. The arrow-key navigation + focus-trap come from
+                  Radix's RovingFocusGroup; the manual button click is the only
+                  deviation from a DropdownMenu primitive (which is not installed). */}
+              <div className="md:hidden">
+                <Menu.Root open={cellSwitcherOpen} onOpenChange={setCellSwitcherOpen}>
+                  <Menu.Anchor asChild>
+                    <button
+                      type="button"
+                      aria-haspopup="menu"
+                      aria-expanded={cellSwitcherOpen}
+                      aria-label="Cells"
+                      onClick={() => setCellSwitcherOpen((v) => !v)}
+                      className="inline-flex items-center justify-center gap-1 rounded-md border border-slate-600 px-3 py-2 text-sm text-slate-200 transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-core"
+                    >
+                      <LayoutGrid aria-hidden="true" className="h-4 w-4" />
+                      Cells
+                    </button>
+                  </Menu.Anchor>
+                  <Menu.Portal>
+                    <Menu.Content
+                      aria-label="Cells"
+                      className="z-50 max-h-80 w-56 overflow-auto rounded-md border border-slate-700 bg-flowgrid-surface p-1 shadow-xl"
+                    >
+                      {activeCells.map((cell) => (
+                        <Menu.Item
+                          key={cell.id}
+                          onSelect={() => {
+                            setCellSwitcherOpen(false);
+                            handleCellTap(cell.id);
+                          }}
+                          className="flex cursor-pointer items-center px-3 py-2 text-sm text-slate-200 outline-none data-[highlighted]:bg-slate-700 data-[highlighted]:text-core"
+                        >
+                          {cell.name}
+                        </Menu.Item>
+                      ))}
+                    </Menu.Content>
+                  </Menu.Portal>
+                </Menu.Root>
+              </div>
+            </>
           )}
 
           {/* D-12: archived-Cells management surface (hidden from canvas, reachable here). */}
