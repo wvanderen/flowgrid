@@ -1,0 +1,75 @@
+/* Flowgrid Sketch Theme — "Holographic Plasma"
+   Mood: holographic, terminal-vibes, geometric/mathematical, electric/plasma,
+   alien/primordial, emergent complexity, dopaminergic, expressive.
+   Inspired by: VJ visualizations, Ghost in the Shell net, Moonsigil Atlas,
+   Super Hexagon, Bespoke Synth. */
+
+:root {
+  /* ── The void ── */
+  --color-bg: #05070e;
+  --color-bg-deep: #02030a;
+  --color-surface: rgba(16, 22, 40, 0.72);
+  --color-surface-solid: #0c1222;
+  --color-border: rgba(86, 120, 190, 0.22);
+  --color-border-strong: rgba(120, 170, 255, 0.45);
+
+  /* ── Text ── */
+  --color-text: #dbe7ff;
+  --color-text-muted: #7588b5;
+  --color-text-dim: #4a5878;
+
+  /* ── Holographic / plasma ── */
+  --color-primary: #34e7ff;        /* electric cyan — Current */
+  --color-primary-hover: #7af2ff;
+  --color-accent: #ff3df0;         /* plasma magenta — Energy */
+  --color-accent-2: #9b6cff;      /* alien violet — Core Charge */
+  --color-success: #3dffa6;       /* bloom green */
+  --color-warning: #ffd23d;
+  --color-danger: #ff4d6d;
+
+  /* glow tokens */
+  --glow-cyan: 0 0 12px rgba(52, 231, 255, 0.55), 0 0 32px rgba(52, 231, 255, 0.25);
+  --glow-magenta: 0 0 12px rgba(255, 61, 240, 0.55), 0 0 32px rgba(255, 61, 240, 0.22);
+  --glow-violet: 0 0 14px rgba(155, 108, 255, 0.55), 0 0 36px rgba(155, 108, 255, 0.25);
+  --glow-soft: 0 0 8px rgba(120, 170, 255, 0.3);
+
+  /* ── Typography ── */
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', ui-monospace, monospace;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.5rem;
+
+  /* ── Spacing ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* ── Shapes (geometric, sharp) ── */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  /* ── Shadows / depth ── */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.5);
+  --shadow-lg: 0 18px 48px rgba(0,0,0,0.6);
+  --shadow-lift: 0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px var(--color-border-strong);
+}
+
+/* hex utility — flat-top hexagon via clip-path */
+.hex {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+.hex-pointy {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}

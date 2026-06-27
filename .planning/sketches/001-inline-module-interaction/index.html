@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sketch 001 — Inline Module Interaction</title>
+<link rel="stylesheet" href="../themes/default.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--color-bg-deep); color: var(--color-text); font-family: var(--font-sans); overflow-x: hidden; }
+
+  /* ambient void */
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(1200px 700px at 50% 38%, rgba(52,231,255,0.06), transparent 60%),
+      radial-gradient(900px 600px at 70% 80%, rgba(255,61,240,0.05), transparent 60%),
+      radial-gradient(700px 500px at 20% 75%, rgba(155,108,255,0.05), transparent 60%),
+      var(--color-bg-deep);
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      linear-gradient(rgba(120,170,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120,170,255,0.04) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(circle at 50% 45%, #000 30%, transparent 75%);
+  }
+
+  /* variant nav */
+  #variant-nav{position:fixed;top:0;left:0;right:0;z-index:9998;background:rgba(8,11,22,0.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--color-border);padding:10px 16px;display:flex;gap:8px;align-items:center;font-family:var(--font-mono);font-size:var(--text-sm);}
+  .variant-tab{background:transparent;color:var(--color-text-muted);border:1px solid transparent;padding:7px 14px;border-radius:var(--radius-md);cursor:pointer;font-family:inherit;font-size:inherit;letter-spacing:.04em;transition:all .18s ease;}
+  .variant-tab:hover{color:var(--color-text);border-color:var(--color-border);}
+  .variant-tab.active{color:var(--color-primary);border-color:var(--color-border-strong);box-shadow:var(--glow-cyan);}
+  #variant-nav .crumb{margin-right:auto;color:var(--color-text-dim);letter-spacing:.18em;font-size:var(--text-xs);text-transform:uppercase;}
+
+  /* stage */
+  .wrap{padding-top:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;position:relative;z-index:1;}
+  .stage{position:relative;width:760px;max-width:96vw;height:640px;}
+  .stage svg.lattice{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+  .overlay{position:absolute;inset:0;pointer-events:none;}
+  .overlay > *{pointer-events:auto;}
+
+  /* module hexes (html mirrors of svg for interaction) */
+  .mhex{position:absolute;width:104px;height:116px;transform:translate(-50%,-50%);cursor:pointer;display:grid;place-items:center;transition:transform .25s cubic-bezier(.2,.8,.2,1), filter .25s ease;}
+  .mhex .face{position:absolute;inset:0;background:linear-gradient(160deg, rgba(20,30,55,.92), rgba(8,12,24,.92));border:1px solid var(--color-border-strong);box-shadow:var(--shadow-md);}
+  .mhex .face.hex{clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);}
+  .mhex .glyph{position:relative;font-family:var(--font-mono);font-size:var(--text-sm);color:var(--color-primary);text-shadow:var(--glow-cyan);letter-spacing:.06em;z-index:2;text-align:center;}
+  .mhex .lbl{position:relative;font-family:var(--font-mono);font-size:9px;color:var(--color-text-muted);letter-spacing:.16em;text-transform:uppercase;margin-top:3px;z-index:2;}
+  .mhex:hover .face{border-color:var(--color-primary-hover);}
+  .mhex.core .face{background:radial-gradient(circle at 50% 40%, rgba(155,108,255,.35), rgba(8,12,24,.95));border-color:var(--color-accent-2);}
+  .mhex.core .glyph{color:var(--color-accent-2);text-shadow:var(--glow-violet);font-size:var(--text-lg);}
+  .mhex.gen .face{border-color:var(--color-primary);box-shadow:var(--glow-cyan), var(--shadow-md);}
+
+  .ring-pulse{position:absolute;inset:-14px;border-radius:50%;border:1px solid rgba(52,231,255,.0);pointer-events:none;}
+
+  /* generic control chips */
+  .chip{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text);background:rgba(12,18,34,.85);border:1px solid var(--color-border-strong);padding:7px 11px;border-radius:var(--radius-md);cursor:pointer;letter-spacing:.05em;backdrop-filter:blur(6px);transition:all .15s ease;white-space:nowrap;}
+  .chip:hover{border-color:var(--color-primary);color:var(--color-primary);box-shadow:var(--glow-cyan);}
+  .chip.primary{background:linear-gradient(180deg, rgba(52,231,255,.18), rgba(52,231,255,.05));border-color:var(--color-primary);color:var(--color-primary);box-shadow:var(--glow-cyan);}
+  .chip.muted{color:var(--color-text-muted);}
+
+  .fieldline{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);letter-spacing:.14em;text-transform:uppercase;}
+
+  /* ===== VARIANT A: radial bloom ===== */
+  .ia-a .bloom-core{position:absolute;left:380px;top:188px;transform:translate(-50%,-50%);}
+  .ia-a .bloom-petal{position:absolute;left:380px;top:188px;transform-origin:0 0;opacity:0;transition:transform .5s cubic-bezier(.2,.9,.2,1), opacity .4s ease;}
+  .ia-a.armed .bloom-petal{opacity:1;}
+  .ia-a.armed .bloom-petal:nth-child(1){transition-delay:.04s;}
+  .ia-a.armed .bloom-petal:nth-child(2){transition-delay:.09s;}
+  .ia-a.armed .bloom-petal:nth-child(3){transition-delay:.14s;}
+  .ia-a.armed .bloom-petal:nth-child(4){transition-delay:.19s;}
+  .ia-a .sigil-ring{position:absolute;left:380px;top:188px;width:190px;height:190px;transform:translate(-50%,-50%) scale(.4);opacity:0;border-radius:50%;border:1px dashed rgba(52,231,255,.5);animation:spin 18s linear infinite;transition:transform .5s ease,opacity .4s ease;}
+  .ia-a.armed .sigil-ring{transform:translate(-50%,-50%) scale(1);opacity:.8;}
+  @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg) scale(1);}from{transform:translate(-50%,-50%) rotate(0) scale(1);}}
+
+  /* ===== VARIANT B: z-lift spotlight ===== */
+  .ia-b .spotlight{position:absolute;left:380px;top:188px;width:340px;height:340px;transform:translate(-50%,-50%) scale(.5);opacity:0;background:radial-gradient(circle, rgba(52,231,255,.16), transparent 62%);transition:transform .45s ease,opacity .4s ease;pointer-events:none;}
+  .ia-b.armed .spotlight{transform:translate(-50%,-50%) scale(1);opacity:1;}
+  .ia-b.armed ~ .underlays .mhex:not(.gen):not(.core){filter:saturate(.4) brightness(.55);transform:translate(-50%,-50%) scale(.9);}
+  .ia-b .dock{position:absolute;left:540px;top:150px;width:210px;opacity:0;transform:translate(12px,0);transition:all .4s cubic-bezier(.2,.8,.2,1);}
+  .ia-b.armed .dock{opacity:1;transform:translate(0,0);transition-delay:.1s;}
+
+  /* ===== VARIANT C: command wheel ===== */
+  .ia-c .wheel{position:absolute;left:380px;top:188px;width:300px;height:300px;transform:translate(-50%,-50%) scale(.5);opacity:0;transition:transform .4s cubic-bezier(.2,.9,.2,1), opacity .35s ease;}
+  .ia-c.armed .wheel{transform:translate(-50%,-50%) scale(1);opacity:1;}
+  .ia-c .wheel svg{overflow:visible;}
+  .ia-c .sector{cursor:pointer;transition:filter .15s ease, transform .15s ease;}
+  .ia-c .sector:hover{filter:brightness(1.4) drop-shadow(0 0 8px rgba(52,231,255,.6));}
+  .ia-c .sector text{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;fill:var(--color-text);text-anchor:middle;}
+  .ia-c .sector:hover text{fill:var(--color-primary);}
+
+  /* replay control */
+  .replay{position:absolute;left:50%;bottom:-6px;transform:translate(-50%,0);display:flex;gap:8px;align-items:center;z-index:5;}
+  .state-tag{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-dim);letter-spacing:.18em;text-transform:uppercase;}
+  .state-tag b{color:var(--color-primary);font-weight:600;}
+
+  .legend{position:absolute;top:8px;left:8px;font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-dim);letter-spacing:.14em;line-height:1.8;}
+  .legend b{color:var(--color-text-muted);}
+
+  /* viewport scaling */
+  #viewport.phone .stage{transform:scale(.62);}
+  #viewport.tablet .stage{transform:scale(.82);}
+</style>
+</head>
+<body>
+
+<div id="variant-nav">
+  <span class="crumb">Sketch 001 · Inline Module Interaction</span>
+  <button class="variant-tab active" onclick="showVariant('a')">A: Radial Bloom</button>
+  <button class="variant-tab" onclick="showVariant('b')">B: Z-Lift Spotlight ★</button>
+  <button class="variant-tab" onclick="showVariant('c')">C: Command Wheel</button>
+</div>
+
+<div class="wrap">
+  <div id="viewport" class="">
+    <div class="stage" id="stage">
+
+      <!-- shared lattice backdrop -->
+      <svg class="lattice" viewBox="0 0 760 640" aria-hidden="true">
+        <defs>
+          <radialGradient id="coreGlow" cx="50%" cy="45%" r="60%">
+            <stop offset="0%" stop-color="#9b6cff" stop-opacity="0.55"/>
+            <stop offset="60%" stop-color="#9b6cff" stop-opacity="0.08"/>
+            <stop offset="100%" stop-color="#9b6cff" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="soft"><feGaussianBlur stdDeviation="1.4"/></filter>
+        </defs>
+
+        <!-- core well -->
+        <circle cx="380" cy="380" r="150" fill="url(#coreGlow)"/>
+        <!-- ambient decorative rings -->
+        <circle cx="380" cy="380" r="118" fill="none" stroke="rgba(120,170,255,0.10)" stroke-dasharray="2 8"/>
+        <circle cx="380" cy="380" r="232" fill="none" stroke="rgba(120,170,255,0.06)" stroke-dasharray="2 12"/>
+
+        <!-- signal routes from modules to core -->
+        <g stroke-width="1.4" fill="none" opacity="0.55">
+          <line x1="380" y1="188" x2="380" y2="380" stroke="#34e7ff"/>
+          <line x1="545" y1="284" x2="380" y2="380" stroke="#34e7ff" opacity="0.5"/>
+          <line x1="545" y1="476" x2="380" y2="380" stroke="#3dffa6" opacity="0.45"/>
+          <line x1="380" y1="572" x2="380" y2="380" stroke="#ff3df0" opacity="0.4"/>
+          <line x1="215" y1="476" x2="380" y2="380" stroke="#34e7ff" opacity="0.35"/>
+          <line x1="215" y1="284" x2="380" y2="380" stroke="#34e7ff" opacity="0.35"/>
+        </g>
+        <!-- animated current particles along generator route -->
+        <circle r="2.6" fill="#7af2ff" filter="url(#soft)">
+          <animateMotion dur="2.4s" repeatCount="indefinite" path="M380,188 L380,380"/>
+        </circle>
+        <circle r="2.2" fill="#7af2ff" opacity="0.7">
+          <animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M380,188 L380,380"/>
+        </circle>
+      </svg>
+
+      <!-- module hex mirrors -->
+      <div class="overlay underlays">
+        <div class="mhex gen" style="left:380px;top:188px" onclick="armInteraction()">
+          <div class="face hex"></div>
+          <div style="position:relative;z-index:2;text-align:center">
+            <div class="glyph">▲<br><span style="font-size:9px;color:var(--color-text)">GEN</span></div>
+          </div>
+          <div class="ring-pulse" style="border-color:rgba(52,231,255,.4);animation:pulseRing 2.6s ease-out infinite"></div>
+        </div>
+
+        <div class="mhex core" style="left:380px;top:380px">
+          <div class="face hex"></div>
+          <div class="glyph">◉<div class="lbl">Core</div></div>
+        </div>
+
+        <div class="mhex" style="left:545px;top:284px"><div class="face hex"></div><div class="glyph" style="color:var(--color-accent-2);text-shadow:var(--glow-violet)">⚡<div class="lbl">Charge</div></div></div>
+        <div class="mhex" style="left:545px;top:476px"><div class="face hex"></div><div class="glyph" style="color:var(--color-success);text-shadow:0 0 10px rgba(61,255,166,.5)">✶<div class="lbl">Bloom</div></div></div>
+        <div class="mhex" style="left:380px;top:572px"><div class="face hex"></div><div class="glyph" style="color:var(--color-accent);text-shadow:var(--glow-magenta)">↗<div class="lbl">Output</div></div></div>
+        <div class="mhex" style="left:215px;top:476px"><div class="face hex"></div><div class="glyph" style="color:var(--color-text-muted)">◈<div class="lbl">Echo</div></div></div>
+        <div class="mhex" style="left:215px;top:284px"><div class="face hex"></div><div class="glyph" style="color:var(--color-text-muted)">◇<div class="lbl">Spark</div></div></div>
+
+        <!-- ===== VARIANT A overlay ===== -->
+        <div class="ia-a" id="ia-a">
+          <div class="sigil-ring"></div>
+          <!-- petals positioned by rotation around bloom-core (380,188) -->
+          <div class="bloom-petal" style="transform:rotate(-78deg) translate(118px)"><div style="transform:rotate(78deg)"><div class="chip primary">▶ Start Session</div></div></div>
+          <div class="bloom-petal" style="transform:rotate(-40deg) translate(120px)"><div style="transform:rotate(40deg)"><div class="chip">⏱ 25m</div></div></div>
+          <div class="bloom-petal" style="transform:rotate(2deg) translate(122px)"><div style="transform:rotate(-2deg)"><div class="chip">⇄ Route → Core</div></div></div>
+          <div class="bloom-petal" style="transform:rotate(42deg) translate(120px)"><div style="transform:rotate(-42deg)"><div class="chip muted">+ intent</div></div></div>
+        </div>
+
+        <!-- ===== VARIANT B overlay ===== -->
+        <div class="ia-b" id="ia-b">
+          <div class="spotlight"></div>
+          <div class="dock">
+            <div class="fieldline" style="margin-bottom:8px">GENERATOR · MUSIC</div>
+            <div style="display:flex;flex-direction:column;gap:7px;align-items:flex-start">
+              <button class="chip primary">▶ Start Session</button>
+              <div style="display:flex;gap:6px"><button class="chip">15m</button><button class="chip" style="border-color:var(--color-primary)">25m</button><button class="chip">45m</button></div>
+              <button class="chip">⇄ Route Current → Core</button>
+              <div class="fieldline" style="margin-top:6px">CHARGE · <b style="color:var(--color-success)">320</b> &nbsp; BLOOM · <b style="color:var(--color-success)">ready</b></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== VARIANT C overlay ===== -->
+        <div class="ia-c" id="ia-c">
+          <div class="wheel">
+            <svg viewBox="-150 -150 300 300" width="300" height="300">
+              <!-- 6 sectors, 60deg each, ring between r=92 and r=144 -->
+              <g id="sectors"></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- replay / state -->
+      <div class="replay">
+        <span class="state-tag">state · <b id="state-label">tap ▲ Generator</b></span>
+        <button class="chip" onclick="armInteraction()">▶ Replay interaction</button>
+        <button class="chip muted" onclick="disarm()">reset</button>
+      </div>
+
+      <div class="legend">
+        <b>canvas:</b> always visible · never covered<br>
+        <b>rule:</b> interaction lives <i>on</i> the hex
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>@keyframes pulseRing{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.5);opacity:0}}</style>
+
+<!-- sketch toolbar -->
+<div id="sketch-tools" style="position:fixed;bottom:12px;right:12px;z-index:9999;font-family:var(--font-mono);font-size:12px;background:rgba(0,0,0,0.72);color:#fff;padding:9px 12px;border-radius:8px;opacity:.42;transition:opacity .2s;border:1px solid var(--color-border)" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.42'">
+  <label style="display:block;margin-bottom:6px">theme
+    <select onchange="document.querySelector('link[href*=themes]').href='../themes/'+this.value+'.css'" style="background:#111;color:#fff;border:1px solid #333">
+      <option value="default">holographic-plasma</option>
+    </select>
+  </label>
+  <div style="display:flex;gap:5px">
+    <button onclick="setVp('phone')" style="background:#111;color:#ccc;border:1px solid #333;padding:3px 6px;border-radius:4px;cursor:pointer">phone</button>
+    <button onclick="setVp('tablet')" style="background:#111;color:#ccc;border:1px solid #333;padding:3px 6px;border-radius:4px;cursor:pointer">tablet</button>
+    <button onclick="setVp('')" style="background:#111;color:#ccc;border:1px solid #333;padding:3px 6px;border-radius:4px;cursor:pointer">full</button>
+  </div>
+</div>
+
+<script>
+  var current = 'a';
+  function showVariant(id){
+    current = id;
+    ['a','b','c'].forEach(function(v){
+      document.getElementById('ia-'+v).style.display = (v===id)?'block':'none';
+    });
+    document.querySelectorAll('.variant-tab').forEach(function(t,i){t.classList.toggle('active', ['a','b','c'][i]===id);});
+    armInteraction();
+  }
+
+  function armInteraction(){
+    var node = document.getElementById('ia-'+current);
+    node.classList.remove('armed'); void node.offsetWidth; node.classList.add('armed');
+    // z-lift the generator in B
+    var gen = document.querySelector('.mhex.gen');
+    if(current==='a'){ gen.style.transform='translate(-50%,-50%) scale(1.35) rotate(-3deg)'; gen.style.filter='brightness(1.25)'; }
+    else if(current==='b'){ gen.style.transform='translate(-50%,-50%) scale(1.5)'; gen.style.filter='brightness(1.35)'; }
+    else { gen.style.transform='translate(-50%,-50%) scale(1.18)'; gen.style.filter='brightness(1.1)'; }
+    document.getElementById('state-label').textContent = ({a:'sigil bloom open',b:'module lifted · neighbors dimmed',c:'command wheel deployed'})[current];
+  }
+  function disarm(){
+    var node = document.getElementById('ia-'+current); node.classList.remove('armed');
+    var gen = document.querySelector('.mhex.gen'); gen.style.transform='translate(-50%,-50%)'; gen.style.filter='';
+    document.getElementById('state-label').textContent='tap ▲ Generator';
+  }
+
+  // build command-wheel sectors
+  (function(){
+    var g = document.getElementById('sectors');
+    var labels = ['▶ Start','⏱ Length','⇄ Route','✶ Bloom','⚙ Config','◎ Inspect'];
+    var colors = ['#34e7ff','#34e7ff','#9b6cff','#3dffa6','#7588b5','#7588b5'];
+    var r1=92, r2=144;
+    for(var i=0;i<6;i++){
+      var a0 = -90 + i*60, a1 = a0+60;
+      function pt(r,deg){var rad=deg*Math.PI/180;return [Math.cos(rad)*r, Math.sin(rad)*r];}
+      var p0=pt(r1,a0), p1=pt(r2,a0), p2=pt(r2,a1), p3=pt(r1,a1);
+      var large = (a1-a0)<=60?0:0;
+      var d = 'M'+p0[0]+' '+p0[1]+' L'+p1[0]+' '+p1[1]+' A'+r2+' '+r2+' 0 '+large+' 1 '+p2[0]+' '+p2[1]+' L'+p3[0]+' '+p3[1]+' A'+r1+' '+r1+' 0 '+large+' 0 '+p0[0]+' '+p0[1]+' Z';
+      var path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill', 'rgba(12,18,34,0.7)');
+      path.setAttribute('stroke', colors[i]);
+      path.setAttribute('stroke-width','1.2');
+      path.setAttribute('class','sector');
+      path.addEventListener('click', function(){ this.style.fill='rgba(52,231,255,0.18)'; });
+      g.appendChild(path);
+      var mid = (a0+a1)/2; var mp = pt((r1+r2)/2, mid);
+      var t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x', mp[0]); t.setAttribute('y', mp[1]+4);
+      t.setAttribute('class','sector');
+      t.textContent = labels[i];
+      g.appendChild(t);
+    }
+  })();
+
+  function setVp(v){ document.getElementById('viewport').className = v; }
+
+  // initial
+  showVariant('a');
+</script>
+</body>
+</html>
