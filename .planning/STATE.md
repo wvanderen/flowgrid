@@ -4,11 +4,11 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 06
 current_phase_name: hardening-accessibility-and-trust
-status: blocked
-stopped_at: Phase 6.1 context gathered
+status: ready
+stopped_at: Phase 6.1 planned (3 plans, ready to execute)
 last_updated: "2026-06-27T15:06:16.759Z"
-last_activity: 2026-06-26
-last_activity_desc: 06-05 Tasks 1&2 landed; Task 3 checkpoint failed (static hexagons)
+last_activity: 2026-06-27
+last_activity_desc: Phase 6.1 (canvas-always-visible layout pivot) planned — 3 plans across 3 waves; unblocks 06-05 Task 3
 progress:
   total_phases: 7
   completed_phases: 6
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 ## Current Position
 
-Phase: 06 (hardening-accessibility-and-trust) — BLOCKED (layout pivot needed)
-Plan: 5 of 5 (PARTIAL — code fixes landed, UAT visibility gap open)
-Status: 06-05 gap-closure partial; canvas layout pivot required before UI-03/VER-06 can close
-Last activity: 2026-06-26 — 06-05 Tasks 1&2 landed; Task 3 checkpoint failed (static hexagons)
+Phase: 06 (hardening-accessibility-and-trust) — Phase 6.1 planned (layout pivot)
+Plan: 6.1 — 3 plans across 3 waves (persistent canvas spine -> Z-Lift + HTML dock -> acceptance gate)
+Status: Phase 6.1 (canvas-always-visible layout pivot) PLANNED — ready to execute; unblocks 06-05 Task 3
+Last activity: 2026-06-27 — Phase 6.1 planned (3 plans); 06-05 Tasks 1&2 stay landed
 
 Progress: [██████████████████████░] 21/22 plans (95%), 5/6 phases (Phase 6 partial)
 

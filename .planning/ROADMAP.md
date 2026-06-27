@@ -209,7 +209,19 @@ Plans:
   5. The layout degrades safely when WebGL/Canvas is unavailable (D-07) and remains operable via semantic non-canvas controls (UI-02).
   6. Re-opened 06-05 Task 3 human smoke passes: particles are visible during their emitting events.
 
-**Plans:** TBD via `/gsd-discuss-phase` -> `/gsd-plan-phase`
+**Plans:** 3 plans
+
+**Wave 1**
+
+- [ ] 06.1-01-PLAN.md — Persistent canvas spine: layout route + AppLayout + selectedCellId/takeoverActive store fields + takeover overlays + ticker-pause (D-01, D-02, D-03, D-05)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 06.1-02-PLAN.md — Z-Lift Spotlight scene op + semantic HTML dock + Cell-edit Dialog (D-04, D-06, D-07, D-08)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 06.1-03-PLAN.md — Acceptance gate: extended canvas-smoke E2E + UI tests + re-opened 06-05 Task 3 human smoke (UI-08, UI-03, VER-06 re-closure)
 
 **UI hint**: yes
 
@@ -230,4 +242,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6. Phase 6.1 is an urg
 | 4. Core Alternation and Rejuvenation Economy | 3/3 | Complete    | 2026-06-24 |
 | 5. Module Forge and Starter Customization | 2/3 | In Progress|  |
 | 6. Hardening, Accessibility, and Trust | 4/5 (+1 partial) | In Progress (06-05 partial; layout pivot blocks UI-03/VER-06) |  |
-| 6.1. Canvas-Always-Visible Layout Pivot | 0/? | Not Started (urgent insertion; unblocks 06-05) |  |
+| 6.1. Canvas-Always-Visible Layout Pivot | 0/3 | Planned (urgent insertion; unblocks 06-05 / UI-03 / VER-06) |  |
