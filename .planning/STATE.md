@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 06
 current_phase_name: hardening-accessibility-and-trust
 status: blocked
-stopped_at: "06-05 partial: code fixes landed (commits 174e6eb, d59062d); UAT Test 1 visibility gap NOT closed — canvas layout pivot required (see .planning/exploration/canvas-always-visible-layout-pivot.md)"
-last_updated: "2026-06-26T22:20:00.000Z"
+stopped_at: Phase 6.1 context gathered
+last_updated: "2026-06-27T15:06:16.759Z"
 last_activity: 2026-06-26
-last_activity_desc: "06-05 gap-closure partial — Tasks 1&2 landed; Task 3 checkpoint failed; canvas-vs-routes IA blocker discovered"
+last_activity_desc: 06-05 Tasks 1&2 landed; Task 3 checkpoint failed (static hexagons)
 progress:
-  total_phases: 6
-  completed_phases: 5
+  total_phases: 7
+  completed_phases: 6
   total_plans: 22
-  completed_plans: 21
-  percent: 95
+  completed_plans: 22
+  percent: 86
 ---
 
 # Project State
@@ -141,6 +141,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-26T22:20:00.000Z
-Stopped at: 06-05 partial — code fixes landed; UAT visibility gap open (canvas layout pivot required)
-Resume file: .planning/exploration/canvas-always-visible-layout-pivot.md
+Last session: 2026-06-27T15:06:16.752Z
+Stopped at: Phase 6.1 context gathered
+Resume file: .planning/phases/06.1-canvas-always-visible-layout-pivot/06.1-CONTEXT.md
