@@ -76,7 +76,7 @@
 - [x] **UI-05**: User can open a Cell Board or inspector that shows starter modules, ports/slots, Cell Charge, Bloom progress, and installed rewards.
 - [x] **UI-06**: User can access minimal settings for default session length, daily target defaults, local day boundary, reduced motion, and export.
 - [x] **UI-07**: Opening Flowgrid after a gap surfaces useful return cues such as stored Core Charge, available Energy, token progress, Cells near Bloom, and recent history without shame language.
-- [ ] **UI-08**: The Flowgrid canvas stays mounted and visible during all core signal-producing interactions (active sessions, session finish, Core convert/store, rejuvenation token grants) so effort is perceivable as it happens; only Settings, History, and Forge build-choice flows may take over the full screen as explicit returnable exceptions.
+- [x] **UI-08**: The Flowgrid canvas stays mounted and visible during all core signal-producing interactions (active sessions, session finish, Core convert/store, rejuvenation token grants) so effort is perceivable as it happens; only Settings, History, and Forge build-choice flows may take over the full screen as explicit returnable exceptions.
 
 ### Persistence and Ownership
 
@@ -191,7 +191,7 @@
 | UI-05 | Phase 3 | Complete |
 | UI-06 | Phase 6 | Complete |
 | UI-07 | Phase 4 | Complete |
-| UI-08 | Phase 6.1 | Pending |
+| UI-08 | Phase 6.1 | Complete |
 | DATA-01 | Phase 2 | Complete |
 | DATA-02 | Phase 2 | Complete |
 | DATA-03 | Phase 2 | Complete |

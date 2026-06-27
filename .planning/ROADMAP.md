@@ -209,11 +209,11 @@ Plans:
   5. The layout degrades safely when WebGL/Canvas is unavailable (D-07) and remains operable via semantic non-canvas controls (UI-02).
   6. Re-opened 06-05 Task 3 human smoke passes: particles are visible during their emitting events.
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 **Wave 1**
 
-- [ ] 06.1-01-PLAN.md — Persistent canvas spine: layout route + AppLayout + selectedCellId/takeoverActive store fields + takeover overlays + ticker-pause (D-01, D-02, D-03, D-05)
+- [x] 06.1-01-PLAN.md — Persistent canvas spine: layout route + AppLayout + selectedCellId/takeoverActive store fields + takeover overlays + ticker-pause (D-01, D-02, D-03, D-05)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -242,4 +242,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6. Phase 6.1 is an urg
 | 4. Core Alternation and Rejuvenation Economy | 3/3 | Complete    | 2026-06-24 |
 | 5. Module Forge and Starter Customization | 2/3 | In Progress|  |
 | 6. Hardening, Accessibility, and Trust | 4/5 (+1 partial) | In Progress (06-05 partial; layout pivot blocks UI-03/VER-06) |  |
-| 6.1. Canvas-Always-Visible Layout Pivot | 0/3 | Planned (urgent insertion; unblocks 06-05 / UI-03 / VER-06) |  |
+| 6.1. Canvas-Always-Visible Layout Pivot | 1/3 | In Progress|  |
