@@ -6,14 +6,14 @@ current_phase: 06.1
 current_phase_name: canvas-always-visible-layout-pivot
 status: executing
 stopped_at: Completed 06.1-01-PLAN.md
-last_updated: "2026-06-27T19:03:55.275Z"
+last_updated: "2026-06-27T19:29:57.083Z"
 last_activity: 2026-06-27
 last_activity_desc: Phase 06.1 execution started
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 25
-  completed_plans: 23
+  completed_plans: 24
   percent: 86
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 ## Current Position
 
 Phase: 06.1 (canvas-always-visible-layout-pivot) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-06-27 — Phase 06.1 execution started
 
@@ -76,6 +76,7 @@ Progress: [██████████████████████░
 | Phase 06 P03 | 6min | 2 tasks | 2 files |
 | Phase 06 P04 | 63min | 3 tasks | 9 files |
 | Phase 06.1 P01 | 12min | 3 tasks | 10 files |
+| Phase 06.1 P02 | 17min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,10 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 06]: Plan 06-04 release-readiness E2E gate complete — VER-04 full flow + IndexedDB reload, VER-05 keyboard + axe WCAG scans per route (caught+fixed a ModuleTile contrast regression), VER-06 scene-graph probe + reduced-motion economy-equivalence. Production app boots empty by design; E2E creates its own Cell.
 - [Phase 06]: Plan 06-05 (gap-closure, PARTIAL): Task 1 fixed particle coordinate space (anchors are container-local — ParticleContainer is a child of the centered scene container, so adding the stage offset double-applied centering) by extracting a pure `buildParticleAnchors` module (TYPE-ONLY pixi imports). Task 2 revised D-09 to session-only OS-preference pre-fill (no durable `update_settings` on mount). Both correct, committed (174e6eb, d59062d), 246 tests green. BUT Task 3 human smoke FAILED — the real blocker is IA: canvas mounts only at `/` while every particle-emitting event runs on a different route that unmounts it. UI-03/VER-06 still open; a layout pivot is required (seed: .planning/exploration/canvas-always-visible-layout-pivot.md).
 - [Phase 06.1]: [Plan 06.1-01]: Persistent canvas spine via pathless React Router v7 layout route — AppLayout mounts FlowgridCanvas ONCE and survives navigation across /, /cells/:id, /core (D-05 build-once preserved); selectedCellId + takeoverActive are view-state mirrors of the URL pushed via flowgridStore.setState (never dispatched); /settings + /forge are fixed inset-0 z-50 overlays with ticker paused via explicit takeoverActive flag (visibilityState alone cannot fire for in-DOM overlays — RESEARCH Pitfall 3).
+- [Phase ?]: Plan 06.1-02: Z-Lift in-place scene op (tweenScalar lift + dim + lazy spotlight/focusCone Graphics, never destroy — Pitfall 4 closed; container stays centered per D-07 fixed framing); pure computeZLiftTargets helper with TYPE-ONLY imports (mirrors particle-anchors.ts); adapter tracks lastSelectedCellId so URL-only selection drives Z-Lift.
+- [Phase ?]: Plan 06.1-02: ZLiftDock renders semantic Start/Finish/Cancel + Core allocation controls beside the canvas with two-paths-one-truth dispatch parity (EXACT command shapes GeneratorTile uses); responsive side-dock/bottom-strip per D-04; v1 heuristic side dock (RESEARCH A3).
+- [Phase ?]: Plan 06.1-02: Cell-list nav collapses into a Radix Menu Cell-switcher below md: (D-04 chrome collapse); @radix-ui/react-menu standalone primitive used via controlled open state + Menu.Anchor (no Trigger primitive; DropdownMenu not installed).
+- [Phase ?]: Plan 06.1-02: EditCellDialog extracted as a dedicated Radix Dialog for Cell edit (D-06 configuration exception); Dialog.Portal escapes layout stacking context (Pitfall 5); reuses EditCellForm (edit_cell command — Rule 3 fix on plan's update_cell typo); Task 3 is a pure refactor (characterization tests per tdd.md).
 
 ### Pending Todos
 
@@ -143,6 +148,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-27T19:03:55.268Z
+Last session: 2026-06-27T19:29:28.943Z
 Stopped at: Completed 06.1-01-PLAN.md
 Resume file: None
