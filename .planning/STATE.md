@@ -5,8 +5,8 @@ milestone_name: Audit Gaps
 current_phase: 06.2
 current_phase_name: close-v1-0-audit-gaps-b-01-applayout-hidden-outlet-w-01-bloc
 status: "Phase 06.2 plan 06.2-01 ABORTED at Task 1 (Rule 4 architectural checkpoint). Plan was built on incorrect git evidence — commit 29e32a7 is a 39-file intentional redesign (not a single-hunk regression); its canvas-as-full-viewport-background layout is fundamentally incompatible with visible+clickable child-route `<Outlet/>` content (bare Outlet = 3/14 E2E; canvas intercepts pointer events). User decision: KEEP the redesign, do NOT revert 29e32a7. Findings + corrected evidence captured in phase `.continue-here.md`. Re-plan via /gsd-plan-phase 06.2 — new plan must choose Option C (hybrid layout under redesign) or Option B (rewrite E2E specs for ZLiftDock, now legitimate)."
-stopped_at: "Phase 06.2-01 aborted at Task 1 (Rule 4 architectural checkpoint); routing back to /gsd-plan-phase 06.2 with corrected git evidence (see phase `.continue-here.md`). Redesign commit 29e32a7 is fixed input."
-last_updated: "2026-06-29T20:23:23.002Z"
+stopped_at: Phase 06.2-01 aborted at Task 1 (Rule 4 architectural checkpoint); routing back to /gsd-plan-phase 06.2 with corrected git evidence (see phase `.continue-here.md`). Redesign commit 29e32a7 is fixed input.
+last_updated: "2026-06-29T22:27:59.130Z"
 last_activity: 2026-06-29
 last_activity_desc: Phase 06.2-01 aborted (Rule 4 architectural checkpoint); routing back to planning
 progress:
