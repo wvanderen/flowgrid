@@ -4,6 +4,12 @@
 //     clicks — proving every canvas-backed action is reachable through the semantic
 //     Cell list + non-canvas panels (D-06). (B) Runs an axe scan on every primary
 //     route asserting zero WCAG 2.0/2.1 A+AA violations (T-06-12).
+//
+// Phase 06.2 (Option B): the keyboard flow + axe scans drive through the redesign's
+// always-visible ZLiftDock + AppLayout chrome. The retired CellBoard / FlowgridHome
+// / CorePanel child routes are display:none under the redesign's <Outlet/>
+// retirement wrapper, so axe ignores them and only the visible floating chrome is
+// analyzed.
 
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
@@ -55,11 +61,17 @@ async function tabTo(
 
 async function createCell(page: import('@playwright/test').Page, name: string): Promise<void> {
   await page.goto('/');
-  await expect(page.getByText('active Cell')).toBeVisible();
+  // Readiness: AppLayout's always-visible floating surface. Replaces the retired
+  // FlowgridHome "active Cell" text (now hidden via the redesign's <Outlet/>
+  // retirement wrapper — Option B).
+  await expect(page.getByRole('button', { name: 'New Cell' })).toBeVisible();
   await page.getByRole('button', { name: 'New Cell' }).click();
   await page.getByLabel('Cell name').fill(name);
   await page.getByRole('button', { name: 'Create Cell' }).click();
-  await page.getByRole('link', { name: 'Return to Flowgrid' }).click();
+  // CreateCellForm navigates to /cells/:id (retired CellBoard); return home via
+  // AppLayout's "Flowgrid" header logo Link (replaces CellBoard's retired
+  // "Return to Flowgrid" link).
+  await page.getByRole('link', { name: 'Flowgrid', exact: true }).click();
   await expect(page.getByRole('link', { name })).toBeVisible();
 }
 
@@ -70,9 +82,13 @@ test('VER-05 (keyboard): Cell list → Start → Finish via keyboard only', asyn
   await tabTo(page, { name: CELL_NAME });
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/cells\//);
-  await expect(page.getByRole('heading', { name: CELL_NAME })).toBeVisible();
+  // ZLiftDock CellInspectorDock renders the cell name in an <h2> (the retired
+  // CellBoard's <h1> is display:none under the redesign — Option B).
+  await expect(page.getByRole('heading', { name: CELL_NAME, level: 2 })).toBeVisible();
 
-  // Start a focus session via keyboard.
+  // Start a focus session via keyboard. ZLiftDock's Start Focus Session button is
+  // a semantic <button> in the tab order; the retired CellBoard parity button is
+  // display:none so the tabTo helper resolves to the ZLiftDock control.
   await tabTo(page, { name: 'Start Focus Session' });
   await page.keyboard.press('Enter');
   await expect(page.getByRole('button', { name: 'Finish' })).toBeVisible();
@@ -82,8 +98,14 @@ test('VER-05 (keyboard): Cell list → Start → Finish via keyboard only', asyn
   await tabTo(page, { name: 'Finish' });
   await page.keyboard.press('Enter');
 
-  // Completion feedback surfaced without a single pointer click.
-  await expect(page.getByText('Session Complete')).toBeVisible();
+  // Completion feedback surfaced without a single pointer click. Scope to the
+  // visible SessionSummary status region: getByRole('status') uses the a11y tree
+  // (filters display:none), so the retired CellBoard's parity SessionSummary
+  // (hidden under the redesign) does NOT match — only ZLiftDock's does. Avoids
+  // the getByText strict-mode-violation that arises when the hidden CellBoard
+  // h2 is still in the DOM.
+  const sessionSummary = page.getByRole('status', { name: 'Session summary' });
+  await expect(sessionSummary.getByText('Session Complete')).toBeVisible();
 });
 
 const ROUTES: ReadonlyArray<{ id: string; path: string; setup?: (page: import('@playwright/test').Page) => Promise<void> }> = [
@@ -108,8 +130,17 @@ for (const route of ROUTES) {
     } else {
       await page.goto(route.path);
       // Wait for the route's primary heading so axe analyzes the rendered tree,
-      // not the loading placeholder.
-      const heading = route.id === 'home' ? 'Flowgrid' : route.id === 'core' || route.id === 'forge' || route.id === 'settings' ? route.id.charAt(0).toUpperCase() + route.id.slice(1) : 'Flowgrid';
+      // not the loading placeholder. Under the redesign the always-visible
+      // AppLayout <h1>Flowgrid</h1> is present on every non-takeover route; the
+      // ZLiftDock <h2>Core</h2> appears on /core. Takeover routes (/forge,
+      // /settings) render their overlay heading (Forge / Settings) above the
+      // still-mounted canvas.
+      const heading =
+        route.id === 'home' ? 'Flowgrid' :
+        route.id === 'core' ? 'Core' :
+        route.id === 'forge' ? 'Forge' :
+        route.id === 'settings' ? 'Settings' :
+        'Flowgrid';
       await expect(page.getByRole('heading', { name: heading, exact: false })).toBeVisible();
     }
 

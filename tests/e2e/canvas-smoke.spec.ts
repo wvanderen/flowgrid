@@ -8,6 +8,14 @@
 // The production app boots to an empty Flowgrid (seeding.ts populates only the
 // client/core/settings singletons; the user creates their first Cell), so each test
 // creates a Cell before probing the canvas.
+//
+// Phase 06.2 (Option B): every locator that previously targeted retired CellBoard
+// chrome (the "Return to Flowgrid" link, Cell name <h1>, the `Cell Board for X`
+// region scope) now drives through the redesign's always-visible ZLiftDock
+// CellInspectorDock (`Controls for X` region, cell name <h2>) + AppLayout chrome.
+// The canvas probe, pixel-variance readback, and reduced-motion economy-equivalence
+// comparison are all independent of CellBoard and remain the load-bearing
+// assertions.
 
 import { test, expect } from '@playwright/test';
 
@@ -16,11 +24,17 @@ const SESSION_MS = 1500; // > 1s so the session records; both compared sessions 
 
 async function createCell(page: import('@playwright/test').Page, name: string): Promise<void> {
   await page.goto('/');
-  await expect(page.getByText('active Cell')).toBeVisible();
+  // Readiness: AppLayout's always-visible floating surface. Replaces the retired
+  // FlowgridHome "active Cell" text (now hidden via the redesign's <Outlet/>
+  // retirement wrapper — Option B).
+  await expect(page.getByRole('button', { name: 'New Cell' })).toBeVisible();
   await page.getByRole('button', { name: 'New Cell' }).click();
   await page.getByLabel('Cell name').fill(name);
   await page.getByRole('button', { name: 'Create Cell' }).click();
-  await page.getByRole('link', { name: 'Return to Flowgrid' }).click();
+  // CreateCellForm navigates to /cells/:id (retired CellBoard); return home via
+  // AppLayout's "Flowgrid" header logo Link (replaces CellBoard's retired
+  // "Return to Flowgrid" link).
+  await page.getByRole('link', { name: 'Flowgrid', exact: true }).click();
   await expect(page.getByRole('link', { name })).toBeVisible();
 }
 
@@ -46,17 +60,16 @@ async function waitForScene(page: import('@playwright/test').Page): Promise<{ ce
 async function runSessionAndReadSummary(page: import('@playwright/test').Page, cellName: string): Promise<{ current: string; xp: string; duration: string }> {
   await page.goto('/');
   await page.getByRole('link', { name: cellName }).click();
-  // Phase 6.1 Plan 02 ZLiftDock also renders the cell name in an <h2>; scope to
-  // CellBoard's <h1> (level 1) so the locator stays unambiguous on /cells/:id.
-  await expect(page.getByRole('heading', { name: cellName, level: 1 })).toBeVisible();
-  // Phase 6.1 Plan 02 ZLiftDock ALSO renders Start/Finish/Cancel buttons with
-  // identical accessible names (two-paths-one-truth — D-08). Scope to CellBoard's
-  // section so the click is deterministic; the dock's button parity is exercised
-  // by tests/ui/z-lift-dock.test.tsx.
-  const cellBoard = page.getByLabel(`Cell Board for ${cellName}`);
-  await cellBoard.getByRole('button', { name: 'Start Focus Session' }).click();
+  // Phase 06.2 (Option B): ZLiftDock CellInspectorDock renders the cell name in
+  // an <h2>; the retired CellBoard's <h1> is display:none under the redesign.
+  await expect(page.getByRole('heading', { name: cellName, level: 2 })).toBeVisible();
+  // Scope Start/Finish to ZLiftDock's CellInspectorDock (`Controls for X`) — the
+  // redesign's visible control surface. The retired CellBoard's `Cell Board for X`
+  // region is display:none so its parity buttons are not in the a11y tree.
+  const cellDock = page.getByLabel(`Controls for ${cellName}`);
+  await cellDock.getByRole('button', { name: 'Start Focus Session' }).click();
   await page.waitForTimeout(SESSION_MS);
-  await cellBoard.getByRole('button', { name: 'Finish' }).click();
+  await cellDock.getByRole('button', { name: 'Finish' }).click();
   const summary = page.getByRole('status', { name: 'Session summary' });
   await expect(summary).toBeVisible();
   await expect(summary.getByText('Session Complete')).toBeVisible();
@@ -140,7 +153,7 @@ test('UI-08 (canvas persists across core routes): /, /cells/:id, /core all keep 
   await createCell(page, 'Canvas Persist Cell');
   const cellId = await cellIdFromName(page, 'Canvas Persist Cell');
 
-  // Route 1: / (already here after createCell -> "Return to Flowgrid").
+  // Route 1: / (already here after createCell → "Flowgrid" logo return).
   await expect(page.locator('canvas')).toBeVisible();
   let summary = await waitForScene(page);
   expect(summary.cells, 'probe reports Cells on /').toBeGreaterThan(0);
@@ -180,7 +193,9 @@ test('UI-08 (param-change identity): <canvas> DOM identity unchanged across /cel
   // visible at desktop width (md:+).
   await page.goto('/');
   await page.getByRole('link', { name: 'Param Cell A' }).click();
-  await expect(page.getByRole('heading', { name: 'Param Cell A', level: 1 })).toBeVisible();
+  // Phase 06.2 (Option B): ZLiftDock CellInspectorDock <h2> (level 2) replaces
+  // the retired CellBoard's <h1> (level 1) under the redesign.
+  await expect(page.getByRole('heading', { name: 'Param Cell A', level: 2 })).toBeVisible();
   await waitForScene(page);
 
   // Tag the <canvas> element so we can re-locate the SAME DOM node after the
@@ -196,7 +211,7 @@ test('UI-08 (param-change identity): <canvas> DOM identity unchanged across /cel
   // instance persists — the canvas DOM identity must persist too (Pitfall 1
   // verification step from RESEARCH.md).
   await page.getByRole('link', { name: 'Param Cell B' }).click();
-  await expect(page.getByRole('heading', { name: 'Param Cell B', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Param Cell B', level: 2 })).toBeVisible();
   await waitForScene(page);
   const sameCanvasConnected = await page.evaluate((): boolean => {
     const c = document.querySelector('canvas[data-flowgrid-canvas-identity="pitfall-1-probe"]');
@@ -254,11 +269,14 @@ test('UI-03 (probe non-zero throughout session lifecycle): Start -> wait -> Fini
   const cellId = await cellIdFromName(page, 'Particles Cell');
 
   await page.goto(`/cells/${cellId}`);
-  // Phase 6.1 Plan 02 ZLiftDock also renders the cell name in an <h2>; scope
-  // to CellBoard's <h1> (level 1) so the locator stays unambiguous.
-  await expect(page.getByRole('heading', { name: 'Particles Cell', level: 1 })).toBeVisible();
-  // Scope Start/Finish to CellBoard (Plan 02 ZLiftDock renders parity buttons).
-  const cellBoard = page.getByLabel('Cell Board for Particles Cell');
+  // Phase 06.2 (Option B): ZLiftDock CellInspectorDock renders the cell name in
+  // an <h2>; the retired CellBoard's <h1> is display:none under the redesign.
+  await expect(page.getByRole('heading', { name: 'Particles Cell', level: 2 })).toBeVisible();
+  // Scope Start/Finish to ZLiftDock's CellInspectorDock (`Controls for X`) — the
+  // redesign's visible control surface. The retired CellBoard's `Cell Board for
+  // Particles Cell` region is display:none so its parity buttons are not in the
+  // a11y tree.
+  const cellDock = page.getByLabel('Controls for Particles Cell');
 
   // BEFORE Start: probe non-zero (canvas mounted, scene built).
   await waitForScene(page);
@@ -270,7 +288,7 @@ test('UI-03 (probe non-zero throughout session lifecycle): Start -> wait -> Fini
 
   // Start the focus session — Current-trail particles should be emitting into
   // the visible canvas alongside the cell. The probe stays non-zero throughout.
-  await cellBoard.getByRole('button', { name: 'Start Focus Session' }).click();
+  await cellDock.getByRole('button', { name: 'Start Focus Session' }).click();
   await page.waitForTimeout(SESSION_MS);
 
   // DURING session: probe still non-zero (canvas never unmounted; particles
@@ -285,7 +303,7 @@ test('UI-03 (probe non-zero throughout session lifecycle): Start -> wait -> Fini
 
   // Finish the session — Bloom burst + Activation pulse + Core ripple particles
   // fire at finish into the visible canvas. Probe stays non-zero.
-  await cellBoard.getByRole('button', { name: 'Finish' }).click();
+  await cellDock.getByRole('button', { name: 'Finish' }).click();
 
   // The Session summary renders (durable session record captured).
   const sessionSummary = page.getByRole('status', { name: 'Session summary' });
