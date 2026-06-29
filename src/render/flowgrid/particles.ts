@@ -23,6 +23,7 @@ export interface LiveParticle {
   vx: number;
   vy: number;
   life: number;
+  readonly maxLife: number;
 }
 
 // Tag attached to the particle layer so scene-inspect.ts can find it without
@@ -73,21 +74,23 @@ export function emitBurst(
   for (let i = 0; i < count; i++) {
     const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
     const speed = 40 + Math.random() * 60;
+    const life = 950 + Math.random() * 420;
     const particle = new Particle({
       texture,
       x,
       y,
       tint,
       alpha: 0.9,
-      scaleX: 0.5,
-      scaleY: 0.5,
+      scaleX: 0.9,
+      scaleY: 0.9,
     });
     layer.addParticle(particle);
     liveParticles.push({
       particle,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      life: 600 + Math.random() * 300,
+      life,
+      maxLife: life,
     });
   }
   layer.update();
@@ -112,28 +115,31 @@ export function emitTrail(
   // Unit vector along the trail; particles drift slightly toward the destination.
   const ux = dx / dist;
   const uy = dy / dist;
-  const count = 4;
+  const count = 8;
   for (let i = 0; i < count; i++) {
-    // Spread particles along the first ~25% of the trail so the motion reads as
-    // "current flowing toward Core" rather than a single dot.
+    // Spread particles along most of the route so the motion reads from a still
+    // screenshot as well as in motion. Earlier values kept all dots near the Cell
+    // edge, where overlapping hexes made the trail too easy to miss.
     const t = i / count;
-    const startX = fromX + dx * t * 0.25;
-    const startY = fromY + dy * t * 0.25;
+    const startX = fromX + dx * t * 0.75;
+    const startY = fromY + dy * t * 0.75;
+    const life = 1100 + Math.random() * 420;
     const particle = new Particle({
       texture,
       x: startX,
       y: startY,
       tint,
-      alpha: 0.75,
-      scaleX: 0.35,
-      scaleY: 0.35,
+      alpha: 0.95,
+      scaleX: 1.2,
+      scaleY: 1.2,
     });
     layer.addParticle(particle);
     liveParticles.push({
       particle,
-      vx: ux * 30 + (Math.random() - 0.5) * 10,
-      vy: uy * 30 + (Math.random() - 0.5) * 10,
-      life: 500 + Math.random() * 200,
+      vx: ux * 62 + (Math.random() - 0.5) * 16,
+      vy: uy * 62 + (Math.random() - 0.5) * 16,
+      life,
+      maxLife: life,
     });
   }
   layer.update();
@@ -144,14 +150,15 @@ export function emitTrail(
 // pixel position. The counts/tints are conservative (Pitfall T-06-07: keep particle
 // counts small; ParticleContainer is GPU-batched; dead particles are removed).
 const EVENT_EMIT_PARAMS: Record<string, { count: number; tint: number }> = {
-  [VISUAL_EVENT_NAMES.bloomBurstVisual]: { count: 14, tint: 0xfde68a },
-  [VISUAL_EVENT_NAMES.cellActivationVisual]: { count: 10, tint: 0xf59e0b },
-  [VISUAL_EVENT_NAMES.coreConvertVisual]: { count: 12, tint: 0xfbbf24 },
-  [VISUAL_EVENT_NAMES.coreChargeStoreVisual]: { count: 10, tint: 0x60a5fa },
-  [VISUAL_EVENT_NAMES.currentFlowVisual]: { count: 6, tint: 0x93c5fd },
-  [VISUAL_EVENT_NAMES.forgeRollVisual]: { count: 16, tint: 0xfbbf24 },
-  [VISUAL_EVENT_NAMES.moduleUpgradeVisual]: { count: 12, tint: 0x34d399 },
-  [VISUAL_EVENT_NAMES.tokenGrantedVisual]: { count: 14, tint: 0xa78bfa },
+  [VISUAL_EVENT_NAMES.focusSessionStartedVisual]: { count: 18, tint: 0x67e8f9 },
+  [VISUAL_EVENT_NAMES.bloomBurstVisual]: { count: 22, tint: 0x3dffa6 },
+  [VISUAL_EVENT_NAMES.cellActivationVisual]: { count: 16, tint: 0xffd23d },
+  [VISUAL_EVENT_NAMES.coreConvertVisual]: { count: 18, tint: 0xff3df0 },
+  [VISUAL_EVENT_NAMES.coreChargeStoreVisual]: { count: 18, tint: 0x9b6cff },
+  [VISUAL_EVENT_NAMES.currentFlowVisual]: { count: 10, tint: 0x34e7ff },
+  [VISUAL_EVENT_NAMES.forgeRollVisual]: { count: 22, tint: 0xffd23d },
+  [VISUAL_EVENT_NAMES.moduleUpgradeVisual]: { count: 18, tint: 0x3dffa6 },
+  [VISUAL_EVENT_NAMES.tokenGrantedVisual]: { count: 20, tint: 0x9b6cff },
 };
 
 // Resolve a per-event anchor for an emitted visual event. The caller has the scene
@@ -193,13 +200,15 @@ export function emitParticles(
     } else if (event.entityType === 'route') {
       const route = anchors.routes.get(event.entityId);
       if (route !== undefined) {
+        // Scene route geometry is stored Core -> Cell because the line is drawn
+        // from the center outward. Current should visibly travel Cell -> Core.
         emitTrail(
           layer,
           liveParticles,
-          route.from.x,
-          route.from.y,
           route.to.x,
           route.to.y,
+          route.from.x,
+          route.from.y,
           params.tint,
         );
       }

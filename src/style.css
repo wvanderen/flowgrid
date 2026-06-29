@@ -30,3 +30,78 @@
     min-height: 100vh;
   }
 }
+
+@layer components {
+  .flowgrid-sigil-shell {
+    isolation: isolate;
+    background:
+      radial-gradient(ellipse at 50% 56%, rgb(19 42 64 / 0.72), transparent 62rem),
+      radial-gradient(circle at 52% 42%, rgb(52 231 255 / 0.055), transparent 42rem),
+      radial-gradient(circle at 72% 76%, rgb(155 108 255 / 0.06), transparent 38rem),
+      radial-gradient(circle at 28% 80%, rgb(61 255 166 / 0.04), transparent 36rem),
+      #05070e;
+  }
+
+  .flowgrid-sigil-shell::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 50% 58%, rgb(120 170 255 / 0.07), transparent 64rem),
+      linear-gradient(rgb(120 170 255 / 0.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(120 170 255 / 0.028) 1px, transparent 1px);
+    background-size: auto, 44px 44px, 44px 44px;
+    mask-image: radial-gradient(ellipse at 50% 58%, #000 24rem, rgb(0 0 0 / 0.72) 56rem, transparent 88rem);
+  }
+
+  .flowgrid-floating-surface {
+    border: 1px solid rgb(120 170 255 / 0.22);
+    background:
+      linear-gradient(145deg, rgb(22 31 54 / 0.74), rgb(7 12 24 / 0.58)),
+      rgb(12 18 34 / 0.66);
+    box-shadow: 0 18px 70px rgb(0 0 0 / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.04);
+    backdrop-filter: blur(18px);
+  }
+
+  .flowgrid-spotlight-action {
+    border-color: rgb(251 191 36 / 0.58);
+    background:
+      radial-gradient(circle at 50% 0%, rgb(251 191 36 / 0.14), transparent 18rem),
+      linear-gradient(145deg, rgb(30 25 15 / 0.78), rgb(10 13 22 / 0.68));
+    box-shadow: 0 18px 70px rgb(251 191 36 / 0.14), 0 12px 48px rgb(0 0 0 / 0.3);
+  }
+
+  .flowgrid-canvas-stage {
+    min-height: 30rem;
+    height: calc(100vh - 9rem);
+    max-height: 46rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .flowgrid-canvas-stage canvas {
+    display: block;
+    background: transparent;
+  }
+
+  @media (max-width: 767px) {
+    .flowgrid-canvas-stage {
+      min-height: 32rem;
+      height: 64vh;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .flowgrid-canvas-stage {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      min-height: 0 !important;
+      max-height: none !important;
+    }
+  }
+}

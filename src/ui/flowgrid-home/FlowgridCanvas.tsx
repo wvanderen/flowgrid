@@ -34,6 +34,7 @@ import { effectiveReduceMotion } from '../settings/reduce-motion.js';
 
 import { flowgridStore } from '../../app/store/flowgrid-store.js';
 import { connectFlowgridAdapter, type FlowgridStoreView } from '../../render/flowgrid/adapter.js';
+import { startAmbientCurrent } from '../../render/flowgrid/ambient-current.js';
 import {
   buildFlowgridScene,
   createFlowgridApplication,
@@ -49,10 +50,11 @@ import { buildParticleAnchors } from './particle-anchors.js';
 
 interface FlowgridCanvasProps {
   readonly onCellTap: (cellId: CellId) => void;
+  readonly onCoreTap: () => void;
   readonly snapshot: FlowgridSnapshot;
 }
 
-export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
+export function FlowgridCanvas({ onCellTap, onCoreTap, snapshot }: FlowgridCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [webglFailed, setWebglFailed] = useState(false);
   // Keep the latest onCellTap without re-running the mount effect. handleCellTap in
@@ -61,6 +63,8 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
   // navigation. The ref is updated on every render (intentional).
   const onCellTapRef = useRef(onCellTap);
   onCellTapRef.current = onCellTap;
+  const onCoreTapRef = useRef(onCoreTap);
+  onCoreTapRef.current = onCoreTap;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -69,10 +73,12 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
     let app: FlowgridApplication | null = null;
     let sceneRefs: SceneRefs | null = null;
     let unsubscribe: (() => void) | null = null;
+    let stopAmbientTick: (() => void) | null = null;
     // D-02: separate unsubscribe for the takeover ticker-pause listener. Lives
     // alongside the adapter unsubscribe so the cleanup path tears both down.
     let takeoverUnsubscribe: (() => void) | null = null;
     let lastTickTime = 0;
+    let latestSnapshot: FlowgridSnapshot = snapshot;
     let cancelled = false;
 
     // D-16 / D-02: compute the effective local date at mount so the scene's
@@ -115,10 +121,29 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
         app,
         snapshot,
         (cellId) => onCellTapRef.current(cellId),
+        () => onCoreTapRef.current(),
         localDate,
         reduceMotion,
       );
       lastTickTime = performance.now();
+      // The vanilla store is structurally compatible with FlowgridStoreView.
+      // Cast keeps the boundary clean: render imports no `flowgridStore` symbol,
+      // and UI owns the wiring of "which store feeds the adapter".
+      const storeView = flowgridStore as unknown as FlowgridStoreView;
+      stopAmbientTick = startAmbientCurrent(app, sceneRefs.particleLayer, sceneRefs.liveParticles, {
+        getSnapshot: () => latestSnapshot,
+        getAnchors: () => {
+          if (sceneRefs === null) {
+            return { core: { x: 0, y: 0 }, cells: new Map(), routes: new Map() };
+          }
+          return buildParticleAnchors(sceneRefs);
+        },
+        isEnabled: () => {
+          const state = storeView.getState();
+          const currentSnapshot = state.snapshot ?? latestSnapshot;
+          return !state.takeoverActive && !effectiveReduceMotion(currentSnapshot.settings.reduceMotion);
+        },
+      });
 
       // D-16 scene-inspect probe: expose aggregate counts unconditionally. The
       // function returns ONLY { cells, core, routes } (no internal Pixi refs —
@@ -133,14 +158,11 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
         return summarizeScene(app);
       };
 
-      // The vanilla store is structurally compatible with FlowgridStoreView.
-      // Cast keeps the boundary clean: render imports no `flowgridStore` symbol,
-      // and UI owns the wiring of "which store feeds the adapter".
-      const storeView = flowgridStore as unknown as FlowgridStoreView;
       unsubscribe = connectFlowgridAdapter(
         storeView,
         (nextSnapshot) => {
           if (app === null || sceneRefs === null) return;
+          latestSnapshot = nextSnapshot;
           // D-05 in-place update. Mutates existing display objects; never destroys
           // + rebuilds. The next reduceMotion is re-derived from the fresh
           // snapshot so a Settings toggle takes effect on the next dispatch.
@@ -153,6 +175,7 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
           // navigation. This is a view-state projection, NOT a dispatch — the
           // adapter fires this callback on selectedCellId change too.
           const nextSelectedCellId = storeView.getState().selectedCellId;
+          const nextSelectedCore = storeView.getState().selectedCore;
           updateFlowgridScene(
             app,
             sceneRefs,
@@ -161,6 +184,7 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
             nextReduceMotion,
             dt,
             nextSelectedCellId,
+            nextSelectedCore,
           );
         },
         (events) => {
@@ -189,7 +213,9 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
       // NEVER destroyed (D-05); only the frame loop halts behind an overlay.
       takeoverUnsubscribe = storeView.subscribe(() => {
         if (app === null) return;
-        if (storeView.getState().takeoverActive) {
+        const state = storeView.getState();
+        const currentSnapshot = state.snapshot ?? latestSnapshot;
+        if (state.takeoverActive || effectiveReduceMotion(currentSnapshot.settings.reduceMotion)) {
           stopMotion(app);
         } else {
           startTicker(app);
@@ -210,6 +236,10 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
       if (takeoverUnsubscribe !== null) {
         takeoverUnsubscribe();
         takeoverUnsubscribe = null;
+      }
+      if (stopAmbientTick !== null) {
+        stopAmbientTick();
+        stopAmbientTick = null;
       }
       if (app !== null) {
         if (sceneRefs !== null) {
@@ -238,7 +268,7 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
     return (
       <div
         ref={containerRef}
-        className="relative flex h-[60vh] w-full flex-col items-center justify-center gap-3 rounded-lg border border-slate-700 bg-slate-900/40 px-6 text-center sm:h-[70vh]"
+        className="flowgrid-canvas-stage relative flex w-full flex-col items-center justify-center gap-3 px-6 text-center"
         role="status"
         aria-live="polite"
         aria-label="Flowgrid visuals unavailable"
@@ -256,7 +286,7 @@ export function FlowgridCanvas({ onCellTap, snapshot }: FlowgridCanvasProps) {
   return (
     <div
       ref={containerRef}
-      className="relative h-[60vh] w-full overflow-hidden rounded-lg border border-slate-700 bg-slate-900/40 sm:h-[70vh]"
+      className="flowgrid-canvas-stage relative w-full overflow-hidden"
       aria-label="Flowgrid canvas"
       role="img"
     />

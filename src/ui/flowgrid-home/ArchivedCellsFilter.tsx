@@ -40,7 +40,13 @@ export function ArchivedCellsFilter() {
   };
 
   return (
-    <section aria-label="Archived Cells" className="rounded-lg border border-slate-700 bg-flowgrid-surface p-4 space-y-3">
+    <section aria-label="Cell maintenance" className="rounded-lg border border-slate-700 bg-flowgrid-surface p-4 space-y-3">
+      <div className="space-y-1">
+        <h3 className="text-base font-semibold text-slate-200">Cell maintenance</h3>
+        <p className="text-sm text-slate-400">
+          Archived Cells stay out of the main Flowgrid. Use this only to recover an older Cell.
+        </p>
+      </div>
       <button
         type="button"
         aria-pressed={expanded}

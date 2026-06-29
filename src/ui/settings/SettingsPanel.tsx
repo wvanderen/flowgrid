@@ -26,6 +26,7 @@ import {
   importArchive,
 } from '../../persistence/index.js';
 
+import { ArchivedCellsFilter } from '../flowgrid-home/ArchivedCellsFilter.js';
 import { prefersReducedMotion } from './reduce-motion.js';
 import { triggerDownload } from '../shared/download.js';
 
@@ -312,6 +313,8 @@ export function SettingsPanel() {
           </Dialog.Root>
         </div>
       </section>
+
+      <ArchivedCellsFilter />
 
       {/* Status / rejection surfaces. */}
       {statusMessage !== null ? (

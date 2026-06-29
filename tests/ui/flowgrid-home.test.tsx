@@ -2,7 +2,7 @@
 //
 // Verifies:
 //   - AppLayout renders the accessible h1, loading state, New Cell Dialog,
-//     ResumeSessionPrompt, ArchivedCellsFilter, and the canvas mock — the chrome
+//     ResumeSessionPrompt, and the canvas mock — the chrome
 //     lifted out of FlowgridHome (now HomeDock) into the pathless layout route.
 //   - FlowgridCanvas stays mounted (same DOM identity) across / -> /cells/:id ->
 //     /core -> / navigation (D-01 build-once — RESEARCH Pitfall 1 closed).
@@ -15,7 +15,7 @@
 
 import type { ReactNode } from 'react';
 import { beforeEach, expect, test, vi } from 'vitest';
-import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 // Mock FlowgridCanvas — happy-dom has no WebGL. The mock keeps the onCellTap prop
@@ -59,10 +59,8 @@ vi.mock('../../src/ui/cell-board/CreateCellForm.js', () => ({
   ),
 }));
 
-// Stub ResumeSessionPrompt / RejuvenationResumePrompt / ArchivedCellsFilter so
-// the AppLayout chrome assertions are isolated from those components' own
-// behaviour. They are reached (rendered by AppLayout) but their internals are
-// tested elsewhere.
+// Stub ResumeSessionPrompt / RejuvenationResumePrompt so the AppLayout chrome
+// assertions are isolated from those components' own behaviour.
 vi.mock('../../src/ui/cell-board/ResumeSessionPrompt.js', () => ({
   ResumeSessionPrompt: (props: { cellName: string }): ReactNode => (
     <div data-testid="resume-session-prompt-stub" data-cell={props.cellName} />
@@ -73,12 +71,6 @@ vi.mock('../../src/ui/core-panel/RejuvenationResumePrompt.js', () => ({
     <div data-testid="rejuvenation-resume-prompt-stub" />
   ),
 }));
-vi.mock('../../src/ui/flowgrid-home/ArchivedCellsFilter.js', () => ({
-  ArchivedCellsFilter: (): ReactNode => (
-    <div data-testid="archived-cells-filter-stub" />
-  ),
-}));
-
 // Stub CellBoard/CorePanel so the layout-route tests are isolated from those
 // components' internals (their own suites cover them). Each renders a stable
 // data-testid the layout test can locate.
@@ -188,7 +180,7 @@ test('AppLayout: ready state renders a "New Cell" button that opens a Radix Dial
   expect(screen.getByTestId('create-cell-form-stub')).toBeInTheDocument();
 });
 
-test('AppLayout: renders ResumeSessionPrompt banner when a cell has activeSessionStartedAt (D-05 reachability)', () => {
+test('AppLayout: does not duplicate ResumeSessionPrompt while the active session controls are live', () => {
   const { ids, state } = buildStarterSnapshot('home-resume');
   const cells = new Map(state.cells);
   const base = cells.get(ids.cellId)!;
@@ -202,14 +194,15 @@ test('AppLayout: renders ResumeSessionPrompt banner when a cell has activeSessio
 
   renderLayoutRoute(['/']);
 
-  expect(screen.getByTestId('resume-session-prompt-stub')).toBeInTheDocument();
+  expect(screen.queryByTestId('resume-session-prompt-stub')).toBeNull();
 });
 
-test('AppLayout: renders the ArchivedCellsFilter section (D-12 reachability)', () => {
+test('AppLayout: keeps archived Cell management out of the main sigil stage', () => {
   seedReady('home-archived');
   renderLayoutRoute(['/']);
 
-  expect(screen.getByTestId('archived-cells-filter-stub')).toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: 'Cell maintenance' })).toBeNull();
+  expect(screen.queryByRole('button', { name: /show archived cells/i })).toBeNull();
 });
 
 test('AppLayout: FlowgridCanvas stays mounted across / -> /cells/:id -> /core -> / (D-01 build-once)', () => {
@@ -299,11 +292,13 @@ test('AppLayout: navigating back to / from /settings keeps the same canvas-mock 
   // preserved the FlowgridCanvas component instance across the takeover
   // round-trip (D-01 build-once, Pitfall 1 closed).
   expect(canvasBefore).toBeInTheDocument();
-  // takeoverActive flipped back to false via AppLayout's useEffect after the
-  // route change.
-  expect(flowgridStore.getState().takeoverActive).toBe(false);
-  // selectedCellId is null on / (no /cells/:id match).
-  expect(flowgridStore.getState().selectedCellId).toBeNull();
+  // takeoverActive flips back to false via AppLayout's useEffect after the route
+  // change. Wait for that effect-driven store mirror instead of racing it in
+  // full-suite parallel runs.
+  await waitFor(() => {
+    expect(flowgridStore.getState().takeoverActive).toBe(false);
+    expect(flowgridStore.getState().selectedCellId).toBeNull();
+  });
 });
 
 test('AppLayout: /cells/:id mirrors selectedCellId from useMatches into flowgridStore (D-01 view-state)', () => {

@@ -38,10 +38,8 @@ export function startMotion(
       const lp = liveParticles[i]!;
       lp.particle.x += lp.vx * dt / 1000;
       lp.particle.y += lp.vy * dt / 1000;
-      // Fade out across the last 200ms of life so particles dissolve rather than pop.
-      if (lp.life < 200) {
-        lp.particle.alpha = Math.max(0, lp.life / 200) * 0.9;
-      }
+      const lifeRatio = Math.max(0, Math.min(1, lp.life / lp.maxLife));
+      lp.particle.alpha = Math.min(0.95, Math.sin(lifeRatio * Math.PI) * 1.05);
       lp.life -= dt;
       if (lp.life <= 0) {
         onDead(lp);

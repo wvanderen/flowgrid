@@ -11,7 +11,7 @@
 
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, act, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, act } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 // Stub the repository singleton so importing src/app/repository.js (transitively,
@@ -411,18 +411,12 @@ function renderCellBoardViaLayout(cellId: string): ReturnType<typeof createMemor
   return router;
 }
 
-test('CellBoard (via layout route): renders alongside the canvas mock (D-01 persistent canvas + CellBoard dock)', () => {
+test('Cell route via layout: mirrors selectedCellId while the canvas mock stays mounted', () => {
   const { ids, state } = buildStarterSnapshot(PREFIX);
   seedReady(state);
 
   renderCellBoardViaLayout(ids.cellId);
 
-  // CellBoard content renders — the section's accessible name is
-  // "Cell Board for <name>" (CellBoard.tsx:90). RTL resolves aria-label on a
-  // <section> via the `region` role; Playwright's getByLabel has no RTL peer.
-  const cell = state.cells.get(ids.cellId)!;
-  const cellBoardSection = screen.getByRole('region', { name: `Cell Board for ${cell.name}` });
-  expect(cellBoardSection).toBeInTheDocument();
   // The canvas mock is mounted alongside CellBoard (the layout route's
   // persistent canvas slot — the 06-05 Task 3 root-cause fix).
   expect(screen.getByTestId('flowgrid-canvas-mock')).toBeInTheDocument();
@@ -431,7 +425,7 @@ test('CellBoard (via layout route): renders alongside the canvas mock (D-01 pers
   expect(flowgridStore.getState().selectedCellId).toBe(ids.cellId);
 });
 
-test('CellBoard (via layout route): "Return to Flowgrid" navigates to / WITHOUT unmounting the canvas mock (D-01 build-once)', async () => {
+test('Cell route via layout: Flowgrid heading link navigates to / WITHOUT unmounting the canvas mock', async () => {
   const { ids, state } = buildStarterSnapshot(PREFIX);
   seedReady(state);
 
@@ -441,15 +435,9 @@ test('CellBoard (via layout route): "Return to Flowgrid" navigates to / WITHOUT 
   const canvasBefore = screen.getByTestId('flowgrid-canvas-mock');
   expect(canvasBefore).toBeInTheDocument();
 
-  // Click "Return to Flowgrid" — CellBoard's in-component link to /. This is
-  // an in-app SPA navigation via React Router, so AppLayout stays mounted
-  // (the pathless layout route is the parent of the child swap). The canvas
-  // must NOT unmount.
-  const cell = state.cells.get(ids.cellId)!;
-  const cellBoardSection = screen.getByRole('region', { name: `Cell Board for ${cell.name}` });
-  fireEvent.click(
-    within(cellBoardSection).getByRole('link', { name: /return to flowgrid/i }),
-  );
+  // Click the app heading link to /. This is an in-app SPA navigation via React
+  // Router, so AppLayout stays mounted and the canvas must NOT unmount.
+  fireEvent.click(screen.getByRole('link', { name: /^flowgrid$/i }));
 
   // Wait for the index child to take over the Outlet.
   await screen.findByTestId('flowgrid-canvas-mock');

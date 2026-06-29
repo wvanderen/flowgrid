@@ -17,6 +17,7 @@
 // → false, then asserts no update_settings command is dispatched on mount.
 
 import { beforeEach, expect, test, vi } from 'vitest';
+import type { ReactNode } from 'react';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
@@ -56,6 +57,14 @@ vi.mock('../../src/persistence/index.js', () => ({
   exportJson: async () => ({}),
   exportSessionCsv: async () => '',
   importArchive: async () => ({ ok: true, value: undefined }),
+}));
+
+// (e) ArchivedCellsFilter — Settings owns the buried maintenance placement, but
+// this suite should not exercise unarchive dispatch or require a full cells map.
+vi.mock('../../src/ui/flowgrid-home/ArchivedCellsFilter.js', () => ({
+  ArchivedCellsFilter: (): ReactNode => (
+    <section aria-label="Cell maintenance" data-testid="archived-cells-filter-stub" />
+  ),
 }));
 
 import { SettingsPanel } from '../../src/ui/settings/SettingsPanel.js';
@@ -103,4 +112,14 @@ test('SettingsPanel mount effect: does NOT dispatch update_settings to durably p
     ([command]) => (command as { type?: string }).type === 'update_settings',
   );
   expect(updateSettingsCalls).toHaveLength(0);
+});
+
+test('SettingsPanel: contains the buried archived Cell maintenance surface', async () => {
+  renderSettings();
+
+  await waitFor(() => {
+    expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
+  });
+
+  expect(screen.getByTestId('archived-cells-filter-stub')).toBeInTheDocument();
 });

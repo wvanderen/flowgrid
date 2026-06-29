@@ -81,6 +81,10 @@ export interface FlowgridState {
   // is the single source of truth, the store is a derived mirror for non-React
   // consumers like the render adapter).
   readonly selectedCellId: CellId | null;
+  // Core selection mirror. True on /core so the canvas and semantic inspector can
+  // treat the Core like an inspectable diagram node without making it durable
+  // simulation state.
+  readonly selectedCore: boolean;
   // D-02 view-state mirror: true when a takeover overlay (/settings or /forge) is
   // covering the canvas. Set by AppLayout from route handle metadata via
   // useMatches. Gates the Pixi ticker pause (stopMotion/startTicker) and the
@@ -100,6 +104,7 @@ export const flowgridStore = createStore<FlowgridState>(() => ({
   lastError: null,
   lastRejection: null,
   selectedCellId: null,
+  selectedCore: false,
   takeoverActive: false,
 }));
 

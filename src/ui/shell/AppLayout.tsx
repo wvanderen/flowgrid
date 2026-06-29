@@ -40,7 +40,6 @@ import { CreateCellForm } from '../cell-board/CreateCellForm.js';
 import { ResumeSessionPrompt } from '../cell-board/ResumeSessionPrompt.js';
 import { RejuvenationResumePrompt } from '../core-panel/RejuvenationResumePrompt.js';
 import { ErrorBanner } from '../shared/ErrorBanner.js';
-import { ArchivedCellsFilter } from '../flowgrid-home/ArchivedCellsFilter.js';
 import { FlowgridCanvas } from '../flowgrid-home/FlowgridCanvas.js';
 import { ReturnCues } from '../flowgrid-home/ReturnCues.js';
 import { ZLiftDock } from './ZLiftDock.js';
@@ -59,6 +58,7 @@ export function AppLayout(): ReactNode {
   const status = useFlowgridStore((s) => s.status);
   const snapshot = useFlowgridStore((s) => s.snapshot);
   const lastError = useFlowgridStore((s) => s.lastError);
+  const activeSession = useFlowgridStore((s) => s.activeSession);
   const activeRejuvenation = useFlowgridStore((s) => s.activeRejuvenation);
   const [createOpen, setCreateOpen] = useState(false);
   // Phase 6.1 D-04 (Plan 06.1-02 Task 2): Cell-switcher open state. Radix Menu
@@ -81,13 +81,16 @@ export function AppLayout(): ReactNode {
     return params !== undefined && 'cellId' in params;
   }) as MatchWithParams | undefined;
   const selectedCellId: CellId | null = cellMatch?.params.cellId ?? null;
+  const selectedCore = matches.some(
+    (m) => 'pathname' in m && String((m as { pathname: unknown }).pathname) === '/core',
+  );
 
   // D-01 view-state mirror: push the URL-derived fields into the store for
   // non-React consumers (the canvas adapter reads them via FlowgridStoreView).
   // This is a derived mirror — the URL remains the single source of truth.
   useEffect(() => {
-    flowgridStore.setState({ selectedCellId, takeoverActive });
-  }, [selectedCellId, takeoverActive]);
+    flowgridStore.setState({ selectedCellId, selectedCore, takeoverActive });
+  }, [selectedCellId, selectedCore, takeoverActive]);
 
   // D-03: tap a Cell hex → React Router navigation to the Cell route. The
   // callback identity changes when `navigate` changes (stable per RouterProvider
@@ -99,6 +102,9 @@ export function AppLayout(): ReactNode {
     },
     [navigate],
   );
+  const handleCoreTap = useCallback(() => {
+    navigate('/core');
+  }, [navigate]);
 
   // The error state takes precedence over ready/loading when a typed
   // PersistenceError is present so the user sees why their action failed.
@@ -134,43 +140,31 @@ export function AppLayout(): ReactNode {
     // D-09: the canvas zone keeps its className/size on WebGL-fail (FlowgridCanvas
     // returns the same h-[60vh]/sm:h-[70vh] wrapper for both branches); the layout
     // is identical whether WebGL works or not.
-    <section aria-label="Flowgrid home" className="mx-auto max-w-5xl px-4 py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-core">Flowgrid</h1>
-        {/* Reachable /core and /settings navigation (peer to / and /cells/:id). */}
-        <div className="flex items-center gap-3">
-          <Link to="/core" className="text-sm text-slate-400 underline">Core</Link>
-          <Link to="/settings" className="text-sm text-slate-400 underline">Settings</Link>
-        </div>
-      </div>
+    <section aria-label="Flowgrid home" className="flowgrid-sigil-shell relative flex min-h-screen flex-col overflow-x-hidden px-4 py-4 text-slate-300 sm:px-6 lg:px-8 xl:h-screen xl:overflow-hidden">
+      <header className="relative z-20 mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3">
+        <h1 className="text-3xl font-bold text-core">
+          <Link to="/" className="transition hover:text-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-core">
+            Flowgrid
+          </Link>
+        </h1>
+        <nav aria-label="Primary" className="flex items-center gap-3">
+          <Link
+            to="/core"
+            aria-current={selectedCore ? 'page' : undefined}
+            className={selectedCore
+              ? 'rounded-md px-2 py-1 text-sm font-semibold text-core focus:outline-none focus-visible:ring-2 focus-visible:ring-core'
+              : 'rounded-md px-2 py-1 text-sm text-slate-400 underline transition hover:text-core focus:outline-none focus-visible:ring-2 focus-visible:ring-core'}
+          >
+            Core
+          </Link>
+          <Link to="/settings" className="rounded-md px-2 py-1 text-sm text-slate-400 underline transition hover:text-core focus:outline-none focus-visible:ring-2 focus-visible:ring-core">Settings</Link>
+        </nav>
+      </header>
 
-      {/* D-02: persistent canvas slot — mounts FlowgridCanvas ONCE per app session.
-          The canvas zone stays in place across all child navigation including
-          takeover overlays (which render via <Outlet/> and cover the canvas
-          without unmounting it). D-09: on WebGL-fail FlowgridCanvas returns the
-          same className + a status note; the zone stays put.
-
-          Phase 6.1 D-08 (Plan 06.1-02 Task 2): the canvas zone is a relative
-          container so ZLiftDock can position itself beside (md:+) or below
-          (<md:) the canvas. The dock reads selectedCellId from the store; no
-          props required. */}
-      <div className="relative flex flex-col gap-2 md:flex-row md:items-start">
-        <div className="min-w-0 flex-1">
-          <FlowgridCanvas snapshot={snapshot} onCellTap={handleCellTap} />
-        </div>
-        {/* D-08: hidden during takeovers alongside the rest of the chrome — the
-            dock is part of the persistent chrome surface. */}
-        {!takeoverActive ? <ZLiftDock /> : null}
-      </div>
-
-      {/* D-03: persistent chrome — hidden during takeovers (full-screen overlays).
-          Contains the home chrome previously owned by FlowgridHome: ReturnCues,
-          resume prompts, New Cell Dialog, Cell-list nav, ArchivedCellsFilter.
-          Visible on /, /cells/:id, /core; hidden on /settings, /forge. */}
       {!takeoverActive && (
-        <>
+        <div className="flowgrid-floating-surface relative z-20 mx-auto mt-4 flex w-fit max-w-full flex-wrap items-center gap-3 rounded-lg px-3 py-2">
           {/* D-05: interrupted-session recovery banner. */}
-          {interruptedCell !== undefined && interruptedCell.activeSessionStartedAt !== null ? (
+          {activeSession === null && interruptedCell !== undefined && interruptedCell.activeSessionStartedAt !== null ? (
             <ResumeSessionPrompt
               cellId={interruptedCell.id}
               cellName={interruptedCell.name}
@@ -184,11 +178,6 @@ export function AppLayout(): ReactNode {
           {activeRejuvenation !== null ? (
             <RejuvenationResumePrompt startedAt={activeRejuvenation.startedAt} />
           ) : null}
-
-          {/* UI-07 return-cue rail: above the canvas, below the resume banners. Must not
-              obstruct the New Cell button or the canvas tap-Cell flow (D-08 protected
-              interaction). Renders nothing when there is no actionable state. */}
-          <ReturnCues />
 
           {/* CELL-01 reachability: the New Cell button is always present so the user
               can create a Cell even before any exist. CreateCellForm lives inside the
@@ -212,8 +201,10 @@ export function AppLayout(): ReactNode {
             </Dialog.Portal>
           </Dialog.Root>
 
+          <ReturnCues />
+
           {activeCellCount === 0 ? (
-            <p role="status" className="rounded-lg border border-dashed border-slate-600 bg-flowgrid-surface p-6 text-center text-slate-400">No active Cells yet. Create one to start playing.</p>
+            <p role="status" className="text-sm text-slate-400">No active Cells yet.</p>
           ) : (
             <>
               {/* Phase 6.1 D-04 (Plan 06.1-02 Task 2) chrome collapse: the
@@ -231,10 +222,16 @@ export function AppLayout(): ReactNode {
                   at all sizes per Mobile Strategy ordering. */}
               <nav aria-label="Cells" className="hidden md:block">
                 <h2 className="sr-only">Cells</h2>
-                <ul className="flex flex-col gap-1">
+                <ul className="flex flex-wrap items-center gap-2">
                   {activeCells.map((cell) => (
                     <li key={cell.id}>
-                      <Link to={`/cells/${cell.id}`} className="text-sm text-slate-300 underline transition hover:text-core focus:outline-none focus-visible:ring-2 focus-visible:ring-core">
+                      <Link
+                        to={`/cells/${cell.id}`}
+                        aria-current={selectedCellId === cell.id ? 'page' : undefined}
+                        className={selectedCellId === cell.id
+                          ? 'rounded-md border border-core/50 bg-core/10 px-2 py-1 text-sm font-semibold text-core focus:outline-none focus-visible:ring-2 focus-visible:ring-core'
+                          : 'rounded-md px-2 py-1 text-sm text-slate-300 underline transition hover:text-core focus:outline-none focus-visible:ring-2 focus-visible:ring-core'}
+                      >
                         {cell.name}
                       </Link>
                     </li>
@@ -289,18 +286,31 @@ export function AppLayout(): ReactNode {
               </div>
             </>
           )}
-
-          {/* D-12: archived-Cells management surface (hidden from canvas, reachable here). */}
-          <ArchivedCellsFilter />
-        </>
+        </div>
       )}
+
+      <div className="relative z-10 mx-auto mt-3 w-full max-w-[92rem] flex-1">
+        <FlowgridCanvas
+          snapshot={snapshot}
+          onCellTap={handleCellTap}
+          onCoreTap={handleCoreTap}
+        />
+        {!takeoverActive ? (
+          <div className="relative z-20 mt-4 xl:pointer-events-none xl:absolute xl:right-3 xl:top-3 xl:mt-0 xl:w-[24rem]">
+            <div className="pointer-events-auto">
+              <ZLiftDock />
+            </div>
+          </div>
+        ) : null}
+      </div>
 
       {/* Child route renders here: HomeDock (/) | CellBoard (/cells/:id) |
           CorePanel (/core) | SettingsTakeover (/settings) | ForgeTakeover (/forge).
-          Takeover overlays render ABOVE the canvas via fixed positioning + z-50
-          (see SettingsTakeover/ForgeTakeover); the canvas stays mounted, hidden
-          not unmounted (D-02). */}
-      <Outlet />
+          Non-takeover children are visually retired into the semantic inspector
+          above, while takeover overlays remain visible fixed layers. */}
+      <div hidden={!takeoverActive}>
+        <Outlet />
+      </div>
     </section>
   );
 }

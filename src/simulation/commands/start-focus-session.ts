@@ -12,9 +12,11 @@ import type {
   SimulationEnv,
   SimulationResult,
   StartFocusSessionCommand,
+  VisualEvent,
   ValidationIssue,
 } from '../../domain/index.js';
 import { operationFromCommand } from '../operation-events.js';
+import { focusSessionStartedVisual } from '../visual-events.js';
 
 function rejectWith(
   state: FlowgridSnapshot,
@@ -107,6 +109,9 @@ export function startFocusSession(
     entityId: command.cellId,
     payload: { activeSessionStartedAt: env.now },
   });
+  const visualEvents: VisualEvent[] = [
+    focusSessionStartedVisual(env.now, command.cellId),
+  ];
 
   return {
     status: 'applied',
@@ -118,7 +123,7 @@ export function startFocusSession(
       client: { ...previousState.client, updatedAt: env.now },
     },
     economyEvents: [],
-    visualEvents: [],
+    visualEvents,
     operations: [operation],
     validationIssues: [],
   };

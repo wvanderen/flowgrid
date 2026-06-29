@@ -22,6 +22,7 @@ export interface FlowgridStoreView {
     // state is mirrored from the URL by AppLayout via useMatches; the render
     // layer reads it through this structural contract (no flowgridStore import).
     readonly selectedCellId: CellId | null;
+    readonly selectedCore: boolean;
     // D-02 view-state mirror: read by the canvas to gate particle emission +
     // pause the ticker while a takeover overlay covers the canvas.
     readonly takeoverActive: boolean;
@@ -57,13 +58,14 @@ export function connectFlowgridAdapter(
   // Without this, a navigation that does not produce a fresh snapshot reference
   // would never reach onSnapshot and the canvas would not Z-Lift.
   let lastSelectedCellId: CellId | null = null;
+  let lastSelectedCore = false;
   let isUpdating = false;
 
   const unsubscribe = store.subscribe(() => {
     if (isUpdating) return;
     isUpdating = true;
     try {
-      const { snapshot, pendingVisualEvents, selectedCellId } = store.getState();
+      const { snapshot, pendingVisualEvents, selectedCellId, selectedCore } = store.getState();
 
       // Rebuild the scene only when the snapshot reference changes. The dispatch
       // path always produces a fresh `result.nextState`, so reference-equality is
@@ -71,14 +73,17 @@ export function connectFlowgridAdapter(
       if (snapshot !== null && snapshot !== lastSnapshot) {
         lastSnapshot = snapshot;
         lastSelectedCellId = selectedCellId;
+        lastSelectedCore = selectedCore;
         onSnapshot(snapshot);
-      } else if (selectedCellId !== lastSelectedCellId) {
+      } else if (
+        selectedCellId !== lastSelectedCellId ||
+        selectedCore !== lastSelectedCore
+      ) {
         // URL-only selection change (no dispatch). Forward so the Z-Lift visual
-        // follows navigation. The snapshot reference is unchanged; we still pass
-        // it so updateFlowgridScene has the full state. The store-mirrored
-        // selectedCellId is what the caller (FlowgridCanvas) forwards into the
-        // Z-Lift pass as the trailing argument.
+        // follows navigation. Core selection uses the same path so the Core can
+        // behave like an inspectable diagram node.
         lastSelectedCellId = selectedCellId;
+        lastSelectedCore = selectedCore;
         if (snapshot !== null) {
           onSnapshot(snapshot);
         }

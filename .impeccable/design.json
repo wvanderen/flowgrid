@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-28T00:00:00.000Z",
+  "title": "Design System: Flowgrid",
+  "extensions": {
+    "colorMeta": {
+      "flowgrid-bg": {
+        "role": "neutral",
+        "displayName": "Flowgrid Deep Space",
+        "canonical": "#0f172a",
+        "tonalRamp": [
+          "oklch(15% 0.03 259)",
+          "oklch(25% 0.04 259)",
+          "oklch(35% 0.04 259)",
+          "oklch(45% 0.04 259)",
+          "oklch(58% 0.035 259)",
+          "oklch(70% 0.025 259)",
+          "oklch(83% 0.015 259)",
+          "oklch(95% 0.008 259)"
+        ]
+      },
+      "flowgrid-surface": {
+        "role": "neutral",
+        "displayName": "Flowgrid Surface",
+        "canonical": "#1e293b",
+        "tonalRamp": [
+          "oklch(15% 0.035 259)",
+          "oklch(25% 0.045 259)",
+          "oklch(35% 0.045 259)",
+          "oklch(45% 0.04 259)",
+          "oklch(58% 0.035 259)",
+          "oklch(70% 0.025 259)",
+          "oklch(83% 0.015 259)",
+          "oklch(95% 0.008 259)"
+        ]
+      },
+      "core": {
+        "role": "primary",
+        "displayName": "Core Amber",
+        "canonical": "#fbbf24",
+        "tonalRamp": [
+          "oklch(15% 0.08 85)",
+          "oklch(25% 0.11 85)",
+          "oklch(35% 0.13 85)",
+          "oklch(48% 0.15 85)",
+          "oklch(62% 0.16 85)",
+          "oklch(75% 0.15 85)",
+          "oklch(86% 0.11 85)",
+          "oklch(95% 0.05 85)"
+        ]
+      },
+      "core-hover": {
+        "role": "primary",
+        "displayName": "Core Hover Amber",
+        "canonical": "#fcd34d",
+        "tonalRamp": [
+          "oklch(15% 0.07 85)",
+          "oklch(25% 0.1 85)",
+          "oklch(35% 0.12 85)",
+          "oklch(48% 0.14 85)",
+          "oklch(62% 0.15 85)",
+          "oklch(75% 0.14 85)",
+          "oklch(86% 0.1 85)",
+          "oklch(95% 0.05 85)"
+        ]
+      },
+      "error": {
+        "role": "status",
+        "displayName": "Error Red",
+        "canonical": "#ef4444",
+        "tonalRamp": [
+          "oklch(15% 0.07 25)",
+          "oklch(25% 0.1 25)",
+          "oklch(35% 0.13 25)",
+          "oklch(48% 0.16 25)",
+          "oklch(62% 0.17 25)",
+          "oklch(75% 0.13 25)",
+          "oklch(86% 0.08 25)",
+          "oklch(95% 0.035 25)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Route titles and selected Cell names only."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Panel titles, Generator headings, summaries, and module tile headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Short app copy, instructions, status explanations, and form labels."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Controls, stat labels, navigation, and small status text."
+      },
+      "mono": {
+        "displayName": "Timer Mono",
+        "purpose": "Elapsed focus and rejuvenation timers only."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dock-float",
+        "value": "shadow-xl",
+        "purpose": "Selected Cell dock floating beside or below the canvas."
+      },
+      {
+        "name": "menu-float",
+        "value": "shadow-xl",
+        "purpose": "Mobile Cell switcher menu."
+      },
+      {
+        "name": "dialog-float",
+        "value": "shadow-2xl",
+        "purpose": "Dialogs over a dark overlay."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-transition",
+        "value": "150-250ms ease-out",
+        "purpose": "Button hover, focus, highlighted menu items, and state feedback."
+      },
+      {
+        "name": "canvas-current",
+        "value": "Pixi ticker with reduced-motion gate",
+        "purpose": "Ambient Current, particles, Z-Lift, and state motion in the lattice."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary gameplay action such as Start, Finish, Create, Save, or Apply.",
+      "html": "<button class=\"ds-btn-primary\">Start Focus Session</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 6px; background: var(--color-core, #fbbf24); color: var(--color-flowgrid-bg, #0f172a); padding: 8px 16px; font: 600 14px/1.25 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; transition: background-color 180ms ease-out; } .ds-btn-primary:hover { background: #fcd34d; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-core, #fbbf24); } .ds-btn-primary:disabled { opacity: .5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary and cancel actions that should stay available without competing with the Generator.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; border: 1px solid #475569; border-radius: 6px; background: transparent; color: #e2e8f0; padding: 8px 16px; font: 500 14px/1.25 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; transition: background-color 180ms ease-out; } .ds-btn-secondary:hover { background: #334155; } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 2px #94a3b8; }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Standard Flowgrid shell panel for Generator, Core controls, Forge choices, Settings, module tiles, and inspectors.",
+      "html": "<section class=\"ds-panel\"><h3>Generator</h3><p>Tap to start a focus session.</p></section>",
+      "css": ".ds-panel { border: 1px solid #334155; border-radius: 8px; background: var(--color-flowgrid-surface, #1e293b); color: #cbd5e1; padding: 16px; font: 400 16px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; } .ds-panel h3 { margin: 0 0 8px; color: #e2e8f0; font-size: 16px; font-weight: 600; } .ds-panel p { margin: 0; color: #cbd5e1; }"
+    },
+    {
+      "name": "Protected Generator Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The sacred session-start component; visually related to panels but marked with Core Amber.",
+      "html": "<section class=\"ds-generator\"><h2>Generator</h2><p>Tap to start a focus session.</p><button>Start Focus Session</button></section>",
+      "css": ".ds-generator { border: 1px solid color-mix(in srgb, var(--color-core, #fbbf24) 50%, transparent); border-radius: 8px; background: var(--color-flowgrid-surface, #1e293b); color: #cbd5e1; padding: 16px; font: 400 16px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; } .ds-generator h2 { margin: 0 0 8px; color: var(--color-core, #fbbf24); font-size: 18px; font-weight: 600; } .ds-generator p { margin: 0 0 12px; } .ds-generator button { border: 0; border-radius: 6px; background: var(--color-core, #fbbf24); color: var(--color-flowgrid-bg, #0f172a); padding: 8px 16px; font-weight: 600; } .ds-generator button:hover { background: #fcd34d; } .ds-generator button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-core, #fbbf24); }"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Compact dark input for Cell, Core, and Settings forms.",
+      "html": "<label class=\"ds-field-label\">Cell name<input class=\"ds-field\" value=\"Writing\" /></label>",
+      "css": ".ds-field-label { display: block; color: #cbd5e1; font: 500 14px/1.25 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; } .ds-field { display: block; width: 100%; margin-top: 4px; border: 1px solid #475569; border-radius: 6px; background: rgba(15, 23, 42, .5); color: #f1f5f9; padding: 8px 12px; font: 400 16px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; } .ds-field::placeholder { color: #64748b; } .ds-field:focus { border-color: var(--color-core, #fbbf24); outline: none; box-shadow: 0 0 0 1px var(--color-core, #fbbf24); }"
+    },
+    {
+      "name": "Stat Tile",
+      "kind": "card",
+      "refersTo": "stat-tile",
+      "description": "Dense readout for Energy, Core Charge, Integration, Tokens, XP, and session summary values.",
+      "html": "<div class=\"ds-stat\"><dt>Energy</dt><dd>24</dd></div>",
+      "css": ".ds-stat { border-radius: 6px; background: rgba(15, 23, 42, .4); padding: 8px; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; } .ds-stat dt { color: #94a3b8; font-size: 12px; font-weight: 500; line-height: 1.2; letter-spacing: .025em; text-transform: uppercase; } .ds-stat dd { margin: 4px 0 0; color: #f1f5f9; font-size: 16px; font-weight: 600; line-height: 1.5; }"
+    },
+    {
+      "name": "Return Cue Rail",
+      "kind": "custom",
+      "refersTo": "chip",
+      "description": "Plain contextual statuses and action links above the canvas; informational first, never loud.",
+      "html": "<section class=\"ds-return-cues\"><span>Charge 8</span><button>Forge ready</button><span>Recent sessions: 3</span></section>",
+      "css": ".ds-return-cues { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font: 400 14px/1.25 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; } .ds-return-cues span { color: #94a3b8; } .ds-return-cues button { border: 0; background: transparent; color: var(--color-core, #fbbf24); padding: 0; text-decoration: underline; font: inherit; cursor: pointer; } .ds-return-cues button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-core, #fbbf24); }"
+    },
+    {
+      "name": "Canvas Frame",
+      "kind": "custom",
+      "refersTo": "panel",
+      "description": "Persistent Pixi lattice frame that holds the living gameplay identity without owning semantic actions.",
+      "html": "<div class=\"ds-canvas-frame\" role=\"img\" aria-label=\"Flowgrid lattice\"></div>",
+      "css": ".ds-canvas-frame { position: relative; height: 60vh; width: 100%; overflow: hidden; border: 1px solid #334155; border-radius: 8px; background: rgba(15, 23, 42, .4); } @media (min-width: 640px) { .ds-canvas-frame { height: 70vh; } }"
+    },
+    {
+      "name": "Selected Cell Dock",
+      "kind": "custom",
+      "refersTo": "panel",
+      "description": "Floating semantic control dock for the selected Cell, responsive as side dock or bottom strip.",
+      "html": "<aside class=\"ds-dock\"><header><h2>Writing</h2><p>Charge 4 · XP 120</p></header><button>Start Focus Session</button></aside>",
+      "css": ".ds-dock { display: flex; align-items: center; gap: 8px; border: 1px solid #334155; border-radius: 8px; background: rgba(30, 41, 59, .95); color: #cbd5e1; padding: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,.1), 0 8px 10px -6px rgba(0,0,0,.1); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; } .ds-dock h2 { margin: 0; color: #f1f5f9; font-size: 14px; font-weight: 600; } .ds-dock p { margin: 0; color: #94a3b8; font-size: 12px; } .ds-dock button { border: 0; border-radius: 6px; background: var(--color-core, #fbbf24); color: var(--color-flowgrid-bg, #0f172a); padding: 8px 12px; font-size: 14px; font-weight: 600; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Living Instrument",
+    "overview": "Flowgrid's interface is a dark, quiet instrument panel for attention: direct enough to trust when the user has limited energy, but alive enough that effort feels like signal moving through a system. The React shell stays familiar and restrained; the Pixi lattice carries the magical layer through hex geometry, Current trails, Core glow, and activation halos.\n\nThe product should feel calm, precise, and quietly magical. It must protect the Generator path: open the app, tap a Cell, start a session. Panels, chips, docks, and dialogs support that path; they do not compete with it. The visual system rejects generic productivity dashboards, overstimulating game UI, passive idle-game spectacle, canvas-only affordances, and marketing-site tropes inside the app shell.",
+    "keyCharacteristics": [
+      "Dark slate substrate with amber used as rare action signal.",
+      "System sans typography, compact hierarchy, and predictable product controls.",
+      "Flat panels with crisp borders; shadows appear only for overlays, menus, and the selected dock.",
+      "Canvas identity is vivid, but critical actions always have semantic HTML peers.",
+      "Copy stays neutral and forgiving, especially around return, recovery, and unfinished work."
+    ],
+    "rules": [
+      {
+        "name": "The Amber Is Signal Rule",
+        "body": "Core Amber is for primary action, selected state, and important system consequence only. Do not use it as decoration.",
+        "section": "colors"
+      },
+      {
+        "name": "The Canvas Has the Magic Rule",
+        "body": "Cyan, violet, bloom green, and glow effects belong mainly to the Pixi lattice. The HTML shell stays quieter so the playable surface can breathe.",
+        "section": "colors"
+      },
+      {
+        "name": "The Product Sans Rule",
+        "body": "Use one sans family for the app shell. Do not introduce display fonts in labels, buttons, data, or panels.",
+        "section": "typography"
+      },
+      {
+        "name": "The Timer Exception Rule",
+        "body": "Monospace exists to make elapsed time stable. Do not use mono as a mood layer elsewhere.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Until It Floats Rule",
+        "body": "Panels and cards are flat at rest. If a surface is in normal document flow, use border and tone instead of shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep the Generator path visually and interactively obvious on every relevant screen.",
+      "Do use Core Amber for primary actions, focus rings, selected state, and meaningful gameplay consequence.",
+      "Do pair every important canvas action with semantic HTML controls, labels, statuses, and keyboard paths.",
+      "Do keep app-shell panels compact: 8px radius, 16px padding, border-first depth, and predictable button shapes.",
+      "Do use reduced-motion settings to preserve meaning without particle or ticker motion.",
+      "Do keep recovery and return copy neutral: surface opportunity, stored progress, and next useful action."
+    ],
+    "donts": [
+      "Don't build generic productivity dashboards that foreground charts, task tables, streak pressure, or shame-coded catch-up language.",
+      "Don't make overstimulating game UI where rewards are louder than the real action the user came to do.",
+      "Don't create passive idle-game visuals where offline accumulation feels more important than effort and recovery.",
+      "Don't hide critical actions inside the canvas without keyboard, screen reader, or normal form equivalents.",
+      "Don't import marketing-site visual tropes into the app shell: oversized hero sections, decorative card grids, tiny uppercase eyebrows, gradient text, or ornamental motion.",
+      "Don't use side-stripe accent borders, gradient text, glassmorphism, ghost-card border-plus-wide-shadow decoration, or rounded cards above 16px."
+    ]
+  }
+}

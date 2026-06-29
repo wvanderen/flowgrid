@@ -41,7 +41,6 @@ import {
   coreChargeStoreVisual,
   coreConvertVisual,
   currentFlowVisual,
-  focusSessionStartedVisual,
 } from '../visual-events.js';
 
 import { applyBloom } from '../systems/bloom.js';
@@ -304,7 +303,6 @@ export function completeFocusSession(
   economyEvents.push(stateValidatedEvent(env.now, nextState.client.id, 0));
 
   const visualEvents: VisualEvent[] = [
-    focusSessionStartedVisual(env.now, command.cellId),
     currentFlowVisual(env.now, routes[0]?.id ?? 'route:unknown', routed),
   ];
   if (bloom.fired) {

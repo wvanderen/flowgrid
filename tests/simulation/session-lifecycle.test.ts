@@ -19,6 +19,7 @@ import type {
   FlowgridSnapshot,
   StartFocusSessionCommand,
 } from '../../src/domain/index.js';
+import { VISUAL_EVENT_NAMES } from '../../src/domain/index.js';
 import { runSimulationCommand } from '../../src/simulation/index.js';
 
 import { buildStarterSnapshot, createTestSimulationEnv } from '../helpers/fixtures.js';
@@ -57,6 +58,15 @@ test('start_focus_session: sets activeSessionStartedAt to env.now and emits one 
   expect(result.operations).toHaveLength(1);
   expect(result.operations[0]?.commandType).toBe('start_focus_session');
   expect(result.operations[0]?.entityType).toBe('cell');
+  expect(result.visualEvents).toEqual([
+    {
+      type: VISUAL_EVENT_NAMES.focusSessionStartedVisual,
+      entityType: 'cell',
+      entityId: ids.cellId,
+      payload: {},
+      at: NOW,
+    },
+  ]);
   expectValidState(result.nextState);
 });
 

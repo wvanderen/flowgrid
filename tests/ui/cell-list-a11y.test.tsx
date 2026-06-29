@@ -21,8 +21,8 @@ vi.mock('../../src/ui/flowgrid-home/FlowgridCanvas.js', () => ({
   ),
 }));
 
-// Stub CreateCellForm / ResumeSessionPrompt / RejuvenationResumePrompt /
-// ArchivedCellsFilter so the layout chrome mounts without their internals.
+// Stub CreateCellForm / ResumeSessionPrompt / RejuvenationResumePrompt so the
+// layout chrome mounts without their internals.
 vi.mock('../../src/ui/cell-board/CreateCellForm.js', () => ({
   CreateCellForm: (): ReactNode => (
     <div data-testid="create-cell-form-stub">CreateCellForm</div>
@@ -38,12 +38,6 @@ vi.mock('../../src/ui/core-panel/RejuvenationResumePrompt.js', () => ({
     <div data-testid="rejuvenation-resume-prompt-stub" />
   ),
 }));
-vi.mock('../../src/ui/flowgrid-home/ArchivedCellsFilter.js', () => ({
-  ArchivedCellsFilter: (): ReactNode => (
-    <div data-testid="archived-cells-filter-stub" />
-  ),
-}));
-
 // Phase 6.1 Plan 03 Task 2 (D-03 chrome persistence): stub CellBoard + CorePanel
 // so the layout route can mount /cells/:id + /core children without dragging in
 // their internals. The Cell-list nav lives in AppLayout (the layout route), so
