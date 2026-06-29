@@ -1,20 +1,20 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-current_phase: 06.1
-status: "Phase 06.1 verified complete via UAT (11/11 passed). Milestone v1.0 at 100% — all 7 phases, 25/25 plans complete."
-stopped_at: Phase 06.1 UAT passed (11/11). Ready to complete milestone v1.0.
-last_updated: "2026-06-29T19:03:52.691Z"
+milestone_name: Audit Gaps
+current_phase: 06.2
+current_phase_name: close-v1-0-audit-gaps-b-01-applayout-hidden-outlet-w-01-bloc
+status: "Phase 06.2 plan 06.2-01 ABORTED at Task 1 (Rule 4 architectural checkpoint). Plan was built on incorrect git evidence — commit 29e32a7 is a 39-file intentional redesign (not a single-hunk regression); its canvas-as-full-viewport-background layout is fundamentally incompatible with visible+clickable child-route `<Outlet/>` content (bare Outlet = 3/14 E2E; canvas intercepts pointer events). User decision: KEEP the redesign, do NOT revert 29e32a7. Findings + corrected evidence captured in phase `.continue-here.md`. Re-plan via /gsd-plan-phase 06.2 — new plan must choose Option C (hybrid layout under redesign) or Option B (rewrite E2E specs for ZLiftDock, now legitimate)."
+stopped_at: "Phase 06.2-01 aborted at Task 1 (Rule 4 architectural checkpoint); routing back to /gsd-plan-phase 06.2 with corrected git evidence (see phase `.continue-here.md`). Redesign commit 29e32a7 is fixed input."
+last_updated: "2026-06-29T20:23:23.002Z"
 last_activity: 2026-06-29
-last_activity_desc: Phase 06.1 complete
+last_activity_desc: Phase 06.2-01 aborted (Rule 4 architectural checkpoint); routing back to planning
 progress:
-  total_phases: 7
+  total_phases: 8
   completed_phases: 7
-  total_plans: 25
+  total_plans: 26
   completed_plans: 25
-  percent: 100
-current_phase_name: canvas-always-visible-layout-pivot
+  percent: 88
 ---
 
 # Project State
@@ -24,16 +24,16 @@ current_phase_name: canvas-always-visible-layout-pivot
 See: .planning/PROJECT.md (updated 2026-06-24)
 
 **Core value:** Tap a Cell, do a real thing, and feel that effort become visible, useful signal in a modular system that makes returning feel powerful and forgiving.
-**Current focus:** Phase 06.1 — canvas-always-visible-layout-pivot
+**Current focus:** Phase 06.2 — close-v1-0-audit-gaps-b-01-applayout-hidden-outlet-w-01-bloc
 
 ## Current Position
 
-Phase: 06.1
-Plan: Not started
-Status: Phase 06.1 verified complete via UAT (11/11 passed). Milestone v1.0 at 100% — all 7 phases, 25/25 plans complete.
-Last activity: 2026-06-29 — Phase 06.1 complete (UAT passed)
+Phase: 06.2 (close-v1-0-audit-gaps-b-01-applayout-hidden-outlet-w-01-bloc) — RE-PLANNING (06.2-01 aborted)
+Plan: 1 of 1 (aborted at Task 1)
+Status: Phase 06.2-01 aborted at Task 1 — plan was built on incorrect git evidence. Commit 29e32a7 is a 39-file intentional redesign, not a single-hunk regression. Bare `<Outlet/>` fix yields 3/14 E2E (canvas intercepts pointer events on child-route links). User decision: keep the redesign; re-plan with corrected evidence. Findings captured in phase `.continue-here.md`.
+Last activity: 2026-06-29 — Phase 06.2-01 aborted (Rule 4 architectural checkpoint); routing back to planning
 
-Progress: [████████████████████] 25/25 plans (100%), 7/7 phases complete
+Progress: [██████████░░░░░░░░░░] 25/25 plans (7/8 phases complete; 06.2 = 0 plans, not started)
 
 ## Performance Metrics
 
@@ -133,11 +133,17 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- [ ] **Complete milestone v1.0** — all phases verified; run `/gsd-complete-milestone` to archive and prepare for the next version.
+- [ ] **RE-PLAN + execute Phase 06.2** — plan `06.2-01` was aborted (Rule 4 architectural checkpoint): its B-01 fix was built on incorrect git evidence. Commit `29e32a7` is a 39-file intentional redesign, not a single-hunk regression; the redesign's full-viewport canvas intercepts pointer events on child-route `<Outlet/>` content (3/14 E2E with bare Outlet). User decision: **keep the redesign, do NOT revert `29e32a7`**. Re-plan via `/gsd-plan-phase 06.2` choosing Option C (hybrid layout under redesign) or Option B (rewrite E2E specs for ZLiftDock). Corrected evidence + carried-over scope (W-01/DATA-07, VERIFICATION.md for 01/04, REQUIREMENTS/ROADMAP drift) captured in phase `.continue-here.md`.
+- [ ] **Re-audit milestone v1.0 after 06.2** — confirm status PASS (no BLOCKER, no unverified phase) before running `/gsd-complete-milestone`.
 
 ### Blockers/Concerns
 
-- None open. Phase 06.1 UAT passed 11/11 (including the re-opened 06-05 Task 3 particle-visibility smoke). Prior documented blockers (particle imperceptibility, grainy hexagons, redundant resume prompt, excessive scroll) were accepted as resolved by the user during UAT and cleared.
+- **B-01 (BLOCKER, re-scoped 2026-06-29):** The hidden-`<Outlet/>` wrapper in `src/ui/shell/AppLayout.tsx` is one mechanism inside a 39-file intentional redesign (`29e32a7`), NOT an isolated regression. Bare-Outlet fix yields 3/14 E2E — the redesign's canvas-as-full-viewport-background layout intercepts pointer events on child-route links. Resolution requires a structural decision (hybrid layout OR E2E rewrite), not a single-hunk reversal. Redesign is fixed input per user decision. Re-opens VER-04, VER-05 (partial), VER-06, UI-03, UI-08. Full detail: `.planning/phases/06.2-.../.continue-here.md`.
+- Phase 06.1 UAT otherwise passed 11/11. Other prior blockers (particle imperceptibility, grainy hexagons, redundant resume prompt, excessive scroll) were accepted as resolved by the user during UAT.
+
+### Roadmap Evolution
+
+- Phase 06.2 inserted after Phase 6.1: Close v1.0 audit gaps: B-01 AppLayout hidden Outlet + W-01 blocked_upgrade surfacing + VERIFICATION.md for 01/04/06.1 + REQUIREMENTS/ROADMAP reconciliation (URGENT)
 
 ## Deferred Items
 
@@ -152,5 +158,5 @@ Items acknowledged and carried forward from roadmap creation:
 ## Session Continuity
 
 Last session: 2026-06-29
-Stopped at: Phase 06.1 UAT passed (11/11). Milestone v1.0 at 100% — ready to complete milestone.
-Resume file: None (run `/gsd-complete-milestone` to archive v1.0 and prepare for next version)
+Stopped at: Phase 06.2 inserted (URGENT) to close v1.0 milestone-audit gaps. Phase 06.1 is the last completed phase (UAT 11/11). The v1.0 milestone is NOT ready to complete until 06.2 closes B-01 + W-01 + missing VERIFICATION.md + REQUIREMENTS/ROADMAP drift.
+Resume file: None — run `/gsd-plan-phase 06.2` to plan the audit-gap closure, then execute. See `.planning/v1.0-MILESTONE-AUDIT.md` for full gap detail.
