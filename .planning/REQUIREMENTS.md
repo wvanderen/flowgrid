@@ -7,38 +7,38 @@
 
 ### Foundation
 
-- [ ] **FND-01**: Developer can run a strict TypeScript project with separated `domain`, `content`, `simulation`, `app`, `persistence`, `render`, `ui`, and `tests` areas.
-- [ ] **FND-02**: Simulation code can run without importing DOM, React, PixiJS, IndexedDB, browser timer, or persistence APIs.
-- [ ] **FND-03**: Durable entities use stable IDs and typed record shapes for Cells, modules, routes, sessions, Core, forge history, settings, and sync-ready operations.
-- [ ] **FND-04**: Commands return changed state, economy events, visual events, sync-ready operations, and validation issues.
-- [ ] **FND-05**: Validation detects negative resources, invalid references, duplicate installs, invalid route allocations, invalid Core allocation totals, and token/forge count regressions.
+- [x] **FND-01**: Developer can run a strict TypeScript project with separated `domain`, `content`, `simulation`, `app`, `persistence`, `render`, `ui`, and `tests` areas.
+- [x] **FND-02**: Simulation code can run without importing DOM, React, PixiJS, IndexedDB, browser timer, or persistence APIs.
+- [x] **FND-03**: Durable entities use stable IDs and typed record shapes for Cells, modules, routes, sessions, Core, forge history, settings, and sync-ready operations.
+- [x] **FND-04**: Commands return changed state, economy events, visual events, sync-ready operations, and validation issues.
+- [x] **FND-05**: Validation detects negative resources, invalid references, duplicate installs, invalid route allocations, invalid Core allocation totals, and token/forge count regressions.
 
 ### Cells
 
-- [ ] **CELL-01**: User can create a Cell with name, color, optional icon, daily target, and starter defaults.
-- [ ] **CELL-02**: User can inspect a Cell's XP, level, Momentum, Charge, daily milestone progress, Activation state, installed modules, and recent sessions.
-- [ ] **CELL-03**: User can edit Cell identity and daily target without losing history.
-- [ ] **CELL-04**: User can archive a Cell so it is hidden from normal active use while preserving completed sessions and history.
-- [ ] **CELL-05**: New Cells include starter modules: Generator, Charge Core, Output, and Bloom.
+- [x] **CELL-01**: User can create a Cell with name, color, optional icon, daily target, and starter defaults.
+- [x] **CELL-02**: User can inspect a Cell's XP, level, Momentum, Charge, daily milestone progress, Activation state, installed modules, and recent sessions.
+- [x] **CELL-03**: User can edit Cell identity and daily target without losing history.
+- [x] **CELL-04**: User can archive a Cell so it is hidden from normal active use while preserving completed sessions and history.
+- [x] **CELL-05**: New Cells include starter modules: Generator, Charge Core, Output, and Bloom.
 
 ### Sessions
 
-- [ ] **SESS-01**: User can start a focus session from a selected Cell with one primary Generator action.
-- [ ] **SESS-02**: User can finish a focus session and receive proportional rewards based on completed duration.
-- [ ] **SESS-03**: User can cancel or discard an active session without creating accidental rewards.
+- [x] **SESS-01**: User can start a focus session from a selected Cell with one primary Generator action.
+- [x] **SESS-02**: User can finish a focus session and receive proportional rewards based on completed duration.
+- [x] **SESS-03**: User can cancel or discard an active session without creating accidental rewards.
 - [x] **SESS-04**: Completed sessions are stored as append-only history records with Cell, start time, end time, duration, XP, Current, Energy/Core outcome, and Bloom/Activation effects.
-- [ ] **SESS-05**: User can view a completion summary showing duration, Current, XP, milestone progress, Energy/Core Charge outcome, and the next useful action.
+- [x] **SESS-05**: User can view a completion summary showing duration, Current, XP, milestone progress, Energy/Core Charge outcome, and the next useful action.
 
 ### Simulation
 
-- [ ] **SIM-01**: Focus time deterministically generates Current, Cell XP, Momentum, milestone progress, and visual events.
-- [ ] **SIM-02**: Cell XP grows local identity or capacity without gating global module-family access.
-- [ ] **SIM-03**: Momentum changes are forgiving and support return after missed days rather than hard streak failure.
-- [ ] **SIM-04**: Daily milestone progress accumulates from partial sessions and resets according to local day rules.
-- [ ] **SIM-05**: When a Cell's daily milestone completes, Bloom fires once for that Cell/day.
-- [ ] **SIM-06**: Bloom creates signal, increases Momentum, emits visual events, and activates the Cell until local day reset.
-- [ ] **SIM-07**: Activated Cells expose a visible state and a simple module-aware benefit without making Activation mandatory for useful play.
-- [ ] **SIM-08**: Simulation uses injected time and RNG for deterministic tests and replayable forge outcomes.
+- [x] **SIM-01**: Focus time deterministically generates Current, Cell XP, Momentum, milestone progress, and visual events.
+- [x] **SIM-02**: Cell XP grows local identity or capacity without gating global module-family access.
+- [x] **SIM-03**: Momentum changes are forgiving and support return after missed days rather than hard streak failure.
+- [x] **SIM-04**: Daily milestone progress accumulates from partial sessions and resets according to local day rules.
+- [x] **SIM-05**: When a Cell's daily milestone completes, Bloom fires once for that Cell/day.
+- [x] **SIM-06**: Bloom creates signal, increases Momentum, emits visual events, and activates the Cell until local day reset.
+- [x] **SIM-07**: Activated Cells expose a visible state and a simple module-aware benefit without making Activation mandatory for useful play.
+- [x] **SIM-08**: Simulation uses injected time and RNG for deterministic tests and replayable forge outcomes.
 
 ### Core
 
@@ -59,7 +59,7 @@
 
 ### Modules and Forge
 
-- [ ] **MOD-01**: Static ModuleDefinitions are versioned content separate from user-owned ModuleInstances.
+- [x] **MOD-01**: Static ModuleDefinitions are versioned content separate from user-owned ModuleInstances.
 - [x] **MOD-02**: User can inspect starter modules and understand their current behavior through normal UI controls.
 - [x] **MOD-03**: User can spend a Module Token on a simple Forge roll that reveals three curated choices.
 - [x] **MOD-04**: User can choose one Forge reward and persist it as an owned ModuleInstance, upgrade, or starter-slot enhancement.
@@ -143,29 +143,29 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FND-01 | Phase 1 | Pending |
-| FND-02 | Phase 1 | Pending |
-| FND-03 | Phase 1 | Pending |
-| FND-04 | Phase 1 | Pending |
-| FND-05 | Phase 1 | Pending |
-| CELL-01 | Phase 3 | Pending |
-| CELL-02 | Phase 3 | Pending |
-| CELL-03 | Phase 3 | Pending |
-| CELL-04 | Phase 3 | Pending |
-| CELL-05 | Phase 3 | Pending |
-| SESS-01 | Phase 3 | Pending |
-| SESS-02 | Phase 3 | Pending |
-| SESS-03 | Phase 3 | Pending |
+| FND-01 | Phase 1 | Complete |
+| FND-02 | Phase 1 | Complete |
+| FND-03 | Phase 1 | Complete |
+| FND-04 | Phase 1 | Complete |
+| FND-05 | Phase 1 | Complete |
+| CELL-01 | Phase 3 | Complete |
+| CELL-02 | Phase 3 | Complete |
+| CELL-03 | Phase 3 | Complete |
+| CELL-04 | Phase 3 | Complete |
+| CELL-05 | Phase 3 | Complete |
+| SESS-01 | Phase 3 | Complete |
+| SESS-02 | Phase 3 | Complete |
+| SESS-03 | Phase 3 | Complete |
 | SESS-04 | Phase 2 | Complete |
-| SESS-05 | Phase 3 | Pending |
-| SIM-01 | Phase 3 | Pending |
-| SIM-02 | Phase 3 | Pending |
-| SIM-03 | Phase 3 | Pending |
-| SIM-04 | Phase 3 | Pending |
-| SIM-05 | Phase 3 | Pending |
-| SIM-06 | Phase 3 | Pending |
-| SIM-07 | Phase 3 | Pending |
-| SIM-08 | Phase 1 | Pending |
+| SESS-05 | Phase 3 | Complete |
+| SIM-01 | Phase 3 | Complete |
+| SIM-02 | Phase 3 | Complete |
+| SIM-03 | Phase 3 | Complete |
+| SIM-04 | Phase 3 | Complete |
+| SIM-05 | Phase 3 | Complete |
+| SIM-06 | Phase 3 | Complete |
+| SIM-07 | Phase 3 | Complete |
+| SIM-08 | Phase 1 | Complete |
 | CORE-01 | Phase 4 | Complete |
 | CORE-02 | Phase 4 | Complete |
 | CORE-03 | Phase 4 | Complete |
@@ -177,7 +177,7 @@
 | REJ-03 | Phase 4 | Complete |
 | REJ-04 | Phase 4 | Complete |
 | REJ-05 | Phase 4 | Complete |
-| MOD-01 | Phase 1 | Pending |
+| MOD-01 | Phase 1 | Complete |
 | MOD-02 | Phase 5 | Complete |
 | MOD-03 | Phase 5 | Complete |
 | MOD-04 | Phase 5 | Complete |

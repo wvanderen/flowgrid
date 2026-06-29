@@ -15,8 +15,8 @@ Flowgrid v1 is a vertical MVP that proves the first loop before expanding into a
 - [x] **Phase 2: Durable Local-First Spine** - Persist normalized records, migrations, append-only history, exports, restore validation, and sync-ready operations. (completed 2026-06-23)
 - [x] **Phase 3: Playable Generator Flowgrid** - Deliver the first visible loop: create a Cell, start/finish focus, see Current/Bloom/Activation, and inspect the starter board. (completed 2026-06-24)
 - [x] **Phase 4: Core Alternation and Rejuvenation Economy** - Route effort through the Core, split Current into Energy/Core Charge, process rejuvenation, and earn Module Tokens. (completed 2026-06-24)
-- [ ] **Phase 5: Module Forge and Starter Customization** - Let users spend Module Tokens on curated Forge choices and apply rewards into starter slots.
-- [ ] **Phase 6: Hardening, Accessibility, and Trust** - Verify the full browser flow, accessible semantic controls, renderer safety, settings, recovery UX, and release-readiness checks.
+- [x] **Phase 5: Module Forge and Starter Customization** - Let users spend Module Tokens on curated Forge choices and apply rewards into starter slots.
+- [x] **Phase 6: Hardening, Accessibility, and Trust** - Verify the full browser flow, accessible semantic controls, renderer safety, settings, recovery UX, and release-readiness checks.
 - [x] **Phase 6.1: Canvas-Always-Visible Layout Pivot** - *(Urgent insertion)* Restructure the app shell so the Flowgrid canvas stays mounted and visible during all core signal-producing interactions; module interactions become inline-on-grid, with Settings/History/Forge as the only full-screen takeovers. Unblocks 06-05 / UI-03 / VER-06. (completed 2026-06-29)
 - [ ] **Phase 06.2: Close v1.0 Audit Gaps** - *(Urgent insertion)* Fix B-01 AppLayout hidden-Outlet regression (re-close VER-04/05/06, UI-03, UI-08), surface W-01 blocked_upgrade error (DATA-07), author VERIFICATION.md for 01/04/06.1, and reconcile REQUIREMENTS/ROADMAP drift.
 
@@ -264,7 +264,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 6.1 -> 06.2. Phas
 | 2. Durable Local-First Spine | 3/3 | Complete   | 2026-06-23 |
 | 3. Playable Generator Flowgrid | 5/5 | Complete   | 2026-06-24 |
 | 4. Core Alternation and Rejuvenation Economy | 3/3 | Complete    | 2026-06-24 |
-| 5. Module Forge and Starter Customization | 2/3 | In Progress|  |
-| 6. Hardening, Accessibility, and Trust | 4/5 (+1 partial) | In Progress (06-05 partial; layout pivot blocks UI-03/VER-06) |  |
+| 5. Module Forge and Starter Customization | 3/3 | Complete | 2026-06-26 |
+| 6. Hardening, Accessibility, and Trust | 5/5 | Complete | 2026-06-29 |
 | 6.1. Canvas-Always-Visible Layout Pivot | 3/3 | Complete    | 2026-06-29 |
 | 06.2. Close v1.0 Audit Gaps | 0/0 | Not Planned (urgent insertion) |  |
