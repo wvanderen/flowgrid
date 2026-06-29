@@ -17,7 +17,8 @@ Flowgrid v1 is a vertical MVP that proves the first loop before expanding into a
 - [x] **Phase 4: Core Alternation and Rejuvenation Economy** - Route effort through the Core, split Current into Energy/Core Charge, process rejuvenation, and earn Module Tokens. (completed 2026-06-24)
 - [ ] **Phase 5: Module Forge and Starter Customization** - Let users spend Module Tokens on curated Forge choices and apply rewards into starter slots.
 - [ ] **Phase 6: Hardening, Accessibility, and Trust** - Verify the full browser flow, accessible semantic controls, renderer safety, settings, recovery UX, and release-readiness checks.
-- [ ] **Phase 6.1: Canvas-Always-Visible Layout Pivot** - *(Urgent insertion)* Restructure the app shell so the Flowgrid canvas stays mounted and visible during all core signal-producing interactions; module interactions become inline-on-grid, with Settings/History/Forge as the only full-screen takeovers. Unblocks 06-05 / UI-03 / VER-06.
+- [x] **Phase 6.1: Canvas-Always-Visible Layout Pivot** - *(Urgent insertion)* Restructure the app shell so the Flowgrid canvas stays mounted and visible during all core signal-producing interactions; module interactions become inline-on-grid, with Settings/History/Forge as the only full-screen takeovers. Unblocks 06-05 / UI-03 / VER-06. (completed 2026-06-29)
+- [ ] **Phase 06.2: Close v1.0 Audit Gaps** - *(Urgent insertion)* Fix B-01 AppLayout hidden-Outlet regression (re-close VER-04/05/06, UI-03, UI-08), surface W-01 blocked_upgrade error (DATA-07), author VERIFICATION.md for 01/04/06.1, and reconcile REQUIREMENTS/ROADMAP drift.
 
 ## Phase Details
 
@@ -209,7 +210,7 @@ Plans:
   5. The layout degrades safely when WebGL/Canvas is unavailable (D-07) and remains operable via semantic non-canvas controls (UI-02).
   6. Re-opened 06-05 Task 3 human smoke passes: particles are visible during their emitting events.
 
-**Plans:** 3/3 plans executed (Plan 03 awaiting Task 3 human smoke)
+**Plans:** 3/3 plans complete
 
 **Wave 1**
 
@@ -225,6 +226,29 @@ Plans:
 
 **UI hint**: yes
 
+### Phase 06.2: Close v1.0 Audit Gaps (INSERTED)
+
+**Goal:** Close every gap surfaced by the v1.0 milestone audit (`.planning/v1.0-MILESTONE-AUDIT.md`) so the v1.0 milestone can be re-verified PASS: fix the B-01 `AppLayout` hidden-`<Outlet/>` regression that re-opened VER-04/05/06, UI-03, and UI-08; surface the W-01 `blocked_upgrade` error to the UI (DATA-07); author the missing VERIFICATION.md for phases 01/04/06.1; and reconcile REQUIREMENTS.md + ROADMAP.md status drift.
+**Mode:** mvp
+**Depends on:** Phase 6.1 (regression was introduced by the post-6.1 "main view redesign" commit `29e32a7`; 06.2 lands on top of the current 6.1-complete codebase)
+**Requirements**: VER-04, VER-05, VER-06 (re-close), UI-03, UI-08 (re-close), DATA-07 (W-01 closure); process closure for 01/04/06.1 verification artifacts.
+**Success Criteria** (what must be TRUE):
+
+  1. `npx playwright test` passes 14/14 — B-01 fixed (`src/ui/shell/AppLayout.tsx:311` no longer hides non-takeover `<Outlet/>` children); VER-04, VER-05, VER-06, UI-03, UI-08 re-closed green.
+  2. The `blocked_upgrade` PersistenceError reaches the UI (W-01 / DATA-07): routed into `flowgridStore` error state and surfaced by `ErrorBanner` (grep `blocked_upgrade` in `src/ui/`/`src/app/` returns matches).
+  3. VERIFICATION.md authored for phases 01, 04, and 06.1 (process blocker closure; code already verified sound via cross-references).
+  4. REQUIREMENTS.md traceability drift reconciled (Phase 1: 9 reqs + Phase 3: 15 reqs flipped from "Pending" [ ] to "Complete" [x]) and ROADMAP progress table matches phase-detail status (Phase 5, Phase 6, Phase 6.1 rows consistent).
+  5. 06.1-03-SUMMARY frontmatter reconciled with 06.1-UAT.md (status / requirements-completed made consistent).
+  6. Re-running the milestone audit yields status PASS (no BLOCKER, no unverified phase).
+
+**Plans:** 1 plan
+
+Plans:
+
+- [ ] 06.2-01-PLAN.md — Close v1.0 audit gaps: B-01 AppLayout bare-Outlet fix (Playwright 14/14 gate, re-closes VER-04/05/06 + UI-03/08), W-01 blocked_upgrade→ErrorBanner wiring (DATA-07, boundary-respecting repository seam), VERIFICATION.md for phases 01/04/06.1, REQUIREMENTS/ROADMAP/06.1-03-SUMMARY drift reconciliation, and milestone re-audit PASS gate.
+
+**UI hint**: yes
+
 ## Deferred After V1
 
 Advanced module graphs, the full patch editor, prestige/Memory, complex rarity pools, cloud sync, multi-device active sessions, native notifications/widgets, AI planning, advanced analytics, and platform integrations stay deferred until v1 validates the first loop. Future spikes should start from the v1 operation log, stable IDs, append-only session history, and entity-specific conflict semantics rather than replacing the local-first foundation.
@@ -232,7 +256,7 @@ Advanced module graphs, the full patch editor, prestige/Memory, complex rarity p
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6. Phase 6.1 is an urgent insertion that unblocks 06-05 (the final plan of Phase 6); execute 6.1 before re-closing 06-05.
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 6.1 -> 06.2. Phase 6.1 was an urgent insertion unblocking 06-05; Phase 06.2 is an urgent insertion closing the v1.0 milestone-audit gaps (B-01 regression + W-01 + missing VERIFICATION.md + REQUIREMENTS/ROADMAP reconciliation) before the milestone can be re-verified PASS.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -242,4 +266,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6. Phase 6.1 is an urg
 | 4. Core Alternation and Rejuvenation Economy | 3/3 | Complete    | 2026-06-24 |
 | 5. Module Forge and Starter Customization | 2/3 | In Progress|  |
 | 6. Hardening, Accessibility, and Trust | 4/5 (+1 partial) | In Progress (06-05 partial; layout pivot blocks UI-03/VER-06) |  |
-| 6.1. Canvas-Always-Visible Layout Pivot | 3/3 (Plan 03 pending human smoke) | Awaiting Task 3 human-verify checkpoint |  |
+| 6.1. Canvas-Always-Visible Layout Pivot | 3/3 | Complete    | 2026-06-29 |
+| 06.2. Close v1.0 Audit Gaps | 0/0 | Not Planned (urgent insertion) |  |
