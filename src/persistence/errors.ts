@@ -108,3 +108,18 @@ export function conflictError(
 ): PersistenceError {
   return { kind, message, recoverable: false, cause };
 }
+
+// Phase 06.2 W-01 (DATA-07): canonical factory for the blocked-upgrade error.
+// Dexie fires `on('blocked')` (no args) when another tab holds an older schema
+// version; this factory constructs the typed PersistenceError so the repository
+// seam (repository.onBlockedUpgrade) can hand it to the app layer without each
+// caller re-inlining the literal. Mirrors the shape `mapDomException`'s
+// 'InvalidStateError' branch returns and consolidates the literal that
+// database.ts:292-300 used to inline.
+export function blockedUpgradeError(): PersistenceError {
+  return {
+    kind: 'blocked_upgrade',
+    message: 'IndexedDB upgrade is blocked, likely by another open tab.',
+    recoverable: true,
+  };
+}

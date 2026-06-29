@@ -5,7 +5,7 @@
 // as versioned code content), so no `moduleDefinitions` store exists. First-run
 // seeding happens in `on('populate')` (RESEARCH §1.6) and writes only the three
 // singletons. `on('blocked')` constructs a PersistenceError via the typed contract;
-// Phase 3 UI subscribes and renders it.
+// routed to the UI via repository.onBlockedUpgrade since Phase 06.2 (DATA-07).
 //
 // Four independent version axes (D-08) — each bumps for a different reason:
 //   1. Dexie schema version (below): store-shape changes only. Currently v4.
@@ -287,15 +287,17 @@ export class FlowgridDatabase extends Dexie {
 
     // Blocked upgrade (DATA-07): another tab holds an open connection. The upgrade
     // has not failed — it resumes when the blocker releases the database. Build the
-    // typed PersistenceError; Phase 3 UI subscribes to surface "close other tabs".
-    // No throw: this is an event handler. The contract is what Phase 2 ships.
+    // typed PersistenceError. Routed via repository.onBlockedUpgrade since Phase
+    // 06.2 (DATA-07); the handler in this file is harmless dead code alongside
+    // the repository subscription (Dexie `on('blocked')` supports multiple
+    // subscribers). No throw: this is an event handler.
     this.on('blocked', () => {
       const _blockedError: PersistenceError = {
         kind: 'blocked_upgrade',
         message: 'IndexedDB upgrade is blocked, likely by another open tab.',
         recoverable: true,
       };
-      // Phase 3 will route _blockedError to the UI error channel.
+      // Routed via repository.onBlockedUpgrade since Phase 06.2 (DATA-07).
       void _blockedError;
     });
   }

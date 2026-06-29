@@ -35,7 +35,7 @@ import type {
 
 import { FlowgridDatabase } from './database.js';
 import { diffFlowgridSnapshots } from './diff.js';
-import { conflictError, mapDomException, type PersistenceError } from './errors.js';
+import { blockedUpgradeError, conflictError, mapDomException, type PersistenceError } from './errors.js';
 
 export type ApplyResult = { readonly ok: true } | { readonly ok: false; readonly error: PersistenceError };
 
@@ -87,6 +87,27 @@ export class FlowgridRepository {
 
   async close(): Promise<void> {
     this.db.close();
+  }
+
+  /**
+   * Phase 06.2 W-01 (DATA-07): subscribe to Dexie's blocked-upgrade event.
+   *
+   * Fires when another browser tab holds an open connection with an older
+   * schema version, blocking this tab's `db.open()` upgrade. The handler
+   * receives the canonical typed `blocked_upgrade` PersistenceError (built by
+   * `blockedUpgradeError()`); the caller (initApp in src/app/store/dispatch.ts)
+   * forwards it to flowgridStore so ErrorBanner can surface "close other tabs"
+   * recovery copy.
+   *
+   * Architecture boundary: persistence owns the Dexie event + the typed error
+   * factory; the app layer owns the store mutation. This method is the only
+   * seam — persistence NEVER imports the store (tests/persistence/boundaries.
+   * test.ts enforces this).
+   *
+   * Register BEFORE calling open(): the blocked event fires DURING open().
+   */
+  onBlockedUpgrade(handler: (error: PersistenceError) => void): void {
+    this.db.on('blocked', () => handler(blockedUpgradeError()));
   }
 
   async applyResult(result: SimulationResult): Promise<ApplyResult> {

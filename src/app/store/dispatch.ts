@@ -188,7 +188,20 @@ export function hydrateStoreForTests(snapshot: FlowgridSnapshot, cells: Iterable
 // correct immediately, and transitions the store loading→ready before React
 // mounts (main.tsx awaits this). On any failure the store lands in 'error' with a
 // typed PersistenceError so FlowgridHome renders ErrorBanner.
+//
+// Phase 06.2 W-01 (DATA-07): subscribes to repository.onBlockedUpgrade BEFORE
+// repository.open() so the typed `blocked_upgrade` PersistenceError (Dexie's
+// on('blocked') event — fires when another tab holds an older schema version)
+// reaches flowgridStore.lastError and surfaces in ErrorBanner with kind-specific
+// recovery copy. Registration must precede open() because the event fires DURING
+// open().
 export async function initApp(repository: FlowgridRepository): Promise<void> {
+  // W-01 / DATA-07: route the `blocked_upgrade` PersistenceError to the UI.
+  // Subscribe BEFORE repository.open() — Dexie's on('blocked') fires during
+  // open() when another tab holds an older schema version.
+  repository.onBlockedUpgrade((error) => {
+    flowgridStore.setState({ status: 'error', lastError: error });
+  });
   try {
     await repository.open();
     const snapshot = await repository.loadSnapshot();
