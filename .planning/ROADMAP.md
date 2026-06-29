@@ -234,7 +234,7 @@ Plans:
 **Requirements**: VER-04, VER-05, VER-06 (re-close), UI-03, UI-08 (re-close), DATA-07 (W-01 closure); process closure for 01/04/06.1 verification artifacts.
 **Success Criteria** (what must be TRUE):
 
-  1. `npx playwright test` passes 14/14 — B-01 fixed (`src/ui/shell/AppLayout.tsx:311` no longer hides non-takeover `<Outlet/>` children); VER-04, VER-05, VER-06, UI-03, UI-08 re-closed green.
+  1. `npx playwright test` passes 14/14 — B-01 resolved under Option B (E2E specs rewritten to drive through the redesign's always-visible ZLiftDock + AppLayout chrome; the hidden `<Outlet/>` wrapper in `src/ui/shell/AppLayout.tsx` stays as a deliberate retirement mechanism per the user decision); VER-04, VER-05, VER-06, UI-03, UI-08 re-closed green.
   2. The `blocked_upgrade` PersistenceError reaches the UI (W-01 / DATA-07): routed into `flowgridStore` error state and surfaced by `ErrorBanner` (grep `blocked_upgrade` in `src/ui/`/`src/app/` returns matches).
   3. VERIFICATION.md authored for phases 01, 04, and 06.1 (process blocker closure; code already verified sound via cross-references).
   4. REQUIREMENTS.md traceability drift reconciled (Phase 1: 9 reqs + Phase 3: 15 reqs flipped from "Pending" [ ] to "Complete" [x]) and ROADMAP progress table matches phase-detail status (Phase 5, Phase 6, Phase 6.1 rows consistent).
@@ -245,7 +245,7 @@ Plans:
 
 Plans:
 
-- [ ] 06.2-01-PLAN.md — Close v1.0 audit gaps: B-01 AppLayout bare-Outlet fix (Playwright 14/14 gate, re-closes VER-04/05/06 + UI-03/08), W-01 blocked_upgrade→ErrorBanner wiring (DATA-07, boundary-respecting repository seam), VERIFICATION.md for phases 01/04/06.1, REQUIREMENTS/ROADMAP/06.1-03-SUMMARY drift reconciliation, and milestone re-audit PASS gate.
+- [ ] 06.2-01-PLAN.md — Close v1.0 audit gaps: B-01 resolved via Option B (rewrite E2E specs to drive through ZLiftDock + AppLayout chrome; redesign + hidden-Outlet wrapper stay fixed; Playwright 14/14 gate re-closes VER-04/05/06 + UI-03/08), W-01 blocked_upgrade→ErrorBanner wiring (DATA-07, boundary-respecting repository seam), VERIFICATION.md for phases 01/04/06.1, REQUIREMENTS/ROADMAP/06.1-03-SUMMARY drift reconciliation, and milestone re-audit PASS gate.
 
 **UI hint**: yes
 
