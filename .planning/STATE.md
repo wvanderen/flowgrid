@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: Audit Gaps
 current_phase: 06.2
 current_phase_name: close-v1-0-audit-gaps-b-01-applayout-hidden-outlet-w-01-bloc
-status: "Phase 06.2 plan 06.2-01 ABORTED at Task 1 (Rule 4 architectural checkpoint). Plan was built on incorrect git evidence — commit 29e32a7 is a 39-file intentional redesign (not a single-hunk regression); its canvas-as-full-viewport-background layout is fundamentally incompatible with visible+clickable child-route `<Outlet/>` content (bare Outlet = 3/14 E2E; canvas intercepts pointer events). User decision: KEEP the redesign, do NOT revert 29e32a7. Findings + corrected evidence captured in phase `.continue-here.md`. Re-plan via /gsd-plan-phase 06.2 — new plan must choose Option C (hybrid layout under redesign) or Option B (rewrite E2E specs for ZLiftDock, now legitimate)."
-stopped_at: Phase 06.2-01 aborted at Task 1 (Rule 4 architectural checkpoint); routing back to /gsd-plan-phase 06.2 with corrected git evidence (see phase `.continue-here.md`). Redesign commit 29e32a7 is fixed input.
-last_updated: "2026-06-29T22:27:59.130Z"
+status: complete
+stopped_at: Phase 06.2-01 complete. v1.0 milestone re-audit reports status PASS (no BLOCKER, no unverified phase; all 6 previously re-opened/partial requirements — VER-04, VER-05, VER-06, UI-03, UI-08, DATA-07 — satisfied). Release authority for /gsd-complete-milestone v1.0.
+last_updated: "2026-06-29T23:07:14.372Z"
 last_activity: 2026-06-29
-last_activity_desc: Phase 06.2-01 aborted (Rule 4 architectural checkpoint); routing back to planning
+last_activity_desc: Phase 06.2-01 complete (4 tasks, 23min); v1.0 milestone re-audit PASS
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 26
-  completed_plans: 25
-  percent: 88
+  completed_plans: 26
+  percent: 100
 ---
 
 # Project State
@@ -28,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-06-24)
 
 ## Current Position
 
-Phase: 06.2 (close-v1-0-audit-gaps-b-01-applayout-hidden-outlet-w-01-bloc) — RE-PLANNING (06.2-01 aborted)
-Plan: 1 of 1 (aborted at Task 1)
-Status: Phase 06.2-01 aborted at Task 1 — plan was built on incorrect git evidence. Commit 29e32a7 is a 39-file intentional redesign, not a single-hunk regression. Bare `<Outlet/>` fix yields 3/14 E2E (canvas intercepts pointer events on child-route links). User decision: keep the redesign; re-plan with corrected evidence. Findings captured in phase `.continue-here.md`.
-Last activity: 2026-06-29 — Phase 06.2-01 aborted (Rule 4 architectural checkpoint); routing back to planning
+Phase: 06.2 (close-v1-0-audit-gaps-b-01-applayout-hidden-outlet-w-01-bloc) — COMPLETE
+Plan: 1 of 1
+Status: Phase complete — v1.0 milestone re-audit PASS (release authority for /gsd-complete-milestone v1.0)
+Last activity: 2026-06-29 — Phase 06.2-01 complete (4 tasks, 23min); v1.0 milestone re-audit PASS
 
-Progress: [██████████░░░░░░░░░░] 25/25 plans (7/8 phases complete; 06.2 = 0 plans, not started)
+Progress: [██████████] 26/26 plans (8/8 phases complete; 100%)
 
 ## Performance Metrics
 
@@ -79,6 +79,7 @@ Progress: [██████████░░░░░░░░░░] 25/25 p
 | Phase 06.1 P01 | 12min | 3 tasks | 10 files |
 | Phase 06.1 P02 | 17min | 3 tasks | 10 files |
 | Phase 06.1 P03 | 18min | 2 of 3 tasks (Task 3 = human smoke) | 4 files |
+| Phase 06.2 P01 | 23min | 4 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -130,15 +131,18 @@ Recent decisions affecting current work:
 - [Phase ?]: Plan 06.1-02: Cell-list nav collapses into a Radix Menu Cell-switcher below md: (D-04 chrome collapse); @radix-ui/react-menu standalone primitive used via controlled open state + Menu.Anchor (no Trigger primitive; DropdownMenu not installed).
 - [Phase ?]: Plan 06.1-02: EditCellDialog extracted as a dedicated Radix Dialog for Cell edit (D-06 configuration exception); Dialog.Portal escapes layout stacking context (Pitfall 5); reuses EditCellForm (edit_cell command — Rule 3 fix on plan's update_cell typo); Task 3 is a pure refactor (characterization tests per tdd.md).
 - [Phase 06.1]: [Plan 06.1-03]: Acceptance gate — extended canvas-smoke E2E (4 new tests: persists-across-core-routes, param-change identity via SPA nav, takeover-coverage with canvas-attach wait, probe-non-zero-throughout-session-lifecycle) + UI tests (strict DOM-identity on canvas persistence, D-09 WebGL-fail continuity, D-03 chrome persistence across core routes, CellBoard alongside canvas mock with Return-to-Flowgrid identity preservation). Tasks 1+2 complete + green (build, canvas-smoke 6/1-skip, UI 61). Rule 3 fixes: CellBoard vs ZLiftDock accessible-name collisions (scope to CellBoard region + level:1); takeover test page.goto reload race (waitFor attached); RTL API mismatch (getByRole region not getByLabel). Task 3 (re-opened 06-05 Task 3 human smoke) PENDING-HUMAN-CHECKPOINT — UI-03/VER-06 deliberately NOT re-closed until human approval.
+- [Phase 06.2]: Option B chosen for B-01: rewrite the three E2E specs to drive through ZLiftDock + AppLayout chrome rather than reverting 29e32a7 (Option A) or un-retiring CellBoard/FlowgridHome/CorePanel (Option C). The redesign is fixed input per the user decision; ZLiftDock has full control parity; smallest, safest diff with zero production code changes. — Phase 06.2-01 plan <decision> block + SUMMARY key-decisions[0].
+- [Phase 06.2]: W-01 routes the blocked_upgrade PersistenceError through repository.onBlockedUpgrade (NOT a direct store import in persistence). Architecture boundary (AGENTS.md + tests/persistence/boundaries.test.ts) forbids persistence importing react/zustand/app/*. 5-file path is already minimal. — Phase 06.2-01 plan Task 2 action + RESEARCH Wiring Plan for W-01.
 
 ### Pending Todos
 
-- [ ] **RE-PLAN + execute Phase 06.2** — plan `06.2-01` was aborted (Rule 4 architectural checkpoint): its B-01 fix was built on incorrect git evidence. Commit `29e32a7` is a 39-file intentional redesign, not a single-hunk regression; the redesign's full-viewport canvas intercepts pointer events on child-route `<Outlet/>` content (3/14 E2E with bare Outlet). User decision: **keep the redesign, do NOT revert `29e32a7`**. Re-plan via `/gsd-plan-phase 06.2` choosing Option C (hybrid layout under redesign) or Option B (rewrite E2E specs for ZLiftDock). Corrected evidence + carried-over scope (W-01/DATA-07, VERIFICATION.md for 01/04, REQUIREMENTS/ROADMAP drift) captured in phase `.continue-here.md`.
-- [ ] **Re-audit milestone v1.0 after 06.2** — confirm status PASS (no BLOCKER, no unverified phase) before running `/gsd-complete-milestone`.
+- [x] **RE-PLAN + execute Phase 06.2** — DONE. Re-planned via `/gsd-plan-phase 06.2` (Option B chosen) and executed via `/gsd-execute-phase 06.2`. B-01 closed (E2E rewritten under Option B; AppLayout.tsx untouched per user decision); W-01/DATA-07 closed (repository seam); VERIFICATION.md authored for 01/04/06.1; REQUIREMENTS/ROADMAP/06.1-03-SUMMARY drift reconciled. SUMMARY: `06.2-01-SUMMARY.md`.
+- [x] **Re-audit milestone v1.0 after 06.2** — DONE. Re-audit reports `status: passed` (no BLOCKER, no unverified phase; all 6 previously re-opened/partial requirements satisfied). See `.planning/v1.0-MILESTONE-AUDIT.md`. Release authority for `/gsd-complete-milestone v1.0`.
 
 ### Blockers/Concerns
 
-- **B-01 (BLOCKER, re-scoped 2026-06-29):** The hidden-`<Outlet/>` wrapper in `src/ui/shell/AppLayout.tsx` is one mechanism inside a 39-file intentional redesign (`29e32a7`), NOT an isolated regression. Bare-Outlet fix yields 3/14 E2E — the redesign's canvas-as-full-viewport-background layout intercepts pointer events on child-route links. Resolution requires a structural decision (hybrid layout OR E2E rewrite), not a single-hunk reversal. Redesign is fixed input per user decision. Re-opens VER-04, VER-05 (partial), VER-06, UI-03, UI-08. Full detail: `.planning/phases/06.2-.../.continue-here.md`.
+- **B-01 (BLOCKER, closed 2026-06-29):** RESOLVED under Option B (Phase 06.2 Task 1). The three Playwright E2E specs were rewritten to drive through the redesign's always-visible ZLiftDock CellInspectorDock/CoreInspector + AppLayout floating chrome; the redesign's hidden `<Outlet/>` wrapper in `AppLayout.tsx` stays byte-identical (deliberate retirement mechanism per user decision). `npx playwright test` → 13 passed / 0 failed / 1 self-skipped (documented VER-06 pixel-variance WebGL self-skip). Re-closes VER-04, VER-05, VER-06, UI-03, UI-08.
+- **W-01 (WARNING, closed 2026-06-29):** RESOLVED via the 5-file boundary-respecting repository seam (Phase 06.2 Task 2). `repository.onBlockedUpgrade(handler)` is the persistence→app indirection; `initApp` subscribes before `repository.open()`; `ErrorBanner` renders kind-specific "Close other Flowgrid tabs" recovery copy. Closes DATA-07.
 - Phase 06.1 UAT otherwise passed 11/11. Other prior blockers (particle imperceptibility, grainy hexagons, redundant resume prompt, excessive scroll) were accepted as resolved by the user during UAT.
 
 ### Roadmap Evolution
@@ -157,6 +161,6 @@ Items acknowledged and carried forward from roadmap creation:
 
 ## Session Continuity
 
-Last session: 2026-06-29
-Stopped at: Phase 06.2 inserted (URGENT) to close v1.0 milestone-audit gaps. Phase 06.1 is the last completed phase (UAT 11/11). The v1.0 milestone is NOT ready to complete until 06.2 closes B-01 + W-01 + missing VERIFICATION.md + REQUIREMENTS/ROADMAP drift.
-Resume file: None — run `/gsd-plan-phase 06.2` to plan the audit-gap closure, then execute. See `.planning/v1.0-MILESTONE-AUDIT.md` for full gap detail.
+Last session: 2026-06-29T23:06:24.324Z
+Stopped at: Phase 06.2-01 complete (4 tasks, 23min); v1.0 milestone re-audit reports status PASS (no BLOCKER, no unverified phase; all 6 previously re-opened/partial requirements — VER-04, VER-05, VER-06, UI-03, UI-08, DATA-07 — satisfied). B-01 resolved under Option B (E2E rewritten for redesign; AppLayout untouched); W-01 closed via repository seam; three process-closure VERIFICATION.md artifacts authored; REQUIREMENTS/ROADMAP/06.1-03-SUMMARY drift reconciled.
+Resume file: None — milestone is ready to complete. Run `/gsd-complete-milestone v1.0`.
