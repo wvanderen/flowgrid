@@ -18,7 +18,7 @@ Flowgrid v1 is a vertical MVP that proves the first loop before expanding into a
 - [x] **Phase 5: Module Forge and Starter Customization** - Let users spend Module Tokens on curated Forge choices and apply rewards into starter slots.
 - [x] **Phase 6: Hardening, Accessibility, and Trust** - Verify the full browser flow, accessible semantic controls, renderer safety, settings, recovery UX, and release-readiness checks.
 - [x] **Phase 6.1: Canvas-Always-Visible Layout Pivot** - *(Urgent insertion)* Restructure the app shell so the Flowgrid canvas stays mounted and visible during all core signal-producing interactions; module interactions become inline-on-grid, with Settings/History/Forge as the only full-screen takeovers. Unblocks 06-05 / UI-03 / VER-06. (completed 2026-06-29)
-- [ ] **Phase 06.2: Close v1.0 Audit Gaps** - *(Urgent insertion)* Fix B-01 AppLayout hidden-Outlet regression (re-close VER-04/05/06, UI-03, UI-08), surface W-01 blocked_upgrade error (DATA-07), author VERIFICATION.md for 01/04/06.1, and reconcile REQUIREMENTS/ROADMAP drift.
+- [x] **Phase 06.2: Close v1.0 Audit Gaps** - *(Urgent insertion)* Fix B-01 AppLayout hidden-Outlet regression (re-close VER-04/05/06, UI-03, UI-08), surface W-01 blocked_upgrade error (DATA-07), author VERIFICATION.md for 01/04/06.1, and reconcile REQUIREMENTS/ROADMAP drift. (completed 2026-06-29)
 
 ## Phase Details
 
@@ -241,11 +241,11 @@ Plans:
   5. 06.1-03-SUMMARY frontmatter reconciled with 06.1-UAT.md (status / requirements-completed made consistent).
   6. Re-running the milestone audit yields status PASS (no BLOCKER, no unverified phase).
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 
-- [ ] 06.2-01-PLAN.md — Close v1.0 audit gaps: B-01 resolved via Option B (rewrite E2E specs to drive through ZLiftDock + AppLayout chrome; redesign + hidden-Outlet wrapper stay fixed; Playwright 14/14 gate re-closes VER-04/05/06 + UI-03/08), W-01 blocked_upgrade→ErrorBanner wiring (DATA-07, boundary-respecting repository seam), VERIFICATION.md for phases 01/04/06.1, REQUIREMENTS/ROADMAP/06.1-03-SUMMARY drift reconciliation, and milestone re-audit PASS gate.
+- [x] 06.2-01-PLAN.md — Close v1.0 audit gaps: B-01 resolved via Option B (rewrite E2E specs to drive through ZLiftDock + AppLayout chrome; redesign + hidden-Outlet wrapper stay fixed; Playwright 14/14 gate re-closes VER-04/05/06 + UI-03/08), W-01 blocked_upgrade→ErrorBanner wiring (DATA-07, boundary-respecting repository seam), VERIFICATION.md for phases 01/04/06.1, REQUIREMENTS/ROADMAP/06.1-03-SUMMARY drift reconciliation, and milestone re-audit PASS gate.
 
 **UI hint**: yes
 
@@ -267,4 +267,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 6.1 -> 06.2. Phas
 | 5. Module Forge and Starter Customization | 3/3 | Complete | 2026-06-26 |
 | 6. Hardening, Accessibility, and Trust | 5/5 | Complete | 2026-06-29 |
 | 6.1. Canvas-Always-Visible Layout Pivot | 3/3 | Complete    | 2026-06-29 |
-| 06.2. Close v1.0 Audit Gaps | 0/0 | Not Planned (urgent insertion) |  |
+| 06.2. Close v1.0 Audit Gaps | 1/1 | Complete | 2026-06-29 |
