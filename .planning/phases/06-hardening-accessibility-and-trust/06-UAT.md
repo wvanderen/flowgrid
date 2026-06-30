@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: resolved
 phase: 06-hardening-accessibility-and-trust
 source: [06-VERIFICATION.md]
 started: 2026-06-26T20:30:00Z
-updated: 2026-06-26T20:55:00Z
+updated: 2026-06-30T00:35:43Z
 ---
 
 ## Current Test
@@ -23,7 +23,8 @@ expected: |
     - Reduced-motion ON yields static hexes/halos with no animation (ticker fully stopped), static durable state still visible.
     - WebGL-fail path shows the friendly inline note ("Visuals unavailable — you can still do everything from the Cell list below") + a Settings link, not a blank frame.
   Why human: VER-06 pixel-variance is intentionally skipped (Pixi v8 preserveDrawingBuffer:false defeats readback). The structural probe (cells>0, core===true, routes>=0) is always-run and passes, but cannot see whether particles actually move or whether the motion reads as "Current flowing".
-result: issue
+result: pass
+resolution: "Fixed in Phase 06-05 (commits 174e6eb primary + d59062d secondary — container-local particle anchors + SettingsPanel OS-preference pin). Confirmed resolved by Phase 06.2 v1.0 milestone re-audit PASS and 06.1-UAT Test 6 perceptual smoke."
 reported: "production build is necessary here? opening index.html shows a blank page. Local dev build still doesn't seem to have any movement at all"
 severity: major
 
@@ -41,8 +42,8 @@ result: pass
 ## Summary
 
 total: 2
-passed: 1
-issues: 1
+passed: 2
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
@@ -50,7 +51,8 @@ blocked: 0
 ## Gaps
 
 - truth: "Particle Current trails, Bloom bursts, Core convert/store ripples, and forge/token flashes visibly animate during their respective events in the dev build served via the Vite dev server."
-  status: failed
+  status: resolved
+  resolved_by: "06-05 (174e6eb + d59062d) — confirmed by 06.2 v1.0 milestone re-audit PASS + 06.1-UAT Test 6 perceptual smoke"
   reason: "User reported: production build is necessary here? opening index.html shows a blank page. Local dev build still doesn't seem to have any movement at all"
   severity: major
   test: 1
