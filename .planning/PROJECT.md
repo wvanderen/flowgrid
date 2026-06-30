@@ -25,6 +25,7 @@ Tap a Cell, do a real thing, and feel that effort become visible, useful signal 
 - ✓ Cell milestone completion fires Bloom, creates signal, increases Momentum, and activates the Cell until local day reset. — Phase 3
 - ✓ Current can move through a Cell, route toward the Core, and be allocated by the Core between Energy conversion and Core Charge storage. — Phase 4
 - ✓ Rejuvenation logs can process Core Charge into Integration progress and grant Module Tokens at thresholds. — Phase 4
+- ✓ v1.0 milestone audit gaps closed: B-01 E2E aligned with the redesign, W-01 `blocked_upgrade` surfaces to the UI, and all phases verified. — Phase 06.2
 
 ### Active
 
@@ -209,4 +210,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-24 after Phase 4*
+*Last updated: 2026-06-30 after Phase 06.2 — v1.0 milestone re-verifies PASS; full milestone-boundary review pending `/gsd-complete-milestone v1.0`.*
