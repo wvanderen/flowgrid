@@ -267,4 +267,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 6.1 -> 06.2. Phas
 | 5. Module Forge and Starter Customization | 3/3 | Complete | 2026-06-26 |
 | 6. Hardening, Accessibility, and Trust | 5/5 | Complete | 2026-06-29 |
 | 6.1. Canvas-Always-Visible Layout Pivot | 3/3 | Complete    | 2026-06-29 |
-| 06.2. Close v1.0 Audit Gaps | 1/1 | Complete | 2026-06-29 |
+| 06.2. Close v1.0 Audit Gaps | 1/1 | Complete    | 2026-06-29 |
