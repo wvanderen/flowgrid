@@ -16,23 +16,25 @@ Tap a Cell, do a real thing, and feel that effort become visible, useful signal 
 
 ### Validated
 
-- ✓ Simulation logic is deterministic, pure TypeScript, and separate from rendering, persistence, and UI concerns. — Phase 1
-- ✓ Durable app state is local-first, IndexedDB-backed, migration-aware, and structured as records rather than one giant opaque blob. — Phase 2
-- ✓ A user can create and inspect Cells as life-domain nodes on a hex Flowgrid around a Core. — Phase 3
-- ✓ A new Cell works immediately with starter Modules: Generator, Charge Core, Output, and Bloom. — Phase 3
-- ✓ The Generator Module is always easy to use and starts an active focus session with minimal friction. — Phase 3
-- ✓ Real focus time generates Current, Cell XP, Momentum, milestone progress, and visible flow feedback. — Phase 3
-- ✓ Cell milestone completion fires Bloom, creates signal, increases Momentum, and activates the Cell until local day reset. — Phase 3
-- ✓ Current can move through a Cell, route toward the Core, and be allocated by the Core between Energy conversion and Core Charge storage. — Phase 4
-- ✓ Rejuvenation logs can process Core Charge into Integration progress and grant Module Tokens at thresholds. — Phase 4
-- ✓ v1.0 milestone audit gaps closed: B-01 E2E aligned with the redesign, W-01 `blocked_upgrade` surfaces to the UI, and all phases verified. — Phase 06.2
+- ✓ Simulation logic is deterministic, pure TypeScript, and separate from rendering, persistence, and UI concerns. — v1.0
+- ✓ Durable app state is local-first, IndexedDB-backed, migration-aware, and structured as records rather than one giant opaque blob. — v1.0
+- ✓ A user can create and inspect Cells as life-domain nodes on a hex Flowgrid around a Core. — v1.0
+- ✓ A new Cell works immediately with starter Modules: Generator, Charge Core, Output, and Bloom. — v1.0
+- ✓ The Generator Module is always easy to use and starts an active focus session with minimal friction. — v1.0
+- ✓ Real focus time generates Current, Cell XP, Momentum, milestone progress, and visible flow feedback. — v1.0
+- ✓ Cell milestone completion fires Bloom, creates signal, increases Momentum, and activates the Cell until local day reset. — v1.0
+- ✓ Current can move through a Cell, route toward the Core, and be allocated by the Core between Energy conversion and Core Charge storage. — v1.0
+- ✓ Rejuvenation logs can process Core Charge into Integration progress and grant Module Tokens at thresholds. — v1.0
+- ✓ Module Tokens can be used in an early Module Forge flow that reveals curated choices and creates new build opportunities. — v1.0
+- ✓ Energy can be spent on early upgrades (Activation boost) and forge rolls. — v1.0
+- ✓ The renderer visualizes simulation-emitted visual events (Current, Bloom, forge/token) rather than owning economy truth, and dropping events never changes durable state. — v1.0
+- ✓ The Flowgrid canvas stays mounted and visible during all core signal-producing interactions so effort is perceivable as it happens. — v1.0
+- ✓ Every critical action is reachable through semantic non-canvas controls and verified by Playwright + axe-core WCAG scans. — v1.0
+- ✓ The first production slice proves that Cells + Modules + Core alternation feels good before advanced systems are built. — v1.0
 
 ### Active
 
-- [ ] Module Tokens can be used in an early Module Forge flow that reveals choices and creates new build opportunities.
-- [ ] Energy can be spent on early upgrades, forge rolls, routes, Cell expansion, or Core Power placeholders.
-- [ ] The renderer visualizes simulation-emitted visual events rather than owning economy truth.
-- [ ] The first production slice proves that Cells + Modules + Core alternation feels good before advanced systems are built.
+*(To be defined — run `/gsd-new-milestone` to set v1.1+ requirements.)*
 
 ### Out of Scope
 
@@ -46,6 +48,15 @@ Tap a Cell, do a real thing, and feel that effort become visible, useful signal 
 - Building the whole app inside Canvas/WebGL - normal UI must handle controls, forms, inspectors, lists, settings, and text-heavy details.
 
 ## Context
+
+**Current state (v1.0 shipped 2026-06-30):**
+
+- ~11,845 LOC TypeScript across 108 source files; 205 commits over 8 days.
+- Tech stack: React 19, Vite 8, Tailwind 4, PixiJS 8, Zustand 5, Dexie 4 (IndexedDB), Vitest, fast-check, Playwright + axe-core.
+- Dexie migration chain v1→v5 across 10 normalized stores; archive envelope ARCHIVE_VERSION=2.
+- 246+ automated tests (unit, property, persistence, UI, E2E) green; Playwright 13 passed / 1 self-skipped.
+- Architecture boundaries enforced by ESLint rules + boundary tests (domain/simulation/render/persistence/ui).
+- Known tech debt: W-02..W-05 optional hygiene items; dead-code `database.ts` on('blocked') handler; flaky AppLayout nav test (~1 in 5 full-suite runs) — all deferred (see STATE.md Deferred Items).
 
 Flowgrid's design promise is:
 
@@ -181,16 +192,18 @@ Flowgrid is a local-first TypeScript systems app with a pure simulation engine, 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Use Cells instead of Spheres | Cells communicate life-domain containers with modules, history, and local progression. | - Pending |
-| Make Modules both UI and gameplay | The app's interface should be symbolic of how the user deploys time and attention. | - Pending |
-| Center the daily loop on Generator -> Current -> Bloom -> Core | This protects the tap-to-start focus interaction while giving effort visible systemic consequences. | - Pending |
-| Make the Core a dual-output system | Convert/store allocation creates a meaningful strategy tradeoff between immediate Energy and future Integration. | ✓ Phase 4 — convert/store allocation live with 100% enforcement; Energy→Activation boost sink shipped |
-| Make rejuvenation part of the economy | Recovery becomes mechanically meaningful through Core Charge processing and Module Token rewards. | ✓ Phase 4 — Charge→Integration→Module Tokens via derived threshold sequence; rest requires prior Charge |
-| Keep Cell XP local | Local XP should grow Cell capacity and identity without blocking global module-family creativity. | - Pending |
-| Unlock global module families through Core and forge systems | Creative module freedom should not depend on the "right" Cell earning XP first. | - Pending |
-| Build the first milestone as a vertical slice | The project needs to prove Cells + Modules + Core alternation feels good before advanced systems expand. | - Pending |
-| Separate simulation, rendering, persistence, sync, and UI | This keeps game logic testable, visuals expressive, persistence durable, and future sync possible. | - Pending |
-| Use local-first persistence with sync-ready operations | Long-lived user history and future multi-device sync require durable records and operation semantics from the start. | - Pending |
+| Use Cells instead of Spheres | Cells communicate life-domain containers with modules, history, and local progression. | ✓ Good — v1.0 shipped with Cells as the core unit |
+| Make Modules both UI and gameplay | The app's interface should be symbolic of how the user deploys time and attention. | ✓ Good — starter modules (Generator, Charge Core, Output, Bloom) are both UI and mechanics |
+| Center the daily loop on Generator -> Current -> Bloom -> Core | This protects the tap-to-start focus interaction while giving effort visible systemic consequences. | ✓ Good — sacred `tap Cell -> start session` preserved through the layout pivot; full loop playable |
+| Make the Core a dual-output system | Convert/store allocation creates a meaningful strategy tradeoff between immediate Energy and future Integration. | ✓ Good — convert/store allocation live with 100% enforcement; Energy→Activation boost sink shipped |
+| Make rejuvenation part of the economy | Recovery becomes mechanically meaningful through Core Charge processing and Module Token rewards. | ✓ Good — Charge→Integration→Module Tokens via derived threshold sequence; rest requires prior Charge |
+| Keep Cell XP local | Local XP should grow Cell capacity and identity without blocking global module-family creativity. | ✓ Good — Cell XP grows local identity; no global gating in v1 |
+| Unlock global module families through Core and forge systems | Creative module freedom should not depend on the "right" Cell earning XP first. | — Pending — v1 shipped curated Forge; full module families deferred to v2 |
+| Build the first milestone as a vertical slice | The project needs to prove Cells + Modules + Core alternation feels good before advanced systems expand. | ✓ Good — v1.0 vertical slice shipped end-to-end |
+| Separate simulation, rendering, persistence, sync, and UI | This keeps game logic testable, visuals expressive, persistence durable, and future sync possible. | ✓ Good — ESLint boundary rules + boundary tests green; simulation is pure TS |
+| Use local-first persistence with sync-ready operations | Long-lived user history and future multi-device sync require durable records and operation semantics from the start. | ✓ Good — Dexie normalized stores + sync-ready operation log + append-only sessions shipped |
+| Persistent canvas via pathless layout route (Phase 6.1) | Canvas must stay visible during all core signal-producing interactions so effort is perceivable. | ✓ Good — AppLayout mounts canvas once; ZLiftDock provides inline control parity |
+| B-01 Option B: rewrite E2E for the redesign (Phase 06.2) | The redesign is fixed input; smallest, safest diff with zero production code changes. | ✓ Good — Playwright 13/0/1; VER-04/05/06, UI-03/08 re-closed green |
 
 ## Evolution
 
@@ -210,4 +223,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-30 after Phase 06.2 — v1.0 milestone re-verifies PASS; full milestone-boundary review pending `/gsd-complete-milestone v1.0`.*
+*Last updated: 2026-06-30 after v1.0 milestone — full milestone-boundary review complete.*

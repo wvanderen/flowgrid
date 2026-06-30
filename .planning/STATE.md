@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Audit Gaps
-current_phase: 06.2
-status: completed
+current_phase: 0
+status: Awaiting next milestone
 stopped_at: Phase 06.2-01 complete (4 tasks, 23min); v1.0 milestone re-audit reports status PASS (no BLOCKER, no unverified phase; all 6 previously re-opened/partial requirements — VER-04, VER-05, VER-06, UI-03, UI-08, DATA-07 — satisfied). B-01 resolved under Option B (E2E rewritten for redesign; AppLayout untouched); W-01 closed via repository seam; three process-closure VERIFICATION.md artifacts authored; REQUIREMENTS/ROADMAP/06.1-03-SUMMARY drift reconciled.
-last_updated: "2026-06-30T03:27:21.418Z"
+last_updated: "2026-06-30T03:35:19.674Z"
 last_activity: 2026-06-30
-last_activity_desc: Phase 06.2 complete
+last_activity_desc: Milestone v1.0 completed and archived
 progress:
   total_phases: 8
   completed_phases: 8
@@ -21,19 +21,17 @@ current_phase_name: close-v1-0-audit-gaps-b-01-applayout-hidden-outlet-w-01-bloc
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-24)
+See: .planning/PROJECT.md (updated 2026-06-30)
 
 **Core value:** Tap a Cell, do a real thing, and feel that effort become visible, useful signal in a modular system that makes returning feel powerful and forgiving.
-**Current focus:** Phase 06.2 — close-v1-0-audit-gaps-b-01-applayout-hidden-outlet-w-01-bloc
+**Current focus:** Planning next milestone (v1.0 shipped 2026-06-30)
 
 ## Current Position
 
-Phase: 06.2
-Plan: Not started
-Status: Phase complete — v1.0 milestone re-audit PASS (release authority for /gsd-complete-milestone v1.0)
-Last activity: 2026-06-30 — Phase 06.2 complete
-
-Progress: [██████████] 26/26 plans (8/8 phases complete; 100%)
+Phase: Milestone v1.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-30 — Milestone v1.0 completed and archived
 
 ## Performance Metrics
 
@@ -160,8 +158,24 @@ Items acknowledged and carried forward from roadmap creation:
 | Long-tail progression | Prestige and Memory | Deferred to v2+ | Roadmap creation |
 | Sync and platform | Cloud sync, multi-device active sessions, native notifications/widgets | Deferred to v2+ | Roadmap creation |
 
+Items acknowledged and deferred at v1.0 milestone close on 2026-06-30:
+
+| Category | Item | Status |
+|----------|------|--------|
+| verification | Phase 05 VERIFICATION — human_needed (deferred human-smoke path closed via green E2E suite; accepted by PASS milestone audit) | accepted |
+| verification | Phase 06 VERIFICATION — human_needed (deferred human-smoke path closed via green E2E suite; accepted by PASS milestone audit) | accepted |
+| quick_task | bury-archived-cells (20260628) | unknown |
+| quick_task | sigil-stage-composition (20260628) | unknown |
+| quick_task | smooth-canvas-background (20260628) | unknown |
+| tech_debt | W-02..W-05 optional hygiene (domain eslint rule, install_module stub, reconcileDayRollover in-memory, runtime invariant flag) | deferred |
+| tech_debt | Dead-code database.ts on('blocked') handler (left per W-01 Option B minimal blast) | deferred |
+
 ## Session Continuity
 
-Last session: 2026-06-29T23:06:24.324Z
-Stopped at: Phase 06.2-01 complete (4 tasks, 23min); v1.0 milestone re-audit reports status PASS (no BLOCKER, no unverified phase; all 6 previously re-opened/partial requirements — VER-04, VER-05, VER-06, UI-03, UI-08, DATA-07 — satisfied). B-01 resolved under Option B (E2E rewritten for redesign; AppLayout untouched); W-01 closed via repository seam; three process-closure VERIFICATION.md artifacts authored; REQUIREMENTS/ROADMAP/06.1-03-SUMMARY drift reconciled.
-Resume file: None — milestone is ready to complete. Run `/gsd-complete-milestone v1.0`.
+Last session: 2026-06-30T03:35:19Z
+Stopped at: v1.0 milestone archived and tagged. Awaiting next milestone.
+Resume file: None — run `/gsd-new-milestone` to start the next milestone.
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
